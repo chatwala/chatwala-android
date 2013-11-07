@@ -169,11 +169,11 @@ public class CameraActivity extends Activity
         int profile;
 
 //        if (CamcorderProfile.get(0, CamcorderProfile.QUALITY_CIF) != null)
-            profile = CamcorderProfile.QUALITY_CIF;
+//            profile = CamcorderProfile.QUALITY_CIF;
 //        else if (CamcorderProfile.get(0, CamcorderProfile.QUALITY_QCIF) != null)
 //            profile = CamcorderProfile.QUALITY_QCIF;
 //        else// if (CamcorderProfile.get(0, CamcorderProfile.QUALITY_480P) != null)
-//            profile = CamcorderProfile.QUALITY_LOW;
+            profile = CamcorderProfile.QUALITY_LOW;
 //        else
 //            throw new RuntimeException("No compatible camera");
 
