@@ -11,16 +11,15 @@
     <co.touchlab.customcamera.CameraPreviewView
         android:id="@+id/camera_preview"
         android:layout_width="@dimen/large_preview_width"
-        android:layout_height="@dimen/large_preview_width"
+        android:layout_height="@dimen/large_preview_height"
         android:layout_marginTop="50dp"
         android:keepScreenOn="true"/>
 
-    <ImageView
+    <Button
         android:id="@+id/camera_button"
-        android:layout_width="50dip"
-        android:layout_height="50dip"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start"
         android:background="@android:color/holo_red_dark"/>
 </FrameLayout>
 

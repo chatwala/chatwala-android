@@ -85,9 +85,9 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-        stopPreview();
+//        stopPreview();
         rotatePreview();
-        startPreview();
+//        startPreview();
     }
 
 

@@ -4,22 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Point;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
 import android.view.*;
-import android.widget.ImageView;
-import android.widget.MediaController;
-import android.widget.Toast;
-import android.widget.VideoView;
+import android.widget.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +37,7 @@ public class CameraActivity extends Activity
     private Integer miniWidth;
     private Integer miniHeight;
     private int height;
+    private Button captureButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -60,7 +54,7 @@ public class CameraActivity extends Activity
         openAndConfigureCamera(false);
         isRecording = new AtomicBoolean(false);
 
-        ImageView captureButton = (ImageView) findViewById(R.id.camera_button);
+        captureButton = (Button) findViewById(R.id.camera_button);
         captureButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -72,6 +66,7 @@ public class CameraActivity extends Activity
                 }
                 else
                 {
+                    captureButton.setText("Start Reply");
                     isRecording.set(false);
                     stopVideo();
                 }
@@ -145,6 +140,11 @@ public class CameraActivity extends Activity
             cameraPreviewView.setLayoutParams(layoutParams);
 
             playLastVideo();
+            captureButton.setText("Stop Reply");
+        }
+        else
+        {
+            captureButton.setText("Stop Message");
         }
 
         if (prepareMediaRecorder())

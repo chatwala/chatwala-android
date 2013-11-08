@@ -2,6 +2,6 @@
 <resources>
     <dimen name="small_preview_width">128dp</dimen>
     <dimen name="small_preview_height">192dp</dimen>
-    <dimen name="large_preview_width">256dp</dimen>
-    <dimen name="large_preview_height">384dp</dimen>
+    <dimen name="large_preview_width">320dp</dimen>
+    <dimen name="large_preview_height">480dp</dimen>
 </resources>
