@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
@@ -13,10 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Display;
-import android.view.Surface;
-import android.view.View;
-import android.view.WindowManager;
+import android.view.*;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.Toast;
@@ -41,6 +40,10 @@ public class CameraActivity extends Activity
     private File lastFile;
     private VideoView videoView;
     private MediaController mc;
+    private int width;
+    private Integer miniWidth;
+    private Integer miniHeight;
+    private int height;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -48,6 +51,9 @@ public class CameraActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
+        initPreviewSizes();
+
+        videoView = (VideoView) findViewById(R.id.videoView);
         cameraPreviewView = (CameraPreviewView) findViewById(R.id.camera_preview);
         cameraPreviewView.setZOrderOnTop(true);
 
@@ -71,6 +77,15 @@ public class CameraActivity extends Activity
                 }
             }
         });
+    }
+
+    private void initPreviewSizes()
+    {
+        width = Math.round(getResources().getDimension(R.dimen.large_preview_width));
+        height = Math.round(getResources().getDimension(R.dimen.large_preview_height));
+
+        miniWidth = Math.round(getResources().getDimension(R.dimen.small_preview_width));
+        miniHeight = Math.round(getResources().getDimension(R.dimen.small_preview_height));
     }
 
     private void openAndConfigureCamera(boolean afterPaused)
@@ -124,6 +139,11 @@ public class CameraActivity extends Activity
         camera.unlock();
         if (lastFile != null)
         {
+            ViewGroup.LayoutParams layoutParams = cameraPreviewView.getLayoutParams();
+            layoutParams.width = miniWidth;
+            layoutParams.height = miniHeight;
+            cameraPreviewView.setLayoutParams(layoutParams);
+
             playLastVideo();
         }
 
@@ -143,16 +163,33 @@ public class CameraActivity extends Activity
 
     private void playLastVideo()
     {
-        videoView = (VideoView) findViewById(R.id.videoView);
+
         mc = new MediaController(this);
         mc.setAnchorView(videoView);
         mc.setMediaPlayer(videoView);
+
         videoView.setMediaController(mc);
 //        videoView.setZOrderMediaOverlay(false);
         videoView.setVideoPath(lastFile.getPath());
 
 //        videoView.setRotation(180);
         videoView.start();
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+        {
+            @Override
+            public void onCompletion(MediaPlayer mp)
+            {
+                playbackDone();
+            }
+        });
+    }
+
+    private void playbackDone()
+    {
+        ViewGroup.LayoutParams layoutParams = cameraPreviewView.getLayoutParams();
+        layoutParams.width = width;
+        layoutParams.height = height;
+        cameraPreviewView.setLayoutParams(layoutParams);
     }
 
     private boolean prepareMediaRecorder()
