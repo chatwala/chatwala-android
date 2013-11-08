@@ -20,6 +20,8 @@ import android.view.*;
 import android.widget.*;
 import co.touchlab.customcamera.util.ZipUtil;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.util.Arrays;
@@ -45,6 +47,7 @@ public class CameraActivity extends Activity
     private Integer miniHeight;
     private int height;
     private Button captureButton;
+    private double start_recording;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -158,8 +161,16 @@ public class CameraActivity extends Activity
                 ZipUtil.unzipFiles(file, outFolder);
 
                 lastFile = new File(outFolder, "video.mp4");
+                FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
+                JSONObject jsonObject = new JSONObject(IOUtils.toString(input));
+                input.close();
+                start_recording = jsonObject.getDouble("start_recording");
             }
             catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (JSONException e)
             {
                 throw new RuntimeException(e);
             }
