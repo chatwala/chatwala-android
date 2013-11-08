@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
@@ -11,12 +12,15 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,14 +52,7 @@ public class CameraActivity extends Activity
 
         initPreviewSizes();
 
-        Uri data = getIntent().getData();
-        if(data!= null)
-        {
-            String encodedPath = data.getEncodedPath();
-            Log.w("Thefile", "path: "+ encodedPath);
-            lastFile = new File(encodedPath);
-            Log.w("Thefile", lastFile.getAbsolutePath());
-        }
+        extractFileAttachment();
 
         videoView = (VideoView) findViewById(R.id.videoView);
         cameraPreviewView = (CameraPreviewView) findViewById(R.id.camera_preview);
@@ -82,6 +79,83 @@ public class CameraActivity extends Activity
                 }
             }
         });
+    }
+
+    private void extractFileAttachment()
+    {
+        Uri uri = getIntent().getData();
+        if (uri != null)
+        {
+            /*String  scheme = uri.getScheme();
+            String  name = null;
+
+            if (scheme.equals("file")) {
+                List<String>
+                    pathSegments = uri.getPathSegments();
+
+                if (pathSegments.size() > 0)
+                    name = pathSegments.get(pathSegments.size() - 1);
+
+            }
+
+            else if (scheme.equals("content")) {
+                Cursor cursor = getContentResolver().query(
+                        uri,
+                        new String[]{MediaStore.MediaColumns.DISPLAY_NAME},
+                        null,
+                        null,
+                        null);
+
+                cursor.moveToFirst();
+
+                int nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+                if (nameIndex >= 0)
+                    name = cursor.getString(nameIndex);
+
+            }
+
+            else
+                return;
+
+            if (name == null)
+                return;
+
+            int     n = name.lastIndexOf(".");
+            String  fileName,
+                    fileExt;
+
+            if (n == -1)
+                return;
+
+            else {
+                fileName = name.substring(0, n);
+                fileExt = name.substring(n);
+
+            }*/
+
+
+            try
+            {
+                InputStream is = getContentResolver().openInputStream(uri);
+                File file = new File(getFilesDir(), "vid_" + System.currentTimeMillis() +".mp4");
+                FileOutputStream os = new FileOutputStream(file);
+
+                byte[] buffer = new byte[4096];
+                int count;
+
+                while ((count = is.read(buffer)) > 0)
+                    os.write(buffer, 0, count);
+
+                os.close();
+                is.close();
+
+                lastFile = file;
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private void initPreviewSizes()
@@ -220,7 +294,7 @@ public class CameraActivity extends Activity
 //        else if (CamcorderProfile.get(0, CamcorderProfile.QUALITY_QCIF) != null)
 //            profile = CamcorderProfile.QUALITY_QCIF;
 //        else// if (CamcorderProfile.get(0, CamcorderProfile.QUALITY_480P) != null)
-            profile = CamcorderProfile.QUALITY_LOW;
+        profile = CamcorderProfile.QUALITY_LOW;
 //        else
 //            throw new RuntimeException("No compatible camera");
 
