@@ -8,6 +8,7 @@ import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -46,6 +47,15 @@ public class CameraActivity extends Activity
         setContentView(R.layout.main);
 
         initPreviewSizes();
+
+        Uri data = getIntent().getData();
+        if(data!= null)
+        {
+            String encodedPath = data.getEncodedPath();
+            Log.w("Thefile", "path: "+ encodedPath);
+            lastFile = new File(encodedPath);
+            Log.w("Thefile", lastFile.getAbsolutePath());
+        }
 
         videoView = (VideoView) findViewById(R.id.videoView);
         cameraPreviewView = (CameraPreviewView) findViewById(R.id.camera_preview);
