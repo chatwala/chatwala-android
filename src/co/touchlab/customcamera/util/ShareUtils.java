@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import co.touchlab.customcamera.Wala;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -98,7 +97,7 @@ public class ShareUtils
         }.execute();
     }
 
-    public static Wala extractAttachment(Intent intent, Context context)
+    /*public static Wala extractAttachment(Intent intent, Context context)
     {
         Uri uri = intent.getData();
         if (uri != null)
@@ -143,5 +142,5 @@ public class ShareUtils
         }
 
         return null;
-    }
+    }*/
 }
