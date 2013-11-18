@@ -298,7 +298,7 @@ public class CameraActivity extends Activity
             params.setPreviewSize(previewVideoSize.width, previewVideoSize.height);
             camera.setParameters(params);
 
-            cameraPreviewView.initCamera(camera, afterPaused);
+            cameraPreviewView.initSurface(camera);
 
             cameraInitialized = true;
         }

@@ -1,8 +1,11 @@
 package co.touchlab.customcamera.util;
 
+import android.content.Context;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import co.touchlab.customcamera.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,10 +33,37 @@ public class CameraUtils
         return 0;
     }
 
-    public static Camera.Size getVideoSize(Camera.Parameters params)
+    public static Camera.Size getVideoSize(Context context, Camera.Parameters parameters)
     {
-        List<Camera.Size> previewSizes = params.getSupportedPreviewSizes();
-        return previewSizes.get(0);
+        //Create new array in case this is immutable
+        List<Camera.Size> supportedVideoSizes = new ArrayList<Camera.Size>(parameters.getSupportedPreviewSizes());
+        return findBestFitCameraSize(context, supportedVideoSizes);
+    }
+
+    public static Camera.Size findCameraVideoSize(Context context, Camera.Parameters parameters)
+    {
+        //Create new array in case this is immutable
+        List<Camera.Size> supportedVideoSizes = new ArrayList<Camera.Size>(parameters.getSupportedVideoSizes());
+        return findBestFitCameraSize(context, supportedVideoSizes);
+    }
+
+    private static Camera.Size findBestFitCameraSize(Context context, List<Camera.Size> supportedVideoSizes)
+    {
+        int minWidth = context.getResources().getInteger(R.integer.video_min_width);
+        Camera.Size best = supportedVideoSizes.get(0);
+
+        for(int i=1; i<supportedVideoSizes.size(); i++)
+        {
+            Camera.Size size = supportedVideoSizes.get(i);
+            if(size.width >= minWidth && size.width < best.width)
+                best = size;
+        }
+
+        assert best.width >= minWidth;
+
+        CWLog.i("width: " + best.width + "/height: " + best.height);
+
+        return best;
     }
 
     public static int findBestCameraProfile(int cameraId)
