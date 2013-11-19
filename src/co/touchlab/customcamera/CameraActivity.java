@@ -37,10 +37,10 @@ public class CameraActivity extends Activity
     private boolean cameraInitialized;
 
     //Dimensions for resizing preview
-    private int largePreviewWidth;
-    private int largePreviewHeight;
-    private Integer smallPreviewWidth;
-    private Integer smallPreviewHeight;
+//    private int largePreviewWidth;
+//    private int largePreviewHeight;
+//    private Integer smallPreviewWidth;
+//    private Integer smallPreviewHeight;
 
     private AtomicBoolean isRecording;
 
@@ -68,7 +68,7 @@ public class CameraActivity extends Activity
 
         openedMessageVideoView = (VideoView) findViewById(R.id.videoView);
         cameraPreviewView = (CameraPreviewView) findViewById(R.id.camera_preview);
-        cameraPreviewView.setZOrderOnTop(true);
+//        cameraPreviewView.setZOrderOnTop(true);
 
         openAndConfigureCamera(false);
         isRecording = new AtomicBoolean(false);
@@ -108,10 +108,10 @@ public class CameraActivity extends Activity
     {
         if (openedMessageVideoFile != null)
         {
-            ViewGroup.LayoutParams layoutParams = cameraPreviewView.getLayoutParams();
-            layoutParams.width = smallPreviewWidth;
-            layoutParams.height = smallPreviewHeight;
-            cameraPreviewView.setLayoutParams(layoutParams);
+//            ViewGroup.LayoutParams layoutParams = cameraPreviewView.getLayoutParams();
+//            layoutParams.width = smallPreviewWidth;
+//            layoutParams.height = smallPreviewHeight;
+//            cameraPreviewView.setLayoutParams(layoutParams);
 
             playLastVideo();
             mainActionButton.setText("Stop Reply");
@@ -279,11 +279,11 @@ public class CameraActivity extends Activity
 
     private void initPreviewSizes()
     {
-        largePreviewWidth = Math.round(getResources().getDimension(R.dimen.large_preview_width));
-        largePreviewHeight = Math.round(getResources().getDimension(R.dimen.large_preview_height));
-
-        smallPreviewWidth = Math.round(getResources().getDimension(R.dimen.small_preview_width));
-        smallPreviewHeight = Math.round(getResources().getDimension(R.dimen.small_preview_height));
+//        largePreviewWidth = Math.round(getResources().getDimension(R.dimen.large_preview_width));
+//        largePreviewHeight = Math.round(getResources().getDimension(R.dimen.large_preview_height));
+//
+//        smallPreviewWidth = Math.round(getResources().getDimension(R.dimen.small_preview_width));
+//        smallPreviewHeight = Math.round(getResources().getDimension(R.dimen.small_preview_height));
     }
 
     private void openAndConfigureCamera(boolean afterPaused)
@@ -294,7 +294,10 @@ public class CameraActivity extends Activity
 
             Camera.Parameters params = camera.getParameters();
             previewVideoSize = getVideoSize(params);
-            cameraVideoSize = findCameraVideoSize(params);
+            if(params.getSupportedVideoSizes() == null)//S3
+                cameraVideoSize = previewVideoSize;
+            else
+                cameraVideoSize = findCameraVideoSize(params);
             params.setPreviewSize(previewVideoSize.width, previewVideoSize.height);
             camera.setParameters(params);
 
@@ -393,10 +396,10 @@ public class CameraActivity extends Activity
 
     private void playbackDone()
     {
-        ViewGroup.LayoutParams layoutParams = cameraPreviewView.getLayoutParams();
-        layoutParams.width = largePreviewWidth;
-        layoutParams.height = largePreviewHeight;
-        cameraPreviewView.setLayoutParams(layoutParams);
+//        ViewGroup.LayoutParams layoutParams = cameraPreviewView.getLayoutParams();
+//        layoutParams.width = largePreviewWidth;
+//        layoutParams.height = largePreviewHeight;
+//        cameraPreviewView.setLayoutParams(layoutParams);
         replyMessageEndTime = System.currentTimeMillis();
     }
 
