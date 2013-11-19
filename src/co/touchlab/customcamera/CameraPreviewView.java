@@ -17,6 +17,7 @@ import java.io.IOException;
 public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Callback
 {
     Camera camera = null;
+    Camera.Size videoSize;
 
     public CameraPreviewView(Context context)
     {
@@ -33,12 +34,14 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
         super(context, attrs, defStyle);
     }
 
-    public void initSurface(Camera camera)
+    public void initSurface(Camera camera, Camera.Size videoSize)
     {
         this.camera = camera;
         SurfaceHolder surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        this.videoSize = videoSize;
     }
 
     @Override
@@ -76,5 +79,11 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
     public void surfaceDestroyed(SurfaceHolder holder)
     {
 
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        setMeasuredDimension(videoSize.width, videoSize.height);
     }
 }

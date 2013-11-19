@@ -42,7 +42,7 @@ public class NewCameraActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.crop_test);
 
         cameraPreviewView = (CameraPreviewView)findViewById(R.id.camera_preview);
 
@@ -106,6 +106,14 @@ public class NewCameraActivity extends Activity
             previewVideoSize = CameraUtils.getVideoSize(NewCameraActivity.this, params);
             cameraVideoSize = CameraUtils.findCameraVideoSize(NewCameraActivity.this, params);
             params.setPreviewSize(previewVideoSize.width, previewVideoSize.height);
+
+            //params.setPreviewSize(cameraVideoSize.width, cameraVideoSize.height);
+
+            //These all kind of suck because they cause crashes, but we may need to use them to smooth out the recording process
+            //params.setRecordingHint(true);
+            //params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+            //params.setPreviewFpsRange(15, 15);
+
             camera.setParameters(params);
         }
         catch (Exception e)
@@ -117,7 +125,7 @@ public class NewCameraActivity extends Activity
 
     private void connectAndStartCameraPreview()
     {
-        cameraPreviewView.initSurface(camera);
+        cameraPreviewView.initSurface(camera, cameraVideoSize);
     }
 
     private boolean prepareMediaRecorder()

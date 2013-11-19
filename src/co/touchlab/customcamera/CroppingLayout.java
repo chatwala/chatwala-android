@@ -41,23 +41,24 @@ public class CroppingLayout extends ViewGroup
             // Find out how big everyone wants to be
             measureChildren(widthMeasureSpec, heightMeasureSpec);
 
+            //Just measure the children, we don't want to use them to determine max
             // Find rightmost and bottom-most child
-            for (int i = 0; i < count; i++) {
-                View child = getChildAt(i);
-                if (child.getVisibility() != GONE) {
-                    int childRight;
-                    int childBottom;
-
-                    AbsoluteLayout.LayoutParams lp
-                            = (AbsoluteLayout.LayoutParams) child.getLayoutParams();
-
-                    childRight = lp.x + child.getMeasuredWidth();
-                    childBottom = lp.y + child.getMeasuredHeight();
-
-                    maxWidth = Math.max(maxWidth, childRight);
-                    maxHeight = Math.max(maxHeight, childBottom);
-                }
-            }
+//            for (int i = 0; i < count; i++) {
+//                View child = getChildAt(i);
+//                if (child.getVisibility() != GONE) {
+//                    int childRight;
+//                    int childBottom;
+//
+//                    AbsoluteLayout.LayoutParams lp
+//                            = (AbsoluteLayout.LayoutParams) child.getLayoutParams();
+//
+//                    childRight = lp.x + child.getMeasuredWidth();
+//                    childBottom = lp.y + child.getMeasuredHeight();
+//
+//                    maxWidth = Math.max(maxWidth, childRight);
+//                    maxHeight = Math.max(maxHeight, childBottom);
+//                }
+//            }
 
             // Account for padding too
 //            maxWidth += mPaddingLeft + mPaddingRight;
@@ -94,11 +95,14 @@ public class CroppingLayout extends ViewGroup
                     AbsoluteLayout.LayoutParams lp =
                             (AbsoluteLayout.LayoutParams) child.getLayoutParams();
 
-//                    int childLeft = mPaddingLeft + lp.x;
-//                    int childTop = mPaddingTop + lp.y;
-//                    child.layout(childLeft, childTop,
-//                            childLeft + child.getMeasuredWidth(),
-//                            childTop + child.getMeasuredHeight());
+                    int viewWidth = getMeasuredWidth();
+                    int viewHeight = getMeasuredHeight();
+
+                    int childLeft = -((child.getMeasuredWidth()/2) - (viewWidth/2));
+                    int childTop = -((child.getMeasuredHeight()/2) - (viewHeight/2));
+                    child.layout(childLeft, childTop,
+                            childLeft + child.getMeasuredWidth(),
+                            childTop + child.getMeasuredHeight());
 
                 }
             }

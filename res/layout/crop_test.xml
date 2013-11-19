@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:orientation="vertical">
+
+    <co.touchlab.customcamera.CroppingLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1">
+        <co.touchlab.customcamera.CameraPreviewView
+            android:id="@+id/camera_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:keepScreenOn="true"/>
+    </co.touchlab.customcamera.CroppingLayout>
+    <!--<FrameLayout-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="0dip"-->
+        <!--android:layout_weight="1">-->
+        <!--<co.touchlab.customcamera.CameraPreviewView-->
+            <!--android:id="@+id/camera_preview"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:keepScreenOn="true"/>-->
+    <!--</FrameLayout>-->
+    <co.touchlab.customcamera.CroppingLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1">
+    </co.touchlab.customcamera.CroppingLayout>
+    <Button
+        android:id="@+id/camera_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        android:background="@android:color/holo_red_dark"/>
+</LinearLayout>
