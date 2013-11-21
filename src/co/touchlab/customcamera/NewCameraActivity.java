@@ -8,10 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Display;
-import android.view.Surface;
-import android.view.View;
-import android.view.WindowManager;
+import android.view.*;
 import android.widget.Button;
 import co.touchlab.customcamera.util.CameraUtils;
 
@@ -28,12 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class NewCameraActivity extends Activity
 {
-    Camera camera = null;
-    MediaRecorder mediaRecorder = null;
-
+    CroppingLayout cameraPreviewContainer, videoViewContainer;
     CameraPreviewView cameraPreviewView;
-    private Camera.Size previewVideoSize;
-    private Camera.Size cameraVideoSize;
 
     private Button mainActionButton;
     private AtomicBoolean isRecording;
@@ -44,169 +37,63 @@ public class NewCameraActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.crop_test);
 
-        cameraPreviewView = (CameraPreviewView)findViewById(R.id.camera_preview);
-
         isRecording = new AtomicBoolean(false);
 
+        cameraPreviewContainer = (CroppingLayout)findViewById(R.id.surface_view_container);
+        videoViewContainer = (CroppingLayout)findViewById(R.id.video_view_container);
         mainActionButton = (Button) findViewById(R.id.camera_button);
         mainActionButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                if(isRecording.get())
-                {
-                    isRecording.set(false);
-                    mediaRecorder.stop();
-                }
-                else
-                {
-                    isRecording.set(true);
-                    camera.unlock();
-                    mediaRecorder.start();
-                }
+                triggerButtonAction();
             }
         });
-
-        initMediaRecorder();
     }
+
+    private void triggerButtonAction()
+    {
+        if (isRecording.compareAndSet(false, true))
+        {
+            cameraPreviewView.startRecording();
+        }
+        else
+        {
+            isRecording.set(false);
+            cameraPreviewView.stopRecording();
+        }
+    }
+
 
     @Override
-    protected void onDestroy()
+    protected void onResume()
+    {
+        super.onResume();
+        createSurface();
+    }
+
+
+
+    @Override
+    protected void onPause()
     {
         super.onDestroy();
-        releaseMediaRecorder();
-        releaseCamera();
+        tearDownSurface();
     }
 
 
-    private void initMediaRecorder()
+    private void createSurface()
     {
-        //http://developer.android.com/guide/topics/media/camera.html
-
-        openAndConfigureCamera();
-        connectAndStartCameraPreview();
-        new Handler().postDelayed(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                prepareMediaRecorder();
-            }
-        }, 100);
+        cameraPreviewView = new CameraPreviewView(NewCameraActivity.this);
+        cameraPreviewContainer.addView(cameraPreviewView);
     }
 
-    private void openAndConfigureCamera()
+
+    private void tearDownSurface()
     {
-        try
-        {
-            camera = Camera.open(CameraUtils.getFrontCameraId());
-
-            Camera.Parameters params = camera.getParameters();
-            previewVideoSize = CameraUtils.getVideoSize(NewCameraActivity.this, params);
-            cameraVideoSize = CameraUtils.findCameraVideoSize(NewCameraActivity.this, params);
-            params.setPreviewSize(previewVideoSize.width, previewVideoSize.height);
-
-            //params.setPreviewSize(cameraVideoSize.width, cameraVideoSize.height);
-
-            //These all kind of suck because they cause crashes, but we may need to use them to smooth out the recording process
-            //params.setRecordingHint(true);
-            //params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-            //params.setPreviewFpsRange(15, 15);
-
-            camera.setParameters(params);
-        }
-        catch (Exception e)
-        {
-            Log.d("##################", "Error opening camera: " + e.getMessage());
-            camera.release();
-        }
-    }
-
-    private void connectAndStartCameraPreview()
-    {
-        cameraPreviewView.initSurface(camera, cameraVideoSize);
-    }
-
-    private boolean prepareMediaRecorder()
-    {
-        mediaRecorder = new MediaRecorder();
-
-        // Step 1: Attach camera to media recorder
-        mediaRecorder.setCamera(camera);
-
-        // Step 2: Set sources
-
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setVideoFrameRate(getResources().getInteger(R.integer.video_frame_rate));
-
-
-        mediaRecorder.setVideoSize(cameraVideoSize.width, cameraVideoSize.height);
-
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-
-        mediaRecorder.setVideoEncodingBitRate(getResources().getInteger(R.integer.video_bid_depth));
-
-        Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-
-        int mrRotate = 0;
-
-        if (display.getRotation() == Surface.ROTATION_0)
-            mrRotate = 270;
-
-
-        if (display.getRotation() == Surface.ROTATION_270)
-            mrRotate = 180;
-
-        if (mrRotate != 0)
-            mediaRecorder.setOrientationHint(mrRotate);
-
-        // Step 4: Set output file
-        File file = new File(Environment.getExternalStorageDirectory(), "vid_" + System.currentTimeMillis() + ".mp4");
-        mediaRecorder.setOutputFile(file.getPath());
-
-        // Step 5: Set the preview output
-        mediaRecorder.setPreviewDisplay(cameraPreviewView.getHolder().getSurface());
-
-        try
-        {
-            mediaRecorder.prepare();
-        }
-        catch (IllegalStateException e)
-        {
-            Log.d("##################", "MediaRecorder prepared in wrong order: " + e.getMessage());
-            releaseMediaRecorder();
-            return false;
-        }
-        catch (IOException e)
-        {
-            Log.d("##################", "MediaRecorder prepare failed: " + e.getMessage());
-            releaseMediaRecorder();
-            return false;
-        }
-
-        return true;
-    }
-
-    private void releaseCamera()
-    {
-        if (camera != null)
-        {
-            camera.release();
-        }
-    }
-
-    private void releaseMediaRecorder()
-    {
-        if (mediaRecorder != null)
-        {
-            mediaRecorder.reset();
-            mediaRecorder.release();
-            mediaRecorder = null;
-        }
+        cameraPreviewContainer.removeAllViews();
+        cameraPreviewView.releaseResources();
+        cameraPreviewView = null;
     }
 }

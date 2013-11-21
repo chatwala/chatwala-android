@@ -3,6 +3,7 @@ package co.touchlab.customcamera;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsoluteLayout;
@@ -32,17 +33,19 @@ public class CroppingLayout extends ViewGroup
     }
 
     @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            int count = getChildCount();
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        int count = getChildCount();
 
-            int maxHeight = 0;
-            int maxWidth = 0;
+        int maxHeight = 0;
+        int maxWidth = 0;
 
-            // Find out how big everyone wants to be
-            measureChildren(widthMeasureSpec, heightMeasureSpec);
 
-            //Just measure the children, we don't want to use them to determine max
-            // Find rightmost and bottom-most child
+        // Find out how big everyone wants to be
+        measureChildren(widthMeasureSpec, heightMeasureSpec);
+
+        //Just measure the children, we don't want to use them to determine max
+        // Find rightmost and bottom-most child
 //            for (int i = 0; i < count; i++) {
 //                View child = getChildAt(i);
 //                if (child.getVisibility() != GONE) {
@@ -60,17 +63,17 @@ public class CroppingLayout extends ViewGroup
 //                }
 //            }
 
-            // Account for padding too
+        // Account for padding too
 //            maxWidth += mPaddingLeft + mPaddingRight;
 //            maxHeight += mPaddingTop + mPaddingBottom;
 
-            // Check against minimum height and width
-            maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
-            maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
+        // Check against minimum height and width
+        maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
+        maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
 
-            setMeasuredDimension(resolveSize(maxWidth, widthMeasureSpec),
-                    resolveSize(maxHeight, heightMeasureSpec));
-        }
+        setMeasuredDimension(resolveSize(maxWidth, widthMeasureSpec),
+                resolveSize(maxHeight, heightMeasureSpec));
+    }
 
         /**
          * Returns a set of layout parameters with a width of
@@ -92,8 +95,7 @@ public class CroppingLayout extends ViewGroup
                 View child = getChildAt(i);
                 if (child.getVisibility() != GONE) {
 
-                    AbsoluteLayout.LayoutParams lp =
-                            (AbsoluteLayout.LayoutParams) child.getLayoutParams();
+                    ViewGroup.LayoutParams lp = child.getLayoutParams();
 
                     int viewWidth = getMeasuredWidth();
                     int viewHeight = getMeasuredHeight();

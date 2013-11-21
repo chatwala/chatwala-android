@@ -33,33 +33,32 @@ public class CameraUtils
         return 0;
     }
 
-    public static Camera.Size getVideoSize(Context context, Camera.Parameters parameters)
+    public static Camera.Size getVideoSize(int containerHeight, Camera.Parameters parameters)
     {
         //Create new array in case this is immutable
         List<Camera.Size> supportedVideoSizes = new ArrayList<Camera.Size>(parameters.getSupportedPreviewSizes());
-        return findBestFitCameraSize(context, supportedVideoSizes);
+        return findBestFitCameraSize(containerHeight, supportedVideoSizes);
     }
 
-    public static Camera.Size findCameraVideoSize(Context context, Camera.Parameters parameters)
+    public static Camera.Size findCameraVideoSize(int containerHeight, Camera.Parameters parameters)
     {
         //Create new array in case this is immutable
         List<Camera.Size> supportedVideoSizes = new ArrayList<Camera.Size>(parameters.getSupportedVideoSizes());
-        return findBestFitCameraSize(context, supportedVideoSizes);
+        return findBestFitCameraSize(containerHeight, supportedVideoSizes);
     }
 
-    private static Camera.Size findBestFitCameraSize(Context context, List<Camera.Size> supportedVideoSizes)
+    private static Camera.Size findBestFitCameraSize(int containerHeight, List<Camera.Size> supportedVideoSizes)
     {
-        int minWidth = context.getResources().getInteger(R.integer.video_min_width);
-        Camera.Size best = supportedVideoSizes.get(0);
+        Camera.Size best = supportedVideoSizes.get(supportedVideoSizes.size()-1);
 
-        for(int i=1; i<supportedVideoSizes.size(); i++)
+        for(int i=supportedVideoSizes.size()-2; i>=0; i--)
         {
             Camera.Size size = supportedVideoSizes.get(i);
-            if(size.width >= minWidth && size.width < best.width)
+            if(size.width <= containerHeight && size.width > best.width)
                 best = size;
         }
 
-        assert best.width >= minWidth;
+        assert best.width <= containerHeight;
 
         CWLog.i("width: " + best.width + "/height: " + best.height);
 
