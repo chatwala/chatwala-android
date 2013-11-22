@@ -203,12 +203,15 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
 
             //either scale up the height of the preview, so that is at least the size of the container
             int viewHeight = ((ViewGroup)getParent()).getHeight();
-            if(cameraVideoSize.height > viewHeight)
-            {
-                viewHeight = cameraVideoSize.height;
-            }
+            int previewHeight = cameraVideoSize.width;
+            int previewWidth = cameraVideoSize.height;
+            double ratio = (double) viewHeight / (double) previewWidth;
 
-            setMeasuredDimension(((ViewGroup)getParent()).getHeight(), viewHeight);
+            double newPreviewHeight = (double) previewHeight * ratio;
+            double newPreviewWidth = (double) previewWidth * ratio;
+
+            //Preview is rotated 90 degrees, so swap width/height
+            setMeasuredDimension((int)newPreviewWidth, (int)newPreviewHeight);
         }
         else
         {
