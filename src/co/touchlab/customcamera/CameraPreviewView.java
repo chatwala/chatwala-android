@@ -87,7 +87,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
     {
-
+        System.out.println("asdf");
     }
 
     @Override
@@ -99,7 +99,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-
+        System.out.println("asdf");
     }
 
     public interface CameraPreviewCallback
@@ -195,7 +195,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output
-        mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
+//        mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
 //        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
 
         try

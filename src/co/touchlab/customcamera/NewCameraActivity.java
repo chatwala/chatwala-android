@@ -41,6 +41,7 @@ public class NewCameraActivity extends Activity
     private AtomicBoolean isRecording;
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
     private AtomicBoolean previewReady = new AtomicBoolean(false);
+    private boolean initialMessageDone;
     private ChatMessage chatMessage;
 
     private long myMessageStartTime;
@@ -137,8 +138,9 @@ public class NewCameraActivity extends Activity
 
     private void showMessageVideo()
     {
-        if(chatMessage != null && chatMessage.messageVideo != null)
+        if(!initialMessageDone && chatMessage != null && chatMessage.messageVideo != null)
         {
+            initialMessageDone = true;
             new LoadAndShowVideoMessageTask().execute(chatMessage.messageVideo);
         }
     }
@@ -188,6 +190,7 @@ public class NewCameraActivity extends Activity
             videoViewContainer.addView(dynamicVideoView);
             dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
             dynamicVideoView.start();
+            triggerButtonAction();
         }
     }
 
@@ -222,6 +225,7 @@ public class NewCameraActivity extends Activity
         cameraPreviewContainer.removeAllViews();
         cameraPreviewView.releaseResources();
         cameraPreviewView = null;
+        videoViewContainer.removeAllViews();
     }
 
     class MessageLoaderTask extends AsyncTask<Void, Void, ChatMessage>

@@ -43,7 +43,7 @@ public class CameraUtils
     public static Camera.Size findCameraVideoSize(int containerHeight, Camera.Parameters parameters)
     {
         //Create new array in case this is immutable
-        List<Camera.Size> supportedVideoSizes = new ArrayList<Camera.Size>(parameters.getSupportedVideoSizes());
+        List<Camera.Size> supportedVideoSizes = new ArrayList<Camera.Size>(parameters.getSupportedPreviewSizes());
         return findBestFitCameraSize(containerHeight, supportedVideoSizes);
     }
 
