@@ -2,6 +2,7 @@ package co.touchlab.customcamera;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -20,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -39,6 +41,10 @@ public class NewCameraActivity extends Activity
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
     private AtomicBoolean previewReady = new AtomicBoolean(false);
     private ChatMessage chatMessage;
+
+    private long myMessageStartTime;
+    private long myMessageEndTime;
+    private long replyMessageEndTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -119,7 +125,7 @@ public class NewCameraActivity extends Activity
             @Override
             public void run()
             {
-                if(previewReady.get() && messageLoadComplete.get())
+                if (previewReady.get() && messageLoadComplete.get())
                 {
                     enableInterface();
                 }
@@ -142,6 +148,12 @@ public class NewCameraActivity extends Activity
             public void surfaceReady()
             {
                 previewSurfaceReady();
+            }
+
+            @Override
+            public void recordingDone(File videoFile)
+            {
+                sendEmail(videoFile);
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
@@ -167,5 +179,82 @@ public class NewCameraActivity extends Activity
         {
             messageLoaded(chatMessage);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void sendEmail(final File videoFile)
+    {
+        new AsyncTask()
+        {
+            @Override
+            protected Object doInBackground(Object... params)
+            {
+                File buildDir = new File(Environment.getExternalStorageDirectory(), "chat_" + System.currentTimeMillis());
+                buildDir.mkdirs();
+
+                File walaFile = new File(buildDir, "video.mp4");
+
+                File outZip;
+                try
+                {
+
+                    FileOutputStream output = new FileOutputStream(walaFile);
+                    FileInputStream input = new FileInputStream(videoFile);
+                    IOUtils.copy(input, output);
+
+                    input.close();
+                    output.close();
+
+                    File metadataFile = new File(buildDir, "metadata.json");
+
+                    MessageMetadata openedMessageMetadata = chatMessage == null ? null : chatMessage.metadata;
+
+                    MessageMetadata sendMessageMetadata = openedMessageMetadata == null ? new MessageMetadata() : openedMessageMetadata.copy();
+
+                    sendMessageMetadata.incrementForNewMessage();
+
+                    long startRecordingMillis = replyMessageEndTime == 0 ? 0 : replyMessageEndTime - myMessageStartTime;
+                    sendMessageMetadata.startRecording = ((double) startRecordingMillis) / 1000d;
+
+                    sendMessageMetadata.senderId = "kevin@touchlab.co";
+
+                    FileWriter fileWriter = new FileWriter(metadataFile);
+
+                    fileWriter.append(sendMessageMetadata.toJsonString());
+
+                    fileWriter.close();
+
+                    outZip = new File(Environment.getExternalStorageDirectory(), "chat.wala");
+
+                    ZipUtil.zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+                catch (JSONException e)
+                {
+                    throw new RuntimeException(e);
+                }
+
+                return outZip;
+            }
+
+            @Override
+            protected void onPostExecute(Object o)
+            {
+                File outZip = (File) o;
+                Intent intent = new Intent(Intent.ACTION_SEND);
+
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"kevin@touchlab.co"});
+                intent.putExtra(Intent.EXTRA_SUBJECT, "test reply");
+                intent.putExtra(Intent.EXTRA_TEXT, "the video");
+
+                Uri uri = Uri.fromFile(outZip);
+                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                startActivity(Intent.createChooser(intent, "Send email..."));
+            }
+        }.execute();
     }
 }

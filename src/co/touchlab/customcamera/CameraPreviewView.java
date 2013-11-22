@@ -52,6 +52,7 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
     public interface CameraPreviewCallback
     {
         void surfaceReady();
+        void recordingDone(File videoFile);
     }
 
     public void initSurface()
@@ -197,6 +198,7 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
     public void stopRecording()
     {
         mediaRecorder.stop();
+        callback.recordingDone(recordingFile);
     }
 
     @Override
