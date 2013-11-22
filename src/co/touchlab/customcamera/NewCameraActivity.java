@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -128,9 +129,66 @@ public class NewCameraActivity extends Activity
                 if (previewReady.get() && messageLoadComplete.get())
                 {
                     enableInterface();
+                    showMessageVideo();
                 }
             }
         });
+    }
+
+    private void showMessageVideo()
+    {
+        if(chatMessage != null && chatMessage.messageVideo != null)
+        {
+            new LoadAndShowVideoMessageTask().execute(chatMessage.messageVideo);
+        }
+    }
+
+    class VideoInfo
+    {
+        public File videoFile;
+        public int width;
+        public int height;
+    }
+
+    class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoInfo>
+    {
+        @Override
+        protected VideoInfo doInBackground(File... params)
+        {
+            try
+            {
+                MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+                File videoFile = params[0];
+                FileInputStream inp = new FileInputStream(videoFile);
+
+                metaRetriever.setDataSource(inp.getFD());
+                String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+                String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+
+                inp.close();
+
+                VideoInfo videoInfo = new VideoInfo();
+                videoInfo.videoFile = videoFile;
+                videoInfo.width = Integer.parseInt(width);
+                videoInfo.height = Integer.parseInt(height);
+
+                return videoInfo;
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(VideoInfo videoInfo)
+        {
+            DynamicVideoView dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height);
+            videoViewContainer.addView(dynamicVideoView);
+            dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
+            dynamicVideoView.start();
+        }
     }
 
     @Override
