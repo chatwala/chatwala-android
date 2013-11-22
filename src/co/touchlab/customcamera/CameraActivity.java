@@ -446,7 +446,7 @@ public class CameraActivity extends Activity
         mediaRecorder.setOutputFile(file.getPath());
 
         // Step 5: Set the preview output
-        mediaRecorder.setPreviewDisplay(cameraPreviewView.getHolder().getSurface());
+//        mediaRecorder.setPreviewDisplay(cameraPreviewView.getHolder().getSurface());
 
         try
         {

@@ -1,6 +1,7 @@
 package co.touchlab.customcamera;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Environment;
@@ -21,7 +22,7 @@ import java.util.List;
  * Time: 9:21 PM
  * To change this template use File | Settings | File Templates.
  */
-public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Callback
+public class CameraPreviewView extends TextureView implements TextureView.SurfaceTextureListener
 {
     Camera camera = null;
     MediaRecorder mediaRecorder = null;
@@ -49,6 +50,58 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
         this(context, callback);
     }
 
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
+    {
+        if(cameraVideoSize != null)
+        {
+            try
+            {
+                camera.setPreviewTexture(surface);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            camera.startPreview();
+
+            prepareMediaRecorder();
+
+            //http://stackoverflow.com/questions/3841122/android-camera-preview-is-sideways/5110406#5110406
+            Display display = ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
+            if (display.getRotation() == Surface.ROTATION_0)
+            {
+                camera.setDisplayOrientation(90);
+            }
+
+            if (display.getRotation() == Surface.ROTATION_270)
+            {
+                camera.setDisplayOrientation(180);
+            }
+
+            callback.surfaceReady();
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
+    {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface)
+    {
+        return false;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface)
+    {
+
+    }
+
     public interface CameraPreviewCallback
     {
         void surfaceReady();
@@ -57,9 +110,10 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
 
     public void initSurface()
     {
-        SurfaceHolder surfaceHolder = getHolder();
-        surfaceHolder.addCallback(this);
-        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+//        SurfaceHolder surfaceHolder = getHolder();
+//        surfaceHolder.addCallback(this);
+//        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        setSurfaceTextureListener(this);
     }
 
     private void openCamera()
@@ -87,7 +141,7 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
         camera.setParameters(params);
     }
 
-    @Override
+    /*@Override
     public void surfaceCreated(SurfaceHolder holder)
     {
 
@@ -96,36 +150,8 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-        if(cameraVideoSize != null)
-        {
-            try
-            {
-                camera.setPreviewDisplay(getHolder());
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-            camera.startPreview();
 
-            prepareMediaRecorder();
-
-            //http://stackoverflow.com/questions/3841122/android-camera-preview-is-sideways/5110406#5110406
-            Display display = ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-
-            if (display.getRotation() == Surface.ROTATION_0)
-            {
-                camera.setDisplayOrientation(90);
-            }
-
-            if (display.getRotation() == Surface.ROTATION_270)
-            {
-                camera.setDisplayOrientation(180);
-            }
-
-            callback.surfaceReady();
-        }
-    }
+    }*/
 
     private boolean prepareMediaRecorder()
     {
@@ -169,7 +195,8 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output
-        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
+        mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
+//        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
 
         try
         {
@@ -201,11 +228,11 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
         callback.recordingDone(recordingFile);
     }
 
-    @Override
+    /*@Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
 
-    }
+    }*/
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
