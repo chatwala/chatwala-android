@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import co.touchlab.customcamera.ChatMessage;
+import co.touchlab.customcamera.MessageMetadata;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -89,12 +91,70 @@ public class ShareUtils
 
                 intent.setType("application/wala");
 
-                Uri uri = Uri.parse("file://"+ outZip);
+                Uri uri = Uri.parse("file://" + outZip);
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
 
                 activity.startActivity(Intent.createChooser(intent, "Send email..."));
             }
         }.execute();
+    }
+
+    public static ChatMessage extractFileAttachment(Activity activity)
+    {
+        Uri uri = activity.getIntent().getData();
+        if (uri != null)
+        {
+            try
+            {
+                InputStream is = activity.getContentResolver().openInputStream(uri);
+                File file = new File(activity.getFilesDir(), "vid_" + System.currentTimeMillis() + ".wala");
+                FileOutputStream os = new FileOutputStream(file);
+
+                byte[] buffer = new byte[4096];
+                int count;
+
+                while ((count = is.read(buffer)) > 0)
+                    os.write(buffer, 0, count);
+
+                os.close();
+                is.close();
+
+                File outFolder = new File(activity.getFilesDir(), "chat_" + System.currentTimeMillis());
+                outFolder.mkdirs();
+
+                ZipUtil.unzipFiles(file, outFolder);
+                ChatMessage chatMessage = new ChatMessage();
+
+                chatMessage.messageVideo = new File(outFolder, "video.mp4");
+                FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
+                chatMessage.metadata = new MessageMetadata();
+                chatMessage.metadata.init(new JSONObject(IOUtils.toString(input)));
+
+                input.close();
+
+                return chatMessage;
+                        /*videoMonitorHandler.postDelayed(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                triggerButtonAction();
+                            }
+                        }, 2000);*/
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (JSONException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /*public static Wala extractAttachment(Intent intent, Context context)

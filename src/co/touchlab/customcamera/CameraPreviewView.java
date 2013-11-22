@@ -4,7 +4,6 @@ import android.content.Context;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
@@ -12,6 +11,8 @@ import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,23 +27,31 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
     MediaRecorder mediaRecorder = null;
 
     private Camera.Size cameraVideoSize = null;
+    private File recordingFile;
+    private final CameraPreviewCallback callback;
 
-    public CameraPreviewView(Context context)
+    public CameraPreviewView(Context context, CameraPreviewCallback callback)
     {
         super(context);
         initSurface();
         openCamera();
+        this.callback = callback;
         //setCameraParams();
     }
 
-    public CameraPreviewView(Context context, AttributeSet attrs)
+    public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback)
     {
-        this(context);
+        this(context, callback);
     }
 
-    public CameraPreviewView(Context context, AttributeSet attrs, int defStyle)
+    public CameraPreviewView(Context context, AttributeSet attrs, int defStyle, CameraPreviewCallback callback)
     {
-        this(context);
+        this(context, callback);
+    }
+
+    public interface CameraPreviewCallback
+    {
+        void surfaceReady();
     }
 
     public void initSurface()
@@ -112,6 +121,8 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
             {
                 camera.setDisplayOrientation(180);
             }
+
+            callback.surfaceReady();
         }
     }
 
@@ -153,8 +164,8 @@ public class CameraPreviewView extends SurfaceView implements SurfaceHolder.Call
             mediaRecorder.setOrientationHint(mrRotate);
 
         // Step 4: Set output file
-        File file = new File(Environment.getExternalStorageDirectory(), "vid_" + System.currentTimeMillis() + ".mp4");
-        mediaRecorder.setOutputFile(file.getPath());
+        recordingFile = new File(Environment.getExternalStorageDirectory(), "vid_" + System.currentTimeMillis() + ".mp4");
+        mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output
         mediaRecorder.setPreviewDisplay(getHolder().getSurface());
