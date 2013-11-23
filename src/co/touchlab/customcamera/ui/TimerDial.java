@@ -165,55 +165,62 @@ public class TimerDial extends View
                 countdownPaint.setColor(Color.GRAY);
                 countdownPaint.setStyle(Paint.Style.FILL);
 
-                float arcPoint = currentTime.floatValue();
-                int startArc = findArcPoint(arcPoint);
-                int endArc = findArcPoint(playbackStartTime);
+                int startArc = findArcPoint(currentTime.longValue(), countdown.longValue());
+                int endArc = 360;
 
                 canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
             }
-            if (currentTime < playbackRecordingStartTime)
+            else
             {
-                Paint countdownPaint = new Paint();
+                if (currentTime < playbackRecordingStartTime)
+                {
+                    Paint countdownPaint = new Paint();
 
-                countdownPaint.setColor(Color.CYAN);
-                countdownPaint.setStyle(Paint.Style.FILL);
+                    countdownPaint.setColor(Color.CYAN);
+                    countdownPaint.setStyle(Paint.Style.FILL);
 
-                float arcPoint = Math.max(currentTime.floatValue(), (float) playbackStartTime);
+                    int arcPoint = Math.max(currentTime.intValue(), playbackStartTime);
+                    int startArc = findArcPoint(arcPoint);
+                    int endArc = findArcPoint(playbackRecordingStartTime);
+
+                    canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
+                }
+                if (currentTime < recordStartTime)
+                {
+                    Paint countdownPaint = new Paint();
+
+                    countdownPaint.setColor(Color.GREEN);
+                    countdownPaint.setStyle(Paint.Style.FILL);
+
+                    int arcPoint = Math.max(currentTime.intValue(), (int) playbackRecordingStartTime);
+                    int startArc = findArcPoint(arcPoint);
+                    int endArc = findArcPoint(recordStartTime);
+
+                    canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
+                }
+
+                Paint recordPaint = new Paint();
+
+                recordPaint.setColor(Color.RED);
+                recordPaint.setStyle(Paint.Style.FILL);
+
+                int arcPoint = Math.max(currentTime.intValue(), (int) recordStartTime);
                 int startArc = findArcPoint(arcPoint);
-                int endArc = findArcPoint(playbackRecordingStartTime);
+                int endArc = findArcPoint(totalDuration);
 
-                canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
+                Log.w("arc", "startArc: " + startArc + "/endArc: " + endArc);
+                canvas.drawArc(arcRect, startArc, endArc - startArc, true, recordPaint);
             }
-            if (currentTime < recordStartTime)
-            {
-                Paint countdownPaint = new Paint();
-
-                countdownPaint.setColor(Color.GREEN);
-                countdownPaint.setStyle(Paint.Style.FILL);
-
-                float arcPoint = Math.max(currentTime.floatValue(), (float) playbackRecordingStartTime);
-                int startArc = findArcPoint(arcPoint);
-                int endArc = findArcPoint(recordStartTime);
-
-                canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
-            }
-
-            Paint recordPaint = new Paint();
-
-            recordPaint.setColor(Color.RED);
-            recordPaint.setStyle(Paint.Style.FILL);
-
-            float arcPoint = Math.max(currentTime.floatValue(), (float) recordStartTime);
-            int startArc = findArcPoint(arcPoint);
-            int endArc = findArcPoint(totalDuration);
-
-            Log.w("arc", "startArc: " + startArc + "/endArc: " + endArc);
-            canvas.drawArc(arcRect, startArc, endArc - startArc, true, recordPaint);
         }
     }
 
-    private int findArcPoint(float arcPoint)
+    private int findArcPoint(long arcPoint)
     {
-        return (int) ((arcPoint / (float) totalDuration) * 360f);
+        return findArcPoint(arcPoint - countdown, totalDuration - countdown);
+    }
+
+    private int findArcPoint(long current, long total)
+    {
+        return (int) (((double)current/(double)total) * 360d);
     }
 }
