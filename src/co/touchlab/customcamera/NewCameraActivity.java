@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.*;
 import android.widget.Button;
+import android.widget.TextView;
 import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.CameraUtils;
 import co.touchlab.customcamera.util.ShareUtils;
@@ -38,18 +39,21 @@ public class NewCameraActivity extends Activity
     CroppingLayout cameraPreviewContainer, videoViewContainer;
     CameraPreviewView cameraPreviewView;
 
-    private Button mainActionButton;
     private AtomicBoolean isRecording;
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
     private AtomicBoolean previewReady = new AtomicBoolean(false);
     private boolean initialMessageDone;
     private ChatMessage chatMessage;
 
+    private long videoPlaybackDuration = 0;
     private long myMessageStartTime;
     private long myMessageEndTime;
     private long replyMessageEndTime;
+
+    private View mainActionButton;
     private TimerDial timerDial;
     private DynamicVideoView dynamicVideoView;
+    private TextView timerText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -62,8 +66,9 @@ public class NewCameraActivity extends Activity
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
-        mainActionButton = (Button) findViewById(R.id.camera_button);
+        mainActionButton = findViewById(R.id.timerContainer);
         timerDial = (TimerDial) findViewById(R.id.timerDial);
+        timerText = (TextView) findViewById(R.id.timerText);
         mainActionButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -79,38 +84,49 @@ public class NewCameraActivity extends Activity
 
     private void triggerButtonAction()
     {
-        if (isRecording.compareAndSet(false, true))
+        if (!isRecording.get())
         {
-            cameraPreviewView.startRecording();
-            mainActionButton.setText("Stop");
-            timerDial.startAnimation(new TimerDial.TimerCallback()
-            {
-                @Override
-                public void countdownComplete()
-                {
-                    if(dynamicVideoView != null)
-                        dynamicVideoView.start();
-                }
-
-                @Override
-                public void playbackComplete()
-                {
-
-                }
-
-                @Override
-                public void recordComplete()
-                {
-
-                }
-            }, 3000, 2000, 10000);
+            startTimer();
         }
         else
         {
-            isRecording.set(false);
-            cameraPreviewView.stopRecording();
-            mainActionButton.setText("Start");
+            stopRecording();
         }
+    }
+
+    private void startTimer()
+    {
+        isRecording.set(true);
+        timerText.setText("Stop");
+        timerDial.startAnimation(new TimerDial.TimerCallback()
+        {
+            @Override
+            public void countdownComplete()
+            {
+                cameraPreviewView.startRecording();
+                if (dynamicVideoView != null)
+                    dynamicVideoView.start();
+            }
+
+            @Override
+            public void playbackComplete()
+            {
+
+            }
+
+            @Override
+            public void recordComplete()
+            {
+                stopRecording();
+            }
+        }, 3000, (int)videoPlaybackDuration, 10000);
+    }
+
+    private void stopRecording()
+    {
+        isRecording.set(false);
+        cameraPreviewView.stopRecording();
+        timerText.setText("Start");
     }
 
     @Override
@@ -129,7 +145,7 @@ public class NewCameraActivity extends Activity
     private void enableInterface()
     {
         mainActionButton.setActivated(true);
-        mainActionButton.setText("Start");
+        timerText.setText("Start");
     }
 
     private void messageLoaded(ChatMessage message)
@@ -163,7 +179,7 @@ public class NewCameraActivity extends Activity
 
     private void showMessageVideo()
     {
-        if(!initialMessageDone && chatMessage != null && chatMessage.messageVideo != null)
+        if (!initialMessageDone && chatMessage != null && chatMessage.messageVideo != null)
         {
             initialMessageDone = true;
             new LoadAndShowVideoMessageTask().execute(chatMessage.messageVideo);
@@ -189,6 +205,8 @@ public class NewCameraActivity extends Activity
                 FileInputStream inp = new FileInputStream(videoFile);
 
                 metaRetriever.setDataSource(inp.getFD());
+                String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                videoPlaybackDuration = Long.parseLong(duration);
                 String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
                 String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
 
@@ -215,7 +233,7 @@ public class NewCameraActivity extends Activity
             videoViewContainer.addView(dynamicVideoView);
             dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
 //            dynamicVideoView.start();
-            triggerButtonAction();
+            startTimer();
         }
     }
 
@@ -284,7 +302,6 @@ public class NewCameraActivity extends Activity
                 File outZip;
                 try
                 {
-
                     FileOutputStream output = new FileOutputStream(walaFile);
                     FileInputStream input = new FileInputStream(videoFile);
                     IOUtils.copy(input, output);

@@ -1,9 +1,6 @@
 package co.touchlab.customcamera.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.TypeEvaluator;
-import android.animation.ValueAnimator;
+import android.animation.*;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,6 +9,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 /**
  * Created with IntelliJ IDEA.
@@ -51,7 +49,9 @@ public class TimerDial extends View
     public interface TimerCallback
     {
         void countdownComplete();
+
         void playbackComplete();
+
         void recordComplete();
     }
 
@@ -69,19 +69,20 @@ public class TimerDial extends View
 
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
 
+        valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.setDuration(totalDuration);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
         {
             @Override
             public void onAnimationUpdate(ValueAnimator animation)
             {
-                TimerDial.this.currentTime = (int)((Float) animation.getAnimatedValue() * (float)totalDuration);
-                if(!countdownComplete && currentTime > TimerDial.this.countdown)
+                TimerDial.this.currentTime = (int) ((Float) animation.getAnimatedValue() * (float) totalDuration);
+                if (!countdownComplete && currentTime > TimerDial.this.countdown)
                 {
                     countdownComplete = true;
                     TimerDial.this.callback.countdownComplete();
                 }
-                if(!playbackComplete && currentTime > TimerDial.this.playback + TimerDial.this.countdown)
+                if (!playbackComplete && currentTime > TimerDial.this.playback + TimerDial.this.countdown)
                 {
                     playbackComplete = true;
                     TimerDial.this.callback.playbackComplete();
@@ -107,21 +108,21 @@ public class TimerDial extends View
     {
         super.onDraw(canvas);
 
+        RectF arcRect = new RectF(0, 0, getWidth(), getHeight());
+
+        Paint clearPaint = new Paint();
+
+        clearPaint.setColor(Color.BLACK);
+        clearPaint.setStyle(Paint.Style.FILL);
+
+        canvas.drawOval(arcRect, clearPaint);
+
         if (totalDuration > 0)
         {
-            RectF arcRect = new RectF(0, 0, getWidth(), getHeight());
-
             int playbackStartTime = countdown;
             int recordStartTime = countdown + playback;
 
-            Paint clearPaint = new Paint();
-
-            clearPaint.setColor(Color.BLACK);
-            clearPaint.setStyle(Paint.Style.FILL);
-
-            canvas.drawOval(arcRect, clearPaint);
-
-            if(currentTime < countdown)
+            if (currentTime < countdown)
             {
                 Paint countdownPaint = new Paint();
 
@@ -153,11 +154,11 @@ public class TimerDial extends View
             recordPaint.setColor(Color.RED);
             recordPaint.setStyle(Paint.Style.FILL);
 
-            float arcPoint = Math.max(currentTime.floatValue(), (float)recordStartTime);
+            float arcPoint = Math.max(currentTime.floatValue(), (float) recordStartTime);
             int startArc = findArcPoint(arcPoint);
             int endArc = findArcPoint(totalDuration);
 
-            Log.w("arc", "startArc: "+ startArc +"/endArc: "+ endArc);
+            Log.w("arc", "startArc: " + startArc + "/endArc: " + endArc);
             canvas.drawArc(arcRect, startArc, endArc - startArc, true, recordPaint);
         }
     }
