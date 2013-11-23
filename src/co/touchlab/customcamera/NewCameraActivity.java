@@ -103,22 +103,6 @@ public class NewCameraActivity extends Activity
             @Override
             public void countdownComplete()
             {
-                if (chatMessage != null && chatMessage.metadata.startRecording > 0d)
-                {
-                    new Handler().postDelayed(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            cameraPreviewView.startRecording();
-                        }
-                    }, Math.round(chatMessage.metadata.startRecording * 1000));
-                }
-                else
-                {
-                    cameraPreviewView.startRecording();
-                }
-
                 if (dynamicVideoView != null)
                 {
                     dynamicVideoView.start();
@@ -129,6 +113,12 @@ public class NewCameraActivity extends Activity
             public void playbackComplete()
             {
 
+            }
+
+            @Override
+            public void recordStart()
+            {
+                cameraPreviewView.startRecording();
             }
 
             @Override

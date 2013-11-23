@@ -28,6 +28,7 @@ public class TimerDial extends View
     private int totalDuration;
     private TimerCallback callback;
     private boolean countdownComplete;
+    private boolean playbackRecordingComplete;
     private boolean playbackComplete;
     private boolean recordComplete;
     private ValueAnimator valueAnimator;
@@ -53,12 +54,17 @@ public class TimerDial extends View
 
         void playbackComplete();
 
+        void recordStart();
         void recordComplete();
     }
 
     public void startAnimation(TimerCallback callback, Integer countdown, Integer playback, Integer playbackRecording, Integer record)
     {
+        if(valueAnimator != null)
+            return;
+
         this.countdownComplete = false;
+        this.playbackRecordingComplete = false;
         this.playbackComplete = false;
         this.recordComplete = false;
 
@@ -83,6 +89,11 @@ public class TimerDial extends View
                 {
                     countdownComplete = true;
                     TimerDial.this.callback.countdownComplete();
+                }
+                if(!playbackRecordingComplete && currentTime > TimerDial.this.playbackRecording + TimerDial.this.countdown)
+                {
+                    playbackRecordingComplete = true;
+                    TimerDial.this.callback.recordStart();
                 }
                 if (!playbackComplete && currentTime > TimerDial.this.playback + TimerDial.this.countdown)
                 {
