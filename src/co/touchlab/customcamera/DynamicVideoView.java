@@ -2,6 +2,7 @@ package co.touchlab.customcamera;
 
 import android.content.Context;
 import android.hardware.Camera;
+import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.VideoView;
@@ -20,13 +21,24 @@ public class DynamicVideoView extends VideoView
     private File video;
     private int width;
     private int height;
+    public MediaPlayer mediaPlayer;
 
-    public DynamicVideoView(Context context, File video, int width, int height)
+    public DynamicVideoView(final Context context, File video, int width, int height)
     {
         super(context);
         this.video = video;
         this.width = width;
         this.height = height;
+        setOnPreparedListener(new MediaPlayer.OnPreparedListener()
+        {
+            @Override
+            public void onPrepared(MediaPlayer mp)
+            {
+                DynamicVideoView.this.mediaPlayer = mp;
+                int volume = context.getResources().getInteger(R.integer.video_playback_volume);
+                mediaPlayer.setVolume((float)volume/100f, (float)volume/100f);
+            }
+        });
     }
 
     public DynamicVideoView(Context context, AttributeSet attrs)

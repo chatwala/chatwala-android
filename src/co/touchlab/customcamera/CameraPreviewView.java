@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -195,7 +196,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output
-//        mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
+//        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
+//            mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
 //        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
 
         try
