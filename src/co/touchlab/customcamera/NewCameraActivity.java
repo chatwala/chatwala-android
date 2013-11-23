@@ -359,7 +359,16 @@ public class NewCameraActivity extends Activity
                 Intent intent = new Intent(Intent.ACTION_SEND);
 
                 intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"kevin@touchlab.co"});
+                String toEmail = null;
+
+                if(chatMessage != null)
+                {
+                    toEmail = chatMessage.metadata.senderId;
+                }
+
+                if(toEmail != null)
+                    intent.putExtra(Intent.EXTRA_EMAIL, new String[]{toEmail});
+
                 intent.putExtra(Intent.EXTRA_SUBJECT, "test reply");
                 intent.putExtra(Intent.EXTRA_TEXT, "the video");
 
