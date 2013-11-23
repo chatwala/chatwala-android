@@ -22,6 +22,7 @@ public class TimerDial extends View
 {
     private Integer countdown;
     private Integer playback;
+    private Integer playbackRecording;
     private Integer record;
     private Integer currentTime;
     private int totalDuration;
@@ -55,7 +56,7 @@ public class TimerDial extends View
         void recordComplete();
     }
 
-    public void startAnimation(TimerCallback callback, Integer countdown, Integer playback, Integer record)
+    public void startAnimation(TimerCallback callback, Integer countdown, Integer playback, Integer playbackRecording, Integer record)
     {
         this.countdownComplete = false;
         this.playbackComplete = false;
@@ -64,6 +65,7 @@ public class TimerDial extends View
         this.callback = callback;
         this.countdown = countdown;
         this.playback = playback;
+        this.playbackRecording = playbackRecording;
         this.record = record;
         this.totalDuration = countdown + playback + record;
 
@@ -140,6 +142,7 @@ public class TimerDial extends View
         if (totalDuration > 0)
         {
             int playbackStartTime = countdown;
+            int playbackRecordingStartTime = countdown + playbackRecording;
             int recordStartTime = countdown + playback;
 
             if (currentTime < countdown)
@@ -155,6 +158,19 @@ public class TimerDial extends View
 
                 canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
             }
+            if (currentTime < playbackRecordingStartTime)
+            {
+                Paint countdownPaint = new Paint();
+
+                countdownPaint.setColor(Color.CYAN);
+                countdownPaint.setStyle(Paint.Style.FILL);
+
+                float arcPoint = Math.max(currentTime.floatValue(), (float) playbackStartTime);
+                int startArc = findArcPoint(arcPoint);
+                int endArc = findArcPoint(playbackRecordingStartTime);
+
+                canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
+            }
             if (currentTime < recordStartTime)
             {
                 Paint countdownPaint = new Paint();
@@ -162,7 +178,7 @@ public class TimerDial extends View
                 countdownPaint.setColor(Color.GREEN);
                 countdownPaint.setStyle(Paint.Style.FILL);
 
-                float arcPoint = Math.max(currentTime.floatValue(), (float) playbackStartTime);
+                float arcPoint = Math.max(currentTime.floatValue(), (float) playbackRecordingStartTime);
                 int startArc = findArcPoint(arcPoint);
                 int endArc = findArcPoint(recordStartTime);
 

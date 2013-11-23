@@ -136,7 +136,7 @@ public class NewCameraActivity extends Activity
             {
                 stopRecording();
             }
-        }, 3000, (int) videoPlaybackDuration, 10000);
+        }, 3000, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int)Math.round(chatMessage.metadata.startRecording * 1000), 10000);
     }
 
     private void stopRecording()
