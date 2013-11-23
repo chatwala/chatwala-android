@@ -46,9 +46,9 @@ public class NewCameraActivity extends Activity
     private ChatMessage chatMessage;
 
     private long videoPlaybackDuration = 0;
-    private long myMessageStartTime;
-    private long myMessageEndTime;
-    private long replyMessageEndTime;
+//    private long myMessageStartTime;
+//    private long myMessageEndTime;
+//    private long replyMessageEndTime;
 
     private View mainActionButton;
     private TimerDial timerDial;
@@ -90,7 +90,7 @@ public class NewCameraActivity extends Activity
         }
         else
         {
-            stopRecording();
+            timerDial.stopAnimation();
         }
     }
 
@@ -335,8 +335,8 @@ public class NewCameraActivity extends Activity
 
                     sendMessageMetadata.incrementForNewMessage();
 
-                    long startRecordingMillis = replyMessageEndTime == 0 ? 0 : replyMessageEndTime - myMessageStartTime;
-                    sendMessageMetadata.startRecording = ((double) startRecordingMillis) / 1000d;
+                    long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
+                    sendMessageMetadata.startRecording = ((double) Math.max(videoPlaybackDuration - startRecordingMillis, 0)) / 1000d;
 
                     sendMessageMetadata.senderId = "kevin@touchlab.co";
 

@@ -20,7 +20,6 @@ import android.view.animation.LinearInterpolator;
  */
 public class TimerDial extends View
 {
-    private Integer sweepAngle = 0;
     private Integer countdown;
     private Integer playback;
     private Integer record;
@@ -30,6 +29,7 @@ public class TimerDial extends View
     private boolean countdownComplete;
     private boolean playbackComplete;
     private boolean recordComplete;
+    private ValueAnimator valueAnimator;
 
     public TimerDial(Context context)
     {
@@ -67,7 +67,7 @@ public class TimerDial extends View
         this.record = record;
         this.totalDuration = countdown + playback + record;
 
-        ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+        valueAnimator = ValueAnimator.ofFloat(0, 1);
 
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.setDuration(totalDuration);
@@ -96,11 +96,31 @@ public class TimerDial extends View
             @Override
             public void onAnimationEnd(Animator animation)
             {
+                resetValues();
+                invalidate();
                 TimerDial.this.callback.recordComplete();
             }
         });
 
         valueAnimator.start();
+    }
+
+    private void resetValues()
+    {
+        countdown = null;
+        playback = null;
+        record = null;
+        currentTime = null;
+        totalDuration = 0;
+        countdownComplete = false;
+        playbackComplete = false;
+        recordComplete = false;
+        valueAnimator = null;
+    }
+
+    public void stopAnimation()
+    {
+        valueAnimator.cancel();
     }
 
     @Override
