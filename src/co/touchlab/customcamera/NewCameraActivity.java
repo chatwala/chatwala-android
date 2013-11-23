@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.*;
 import android.widget.Button;
+import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.CameraUtils;
 import co.touchlab.customcamera.util.ShareUtils;
 import co.touchlab.customcamera.util.ZipUtil;
@@ -47,6 +48,8 @@ public class NewCameraActivity extends Activity
     private long myMessageStartTime;
     private long myMessageEndTime;
     private long replyMessageEndTime;
+    private TimerDial timerDial;
+    private DynamicVideoView dynamicVideoView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -60,6 +63,7 @@ public class NewCameraActivity extends Activity
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
         mainActionButton = (Button) findViewById(R.id.camera_button);
+        timerDial = (TimerDial) findViewById(R.id.timerDial);
         mainActionButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -79,6 +83,27 @@ public class NewCameraActivity extends Activity
         {
             cameraPreviewView.startRecording();
             mainActionButton.setText("Stop");
+            timerDial.startAnimation(new TimerDial.TimerCallback()
+            {
+                @Override
+                public void countdownComplete()
+                {
+                    if(dynamicVideoView != null)
+                        dynamicVideoView.start();
+                }
+
+                @Override
+                public void playbackComplete()
+                {
+
+                }
+
+                @Override
+                public void recordComplete()
+                {
+
+                }
+            }, 3000, 2000, 10000);
         }
         else
         {
@@ -186,10 +211,10 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoInfo videoInfo)
         {
-            DynamicVideoView dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height);
+            dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height);
             videoViewContainer.addView(dynamicVideoView);
             dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
-            dynamicVideoView.start();
+//            dynamicVideoView.start();
             triggerButtonAction();
         }
     }
