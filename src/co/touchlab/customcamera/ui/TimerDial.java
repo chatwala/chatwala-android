@@ -122,11 +122,13 @@ public class TimerDial extends View
     {
         countdown = null;
         playback = null;
+        playbackRecording = null;
         record = null;
         currentTime = null;
         totalDuration = 0;
         countdownComplete = false;
         playbackComplete = false;
+        playbackRecordingComplete = false;
         recordComplete = false;
         valueAnimator = null;
     }
