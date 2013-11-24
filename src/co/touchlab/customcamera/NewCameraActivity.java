@@ -199,6 +199,7 @@ public class NewCameraActivity extends Activity
         public File videoFile;
         public int width;
         public int height;
+        public int rotation;
     }
 
     class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoInfo>
@@ -215,6 +216,7 @@ public class NewCameraActivity extends Activity
                 metaRetriever.setDataSource(inp.getFD());
                 String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
                 videoPlaybackDuration = Long.parseLong(duration);
+                String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
                 String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
                 String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
 
@@ -222,6 +224,7 @@ public class NewCameraActivity extends Activity
 
                 VideoInfo videoInfo = new VideoInfo();
                 videoInfo.videoFile = videoFile;
+                videoInfo.rotation = rotation == null ? 0 : Integer.parseInt(rotation);
                 videoInfo.width = Integer.parseInt(width);
                 videoInfo.height = Integer.parseInt(height);
 
@@ -237,7 +240,7 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoInfo videoInfo)
         {
-            dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height);
+            dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
             videoViewContainer.addView(dynamicVideoView);
             dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
 //            dynamicVideoView.start();

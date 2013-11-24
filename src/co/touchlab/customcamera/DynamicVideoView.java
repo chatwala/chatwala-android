@@ -21,14 +21,16 @@ public class DynamicVideoView extends VideoView
     private File video;
     private int width;
     private int height;
+    private int rotation;
     public MediaPlayer mediaPlayer;
 
-    public DynamicVideoView(final Context context, File video, int width, int height)
+    public DynamicVideoView(final Context context, File video, int width, int height, int rotation)
     {
         super(context);
         this.video = video;
         this.width = width;
         this.height = height;
+        this.rotation = rotation;
         setOnPreparedListener(new MediaPlayer.OnPreparedListener()
         {
             @Override
@@ -65,8 +67,8 @@ public class DynamicVideoView extends VideoView
         {
             //either scale up the height of the preview, so that is at least the size of the container
             int viewHeight = ((ViewGroup) getParent()).getHeight();
-            int previewHeight = width;
-            int previewWidth = height;
+            int previewHeight = Math.max(width, height);
+            int previewWidth = Math.min(width, height);
             double ratio = (double) viewHeight / (double) previewWidth;
 
             double newPreviewHeight = (double) previewHeight * ratio;
