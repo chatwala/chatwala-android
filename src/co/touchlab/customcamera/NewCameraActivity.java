@@ -54,6 +54,7 @@ public class NewCameraActivity extends Activity
     private TimerDial timerDial;
     private DynamicVideoView dynamicVideoView;
     private TextView timerText;
+    private boolean appActive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -126,7 +127,7 @@ public class NewCameraActivity extends Activity
             {
                 stopRecording();
             }
-        }, 3000, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int)Math.round(chatMessage.metadata.startRecording * 1000), 10000);
+        }, 3000, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000), 10000);
     }
 
     private void stopRecording()
@@ -140,8 +141,17 @@ public class NewCameraActivity extends Activity
     protected void onResume()
     {
         super.onResume();
+        appActive = true;
         disableInterface();
         createSurface();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        appActive = false;
+        tearDownSurface();
     }
 
     private void disableInterface()
@@ -187,9 +197,8 @@ public class NewCameraActivity extends Activity
 
     private void showMessageVideo()
     {
-        if (!initialMessageDone && chatMessage != null && chatMessage.messageVideo != null)
+        if (chatMessage != null && chatMessage.messageVideo != null)
         {
-            initialMessageDone = true;
             new LoadAndShowVideoMessageTask().execute(chatMessage.messageVideo);
         }
     }
@@ -255,15 +264,12 @@ public class NewCameraActivity extends Activity
                 }
             }, 200);
 
-            startTimer();
+            if (!initialMessageDone)
+            {
+                initialMessageDone = true;
+                startTimer();
+            }
         }
-    }
-
-    @Override
-    protected void onPause()
-    {
-        super.onDestroy();
-        tearDownSurface();
     }
 
     private void createSurface()
@@ -279,7 +285,8 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingDone(File videoFile)
             {
-                sendEmail(videoFile);
+                if(appActive)
+                    sendEmail(videoFile);
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
@@ -375,12 +382,12 @@ public class NewCameraActivity extends Activity
                 intent.setType("text/plain");
                 String toEmail = null;
 
-                if(chatMessage != null)
+                if (chatMessage != null)
                 {
                     toEmail = chatMessage.metadata.senderId;
                 }
 
-                if(toEmail != null)
+                if (toEmail != null)
                     intent.putExtra(Intent.EXTRA_EMAIL, new String[]{toEmail});
 
                 intent.putExtra(Intent.EXTRA_SUBJECT, "test reply");
