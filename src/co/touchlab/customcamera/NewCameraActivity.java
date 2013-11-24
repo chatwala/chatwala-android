@@ -243,7 +243,18 @@ public class NewCameraActivity extends Activity
             dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
             videoViewContainer.addView(dynamicVideoView);
             dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
-//            dynamicVideoView.start();
+            dynamicVideoView.start();
+
+            new Handler().postDelayed(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    dynamicVideoView.pause();
+                    dynamicVideoView.seekTo(0);
+                }
+            }, 200);
+
             startTimer();
         }
     }
