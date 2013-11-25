@@ -5,6 +5,4 @@
     <integer name="video_frame_rate_s4">30</integer>
     <integer name="video_min_width">480</integer>
     <integer name="video_playback_volume">50</integer>
-
-
 </resources>

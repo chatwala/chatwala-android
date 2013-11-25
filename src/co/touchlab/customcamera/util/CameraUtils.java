@@ -60,18 +60,21 @@ public class CameraUtils
 
     private static Camera.Size findBestFitCameraSize(int containerHeight, List<Camera.Size> supportedVideoSizes)
     {
-        Camera.Size best = supportedVideoSizes.get(supportedVideoSizes.size() - 1);
+        if(supportedVideoSizes == null || supportedVideoSizes.size() == 0)
+            return null;
 
-        for(int i=supportedVideoSizes.size()-2; i>=0; i--)
+        Camera.Size best = supportedVideoSizes.get(0);
+
+        for(int i=1; i<supportedVideoSizes.size(); i++)
         {
             Camera.Size size = supportedVideoSizes.get(i);
-            if(size.width <= containerHeight && size.width > best.width)
+            if(size.width >= containerHeight && size.width < best.width)
                 best = size;
         }
 
         assert best.width <= containerHeight;
 
-        CWLog.i("width: " + best.width + "/height: " + best.height);
+        CWLog.i("BEST: width: " + best.width + "/height: " + best.height);
 
         return best;
     }

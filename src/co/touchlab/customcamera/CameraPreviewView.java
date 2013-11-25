@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
@@ -30,6 +31,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     private Camera.Size cameraVideoSize = null;
     private File recordingFile;
     private final CameraPreviewCallback callback;
+    private Handler debugHandler;
 
     public CameraPreviewView(Context context, CameraPreviewCallback callback)
     {
@@ -81,6 +83,22 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             }
 
             callback.surfaceReady();
+
+            debugHandler = new Handler();
+            debugHandler.post(theRunnable);
+        }
+    }
+
+    CheckSizeRunnable theRunnable = new CheckSizeRunnable();
+
+    class CheckSizeRunnable implements Runnable
+    {
+
+        @Override
+        public void run()
+        {
+            Log.w("CHECK_SIZE", "width: "+ getWidth() +"/height: "+ getHeight());
+            debugHandler.postDelayed(theRunnable, 1000);
         }
     }
 
@@ -264,8 +282,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         Camera.Parameters params = camera.getParameters();
 
-        cameraPreviewSize = CameraUtils.findCameraPreviewSize(((ViewGroup)getParent()).getHeight(), params);
-        cameraVideoSize = CameraUtils.findCameraVideoSize(((ViewGroup)getParent()).getHeight(), params);
+        int viewWidth = getResources().getInteger(R.integer.video_min_width);
+        cameraPreviewSize = CameraUtils.findCameraPreviewSize(viewWidth, params);
+        cameraVideoSize = CameraUtils.findCameraVideoSize(viewWidth, params);
         params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
 
         camera.setParameters(params);
