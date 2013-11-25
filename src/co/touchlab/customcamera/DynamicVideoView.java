@@ -66,10 +66,10 @@ public class DynamicVideoView extends VideoView
         if (((ViewGroup) getParent()).getHeight() != 0)
         {
             //either scale up the height of the preview, so that is at least the size of the container
-            int viewHeight = ((ViewGroup) getParent()).getHeight();
+            int viewWidth = ((ViewGroup)getParent()).getWidth();
             int previewHeight = Math.max(width, height);
             int previewWidth = Math.min(width, height);
-            double ratio = (double) viewHeight / (double) previewWidth;
+            double ratio = (double) viewWidth / (double) previewWidth;
 
             double newPreviewHeight = (double) previewHeight * ratio;
             double newPreviewWidth = (double) previewWidth * ratio;

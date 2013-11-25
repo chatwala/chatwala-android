@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -13,8 +12,6 @@ import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +25,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     Camera camera = null;
     MediaRecorder mediaRecorder = null;
 
+    private Camera.Size cameraPreviewSize = null;
     private Camera.Size cameraVideoSize = null;
     private File recordingFile;
     private final CameraPreviewCallback callback;
@@ -54,7 +52,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        if(cameraVideoSize != null)
+        if(cameraPreviewSize != null)
         {
             try
             {
@@ -169,7 +167,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setVideoFrameRate(getResources().getInteger(R.integer.video_frame_rate));
 
-
         mediaRecorder.setVideoSize(cameraVideoSize.width, cameraVideoSize.height);
 
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -241,13 +238,13 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         if(((ViewGroup)getParent()).getHeight() != 0)
         {
-            setCameraPreviewSize();
+            findCameraSizes();
 
             //either scale up the height of the preview, so that is at least the size of the container
-            int viewHeight = ((ViewGroup)getParent()).getHeight();
+            int viewWidth = ((ViewGroup)getParent()).getWidth();
             int previewHeight = cameraVideoSize.width;
             int previewWidth = cameraVideoSize.height;
-            double ratio = (double) viewHeight / (double) previewWidth;
+            double ratio = (double) viewWidth / (double) previewWidth;
 
             double newPreviewHeight = (double) previewHeight * ratio;
             double newPreviewWidth = (double) previewWidth * ratio;
@@ -262,12 +259,13 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         }
     }
 
-    private void setCameraPreviewSize()
+    private void findCameraSizes()
     {
         Camera.Parameters params = camera.getParameters();
 
+        cameraPreviewSize = CameraUtils.findCameraPreviewSize(((ViewGroup)getParent()).getHeight(), params);
         cameraVideoSize = CameraUtils.findCameraVideoSize(((ViewGroup)getParent()).getHeight(), params);
-        params.setPreviewSize(cameraVideoSize.width, cameraVideoSize.height);
+        params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
 
         camera.setParameters(params);
     }
