@@ -12,6 +12,7 @@ import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -165,7 +166,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setVideoFrameRate(getResources().getInteger(R.integer.video_frame_rate));
+        mediaRecorder.setVideoFrameRate(CameraUtils.findVideoFrameRate(getContext()));
 
         mediaRecorder.setVideoSize(cameraVideoSize.width, cameraVideoSize.height);
 
@@ -242,8 +243,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 
             //either scale up the height of the preview, so that is at least the size of the container
             int viewWidth = ((ViewGroup)getParent()).getWidth();
-            int previewHeight = cameraVideoSize.width;
-            int previewWidth = cameraVideoSize.height;
+            int previewHeight = cameraPreviewSize.width;
+            int previewWidth = cameraPreviewSize.height;
             double ratio = (double) viewWidth / (double) previewWidth;
 
             double newPreviewHeight = (double) previewHeight * ratio;

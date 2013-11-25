@@ -3,6 +3,7 @@ package co.touchlab.customcamera.util;
 import android.content.Context;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import android.os.Build;
 import co.touchlab.customcamera.R;
 
 import java.util.ArrayList;
@@ -73,6 +74,19 @@ public class CameraUtils
         CWLog.i("width: " + best.width + "/height: " + best.height);
 
         return best;
+    }
+
+    public static int findVideoFrameRate(Context context)
+    {
+        CWLog.i("Build.MODEL: "+ Build.MODEL);
+        CWLog.i("Build.DEVICE: "+ Build.DEVICE);
+        CWLog.i("Build.PRODUCT: "+ Build.PRODUCT);
+
+        //S4 can't handle 24 fps
+        if(Build.DEVICE.startsWith("jflte"))
+            return context.getResources().getInteger(R.integer.video_frame_rate_s4);
+        else
+            return context.getResources().getInteger(R.integer.video_frame_rate);
     }
 
     public static int findBestCameraProfile(int cameraId)
