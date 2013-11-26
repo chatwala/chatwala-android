@@ -35,7 +35,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         initSurface();
         openCamera();
         this.callback = callback;
-        //setCameraParams();
+        setCameraParams();
     }
 
     public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback)
@@ -132,7 +132,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         Camera.Parameters params = camera.getParameters();
 
         //These all kind of suck because they cause crashes, but we may need to use them to smooth out the recording process
-        //params.setRecordingHint(true);
+        CameraUtils.setRecordingHintIfNecessary(params);
         //params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         //params.setPreviewFpsRange(15, 15);
 

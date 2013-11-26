@@ -19,6 +19,8 @@ import java.util.List;
  */
 public class CameraUtils
 {
+    private static String BUILD_DEVICE_S4 = "jflte";
+
     public static File getRootDataFolder(Context context)
     {
         File filesDir = context.getFilesDir();
@@ -87,6 +89,11 @@ public class CameraUtils
         return best;
     }
 
+    private static boolean isDeviceS4()
+    {
+        return Build.DEVICE.startsWith(BUILD_DEVICE_S4);
+    }
+
     public static int findVideoFrameRate(Context context)
     {
         CWLog.i("Build.MODEL: "+ Build.MODEL);
@@ -94,7 +101,7 @@ public class CameraUtils
         CWLog.i("Build.PRODUCT: "+ Build.PRODUCT);
 
         //S4 can't handle 24 fps
-        if(Build.DEVICE.startsWith("jflte"))
+        if(isDeviceS4())
             return context.getResources().getInteger(R.integer.video_frame_rate_s4);
         else
             return context.getResources().getInteger(R.integer.video_frame_rate);
@@ -110,5 +117,13 @@ public class CameraUtils
             return CamcorderProfile.QUALITY_480P;
         else
             throw new RuntimeException("No compatible camera");
+    }
+
+    public static void setRecordingHintIfNecessary(Camera.Parameters params)
+    {
+        if(isDeviceS4())
+        {
+            params.setRecordingHint(true);
+        }
     }
 }
