@@ -1,7 +1,6 @@
 package co.touchlab.customcamera;
 
 import android.content.Context;
-import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.ViewGroup;

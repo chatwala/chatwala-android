@@ -11,8 +11,16 @@ import android.util.Log;
  */
 public class CWLog
 {
+
+    public static final String CHAT_WALA = "ChatWala";
+
     public static void i(String s)
     {
-        Log.i("ChatWala", s);
+        Log.i(CHAT_WALA, s);
+    }
+
+    public static void i(String s, Exception e)
+    {
+        Log.i(CHAT_WALA, s, e);
     }
 }

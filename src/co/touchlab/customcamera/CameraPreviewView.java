@@ -4,8 +4,6 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Environment;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
@@ -13,7 +11,6 @@ import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,7 +28,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     private Camera.Size cameraVideoSize = null;
     private File recordingFile;
     private final CameraPreviewCallback callback;
-    private Handler debugHandler;
 
     public CameraPreviewView(Context context, CameraPreviewCallback callback)
     {
@@ -83,22 +79,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             }
 
             callback.surfaceReady();
-
-            debugHandler = new Handler();
-            debugHandler.post(theRunnable);
-        }
-    }
-
-    CheckSizeRunnable theRunnable = new CheckSizeRunnable();
-
-    class CheckSizeRunnable implements Runnable
-    {
-
-        @Override
-        public void run()
-        {
-            Log.w("CHECK_SIZE", "width: "+ getWidth() +"/height: "+ getHeight());
-            debugHandler.postDelayed(theRunnable, 1000);
         }
     }
 
@@ -208,7 +188,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             mediaRecorder.setOrientationHint(mrRotate);
 
         // Step 4: Set output file
-        recordingFile = new File(Environment.getExternalStorageDirectory(), "vid_" + System.currentTimeMillis() + ".mp4");
+        recordingFile = new File(CameraUtils.getRootDataFolder(getContext()), "vid_" + System.currentTimeMillis() + ".mp4");
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output

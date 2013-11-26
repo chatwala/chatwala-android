@@ -1,19 +1,16 @@
 package co.touchlab.customcamera;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.hardware.Camera;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
-import android.view.*;
-import android.widget.Button;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.CameraUtils;
@@ -21,7 +18,6 @@ import co.touchlab.customcamera.util.ShareUtils;
 import co.touchlab.customcamera.util.ZipUtil;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.util.Arrays;
@@ -325,7 +321,7 @@ public class NewCameraActivity extends Activity
             @Override
             protected Object doInBackground(Object... params)
             {
-                File buildDir = new File(Environment.getExternalStorageDirectory(), "chat_" + System.currentTimeMillis());
+                File buildDir = new File(CameraUtils.getRootDataFolder(NewCameraActivity.this), "chat_" + System.currentTimeMillis());
                 buildDir.mkdirs();
 
                 File walaFile = new File(buildDir, "video.mp4");
@@ -351,7 +347,12 @@ public class NewCameraActivity extends Activity
                     long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
                     sendMessageMetadata.startRecording = ((double) Math.max(videoPlaybackDuration - startRecordingMillis, 0)) / 1000d;
 
-                    sendMessageMetadata.senderId = "kevin@touchlab.co";
+                    String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
+
+                    if(myEmail == null && chatMessage != null)
+                        myEmail = chatMessage.probableEmailSource;
+
+                    sendMessageMetadata.senderId = myEmail;
 
                     FileWriter fileWriter = new FileWriter(metadataFile);
 
@@ -359,7 +360,9 @@ public class NewCameraActivity extends Activity
 
                     fileWriter.close();
 
-                    outZip = new File(Environment.getExternalStorageDirectory(), "chat.wala");
+                    File shareDir = new File(NewCameraActivity.this.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
+                    shareDir.mkdirs();
+                    outZip = new File(shareDir, "chat.wala");
 
                     ZipUtil.zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
                 }

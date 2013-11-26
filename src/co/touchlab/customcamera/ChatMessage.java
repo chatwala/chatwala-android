@@ -13,4 +13,7 @@ public class ChatMessage
 {
     public MessageMetadata metadata;
     public File messageVideo;
+
+    //This comes from the file URI.  May be suspect, but if that's all we have, its a good guess
+    public String probableEmailSource;
 }

@@ -1,11 +1,8 @@
 package co.touchlab.customcamera.util;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Environment;
+import android.text.TextUtils;
 import co.touchlab.customcamera.ChatMessage;
 import co.touchlab.customcamera.MessageMetadata;
 import org.apache.commons.io.IOUtils;
@@ -13,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.util.Arrays;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +20,9 @@ import java.util.Arrays;
  */
 public class ShareUtils
 {
+
+    public static final String EMAIL_CONTENT_PREFIX = "content://gmail-ls/";
+
     public static ChatMessage extractFileAttachment(Activity activity)
     {
         Uri uri = activity.getIntent().getData();
@@ -55,6 +54,8 @@ public class ShareUtils
                 chatMessage.metadata = new MessageMetadata();
                 chatMessage.metadata.init(new JSONObject(IOUtils.toString(input)));
 
+                chatMessage.probableEmailSource = dirtyEmailMagic(uri.toString());
+
                 input.close();
 
                 return chatMessage;
@@ -80,6 +81,26 @@ public class ShareUtils
         {
             return null;
         }
+    }
+
+    private static String dirtyEmailMagic(String s)
+    {
+        try
+        {
+            if(s.contains(EMAIL_CONTENT_PREFIX))
+            {
+                String email = s.substring(EMAIL_CONTENT_PREFIX.length(), s.indexOf('/', EMAIL_CONTENT_PREFIX.length()));
+                if(!TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
+                    return email;
+            }
+        }
+        catch (Exception e)
+        {
+            //This appears kind of lazy, but we have no idea what kind of weird patterns we'll be getting in the future. Log and forget.
+            CWLog.i("Failed extracting email from: "+ s, e);
+        }
+
+        return null;
     }
 
     /*public static Wala extractAttachment(Intent intent, Context context)

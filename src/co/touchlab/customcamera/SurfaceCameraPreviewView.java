@@ -3,7 +3,6 @@ package co.touchlab.customcamera;
 import android.content.Context;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
@@ -163,7 +162,7 @@ public class SurfaceCameraPreviewView extends SurfaceView implements SurfaceHold
             mediaRecorder.setOrientationHint(mrRotate);
 
         // Step 4: Set output file
-        recordingFile = new File(Environment.getExternalStorageDirectory(), "vid_" + System.currentTimeMillis() + ".mp4");
+        recordingFile = new File(CameraUtils.getRootDataFolder(getContext()), "vid_" + System.currentTimeMillis() + ".mp4");
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output
