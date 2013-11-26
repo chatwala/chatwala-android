@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
@@ -51,6 +52,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
+        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureAvailable: "+ surface);
         if(cameraPreviewSize != null)
         {
             try
@@ -85,19 +87,20 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
     {
-        System.out.println("asdf");
+        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureSizeChanged");
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface)
     {
+        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureDestroyed");
         return false;
     }
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        System.out.println("asdf");
+        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureUpdated: " + surface);
     }
 
     public interface CameraPreviewCallback
@@ -119,6 +122,14 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         try
         {
             camera = Camera.open(CameraUtils.getFrontCameraId());
+            camera.setErrorCallback(new Camera.ErrorCallback()
+            {
+                @Override
+                public void onError(int error, Camera camera)
+                {
+                    Log.w(CameraPreviewView.class.getSimpleName(), "onError: "+ error +"/Camera: "+ camera);
+                }
+            });
         }
         catch (Exception e)
         {
