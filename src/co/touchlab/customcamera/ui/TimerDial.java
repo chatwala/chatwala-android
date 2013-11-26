@@ -22,14 +22,13 @@ import android.view.animation.LinearInterpolator;
  */
 public class TimerDial extends View
 {
-    private Integer countdown;
     private Integer playback;
     private Integer playbackRecording;
     private Integer record;
     private Integer currentTime;
     private int totalDuration;
     private TimerCallback callback;
-    private boolean countdownComplete;
+    private boolean playbackStarted;
     private boolean playbackRecordingComplete;
     private boolean playbackComplete;
     private boolean recordComplete;
@@ -52,30 +51,27 @@ public class TimerDial extends View
 
     public interface TimerCallback
     {
-        void countdownComplete();
-
+        void playbackStart();
         void playbackComplete();
-
         void recordStart();
         void recordComplete();
     }
 
-    public void startAnimation(TimerCallback callback, Integer countdown, Integer playback, Integer playbackRecording, Integer record)
+    public void startAnimation(TimerCallback callback, Integer playback, Integer playbackRecording, Integer record)
     {
         if(valueAnimator != null)
             return;
 
-        this.countdownComplete = false;
+        this.playbackStarted = false;
         this.playbackRecordingComplete = false;
         this.playbackComplete = false;
         this.recordComplete = false;
 
         this.callback = callback;
-        this.countdown = countdown;
         this.playback = playback;
         this.playbackRecording = playbackRecording;
         this.record = record;
-        this.totalDuration = countdown + playback + record;
+        this.totalDuration = playback + record;
 
         valueAnimator = ValueAnimator.ofFloat(0, 1);
 
@@ -87,17 +83,17 @@ public class TimerDial extends View
             public void onAnimationUpdate(ValueAnimator animation)
             {
                 TimerDial.this.currentTime = (int) ((Float) animation.getAnimatedValue() * (float) totalDuration);
-                if (!countdownComplete && currentTime > TimerDial.this.countdown)
+                if (!playbackStarted)
                 {
-                    countdownComplete = true;
-                    TimerDial.this.callback.countdownComplete();
+                    playbackStarted = true;
+                    TimerDial.this.callback.playbackStart();
                 }
-                if(!playbackRecordingComplete && currentTime > TimerDial.this.playbackRecording + TimerDial.this.countdown)
+                if(!playbackRecordingComplete && currentTime > TimerDial.this.playbackRecording)
                 {
                     playbackRecordingComplete = true;
                     TimerDial.this.callback.recordStart();
                 }
-                if (!playbackComplete && currentTime > TimerDial.this.playback + TimerDial.this.countdown)
+                if (!playbackComplete && currentTime > TimerDial.this.playback)
                 {
                     playbackComplete = true;
                     TimerDial.this.callback.playbackComplete();
@@ -122,13 +118,11 @@ public class TimerDial extends View
 
     private void resetValues()
     {
-        countdown = null;
         playback = null;
         playbackRecording = null;
         record = null;
         currentTime = null;
         totalDuration = 0;
-        countdownComplete = false;
         playbackComplete = false;
         playbackRecordingComplete = false;
         recordComplete = false;
@@ -156,69 +150,54 @@ public class TimerDial extends View
 
         if (totalDuration > 0)
         {
-            int playbackStartTime = countdown;
-            int playbackRecordingStartTime = countdown + playbackRecording;
-            int recordStartTime = countdown + playback;
+            int playbackStartTime = 0;
+            int playbackRecordingStartTime = playbackRecording;
+            int recordStartTime = playback;
 
-            if (currentTime < countdown)
+            if (currentTime < playbackRecordingStartTime)
             {
                 Paint countdownPaint = new Paint();
 
-                countdownPaint.setColor(Color.GRAY);
+                countdownPaint.setColor(Color.CYAN);
                 countdownPaint.setStyle(Paint.Style.FILL);
 
-                int startArc = findArcPoint(currentTime.longValue(), countdown.longValue());
-                int endArc = 360;
+                int arcPoint = Math.max(currentTime.intValue(), playbackStartTime);
+                int startArc = findArcPoint(arcPoint);
+                int endArc = findArcPoint(playbackRecordingStartTime);
 
                 canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
             }
-            else
+            if (currentTime < recordStartTime)
             {
-                if (currentTime < playbackRecordingStartTime)
-                {
-                    Paint countdownPaint = new Paint();
+                Paint countdownPaint = new Paint();
 
-                    countdownPaint.setColor(Color.CYAN);
-                    countdownPaint.setStyle(Paint.Style.FILL);
+                countdownPaint.setColor(Color.GREEN);
+                countdownPaint.setStyle(Paint.Style.FILL);
 
-                    int arcPoint = Math.max(currentTime.intValue(), playbackStartTime);
-                    int startArc = findArcPoint(arcPoint);
-                    int endArc = findArcPoint(playbackRecordingStartTime);
-
-                    canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
-                }
-                if (currentTime < recordStartTime)
-                {
-                    Paint countdownPaint = new Paint();
-
-                    countdownPaint.setColor(Color.GREEN);
-                    countdownPaint.setStyle(Paint.Style.FILL);
-
-                    int arcPoint = Math.max(currentTime.intValue(), (int) playbackRecordingStartTime);
-                    int startArc = findArcPoint(arcPoint);
-                    int endArc = findArcPoint(recordStartTime);
-
-                    canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
-                }
-
-                Paint recordPaint = new Paint();
-
-                recordPaint.setColor(Color.RED);
-                recordPaint.setStyle(Paint.Style.FILL);
-
-                int arcPoint = Math.max(currentTime.intValue(), (int) recordStartTime);
+                int arcPoint = Math.max(currentTime.intValue(), (int) playbackRecordingStartTime);
                 int startArc = findArcPoint(arcPoint);
-                int endArc = findArcPoint(totalDuration);
+                int endArc = findArcPoint(recordStartTime);
 
-                Log.w("arc", "startArc: " + startArc + "/endArc: " + endArc);
-                canvas.drawArc(arcRect, startArc, endArc - startArc, true, recordPaint);
+                canvas.drawArc(arcRect, startArc, endArc - startArc, true, countdownPaint);
             }
+
+            Paint recordPaint = new Paint();
+
+            recordPaint.setColor(Color.RED);
+            recordPaint.setStyle(Paint.Style.FILL);
+
+            int arcPoint = Math.max(currentTime.intValue(), (int) recordStartTime);
+            int startArc = findArcPoint(arcPoint);
+            int endArc = findArcPoint(totalDuration);
+
+            Log.w("arc", "startArc: " + startArc + "/endArc: " + endArc);
+            canvas.drawArc(arcRect, startArc, endArc - startArc, true, recordPaint);
         }
     }
 
     private int findArcPoint(long arcPoint)
     {
-        return findArcPoint(arcPoint - countdown, totalDuration - countdown);
+        return findArcPoint(arcPoint, totalDuration);
     }
 
     private int findArcPoint(long current, long total)

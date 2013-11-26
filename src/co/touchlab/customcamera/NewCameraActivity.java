@@ -100,7 +100,7 @@ public class NewCameraActivity extends Activity
         timerDial.startAnimation(new TimerDial.TimerCallback()
         {
             @Override
-            public void countdownComplete()
+            public void playbackStart()
             {
                 if (dynamicVideoView != null)
                 {
@@ -125,7 +125,7 @@ public class NewCameraActivity extends Activity
             {
                 stopRecording();
             }
-        }, 3000, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000), 10000);
+        }, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000), 10000);
     }
 
     private void stopRecording()
