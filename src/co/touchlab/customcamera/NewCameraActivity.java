@@ -2,6 +2,7 @@ package co.touchlab.customcamera;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -9,10 +10,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.CameraUtils;
 import co.touchlab.customcamera.util.ShareUtils;
+import co.touchlab.customcamera.util.VideoUtils;
 import co.touchlab.customcamera.util.ZipUtil;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -43,7 +46,9 @@ public class NewCameraActivity extends Activity
     private View timerButtonContainer;
     private TimerDial timerDial;
     private DynamicVideoView dynamicVideoView;
+    private ImageView dynamicVideoThumb;
     private DynamicVideoView videoResultPreviewView;
+    private ImageView videoResultPreviewThumb;
     private TextView timerText;
     private File videoResultPreview;
     private View closeVideoPreview;
@@ -217,6 +222,7 @@ public class NewCameraActivity extends Activity
         public int width;
         public int height;
         public int rotation;
+        public Bitmap bitmap;
     }
 
     class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoInfo>
@@ -249,6 +255,7 @@ public class NewCameraActivity extends Activity
 
                 VideoInfo videoInfo = new VideoInfo();
                 videoInfo.videoFile = videoFile;
+                videoInfo.bitmap = VideoUtils.createVideoFrame(videoFile.getPath(), 0);
                 videoInfo.rotation = rotation == null ? 0 : Integer.parseInt(rotation);
                 videoInfo.width = Integer.parseInt(width);
                 videoInfo.height = Integer.parseInt(height);
@@ -290,12 +297,14 @@ public class NewCameraActivity extends Activity
             {
                 dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
                 videoViewContainer.addView(dynamicVideoView);
-
-                /*if (!initialMessageDone)
+                dynamicVideoThumb = new DynamicVideoThumbImageView(NewCameraActivity.this, videoInfo.width, videoInfo.height);
+                dynamicVideoThumb.setImageBitmap(videoInfo.bitmap);
+                videoViewContainer.addView(dynamicVideoThumb);
+                if (!initialMessageDone)
                 {
                     initialMessageDone = true;
                     startTimer();
-                }*/
+                }
             }
             /*dynamicVideoView.start();
 
