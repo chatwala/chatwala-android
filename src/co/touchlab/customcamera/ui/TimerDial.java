@@ -114,6 +114,7 @@ public class TimerDial extends View
                 invalidate();
                 TimerDial.this.callback.recordComplete();
                 TimerDial.this.callback = null;
+                valueAnimator = null;
             }
         });
 

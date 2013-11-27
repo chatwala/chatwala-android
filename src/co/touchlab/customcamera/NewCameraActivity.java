@@ -6,8 +6,6 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -42,16 +40,12 @@ public class NewCameraActivity extends Activity
     private ChatMessage chatMessage;
 
     private long videoPlaybackDuration = 0;
-//    private long myMessageStartTime;
-//    private long myMessageEndTime;
-//    private long replyMessageEndTime;
 
-    private View mainActionButton;
+    private View timerButtonContainer;
     private TimerDial timerDial;
     private DynamicVideoView dynamicVideoView;
     private DynamicVideoView videoResultPreviewView;
     private TextView timerText;
-    private boolean appActive;
     private File videoResultPreview;
     private View closeVideoPreview;
 
@@ -68,10 +62,10 @@ public class NewCameraActivity extends Activity
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
-        mainActionButton = findViewById(R.id.timerContainer);
+        timerButtonContainer = findViewById(R.id.timerContainer);
         timerDial = (TimerDial) findViewById(R.id.timerDial);
         timerText = (TextView) findViewById(R.id.timerText);
-        mainActionButton.setOnClickListener(new View.OnClickListener()
+        timerButtonContainer.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -96,7 +90,12 @@ public class NewCameraActivity extends Activity
 
     private void triggerButtonAction()
     {
-        if (!isRecording.get())
+        if(videoResultPreview != null)
+        {
+            sendEmail(videoResultPreview);
+            closeResultPreview();
+        }
+        else if (!isRecording.get())
         {
             startTimer();
         }
@@ -152,7 +151,6 @@ public class NewCameraActivity extends Activity
     protected void onResume()
     {
         super.onResume();
-        appActive = true;
         disableInterface();
         createSurface();
     }
@@ -161,18 +159,17 @@ public class NewCameraActivity extends Activity
     protected void onPause()
     {
         super.onPause();
-        appActive = false;
         tearDownSurface();
     }
 
     private void disableInterface()
     {
-        mainActionButton.setActivated(false);
+        timerButtonContainer.setActivated(false);
     }
 
     private void enableInterface()
     {
-        mainActionButton.setActivated(true);
+        timerButtonContainer.setActivated(true);
         timerText.setText("Start");
     }
 
@@ -242,7 +239,7 @@ public class NewCameraActivity extends Activity
 
                 metaRetriever.setDataSource(inp.getFD());
                 String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                if (previewVideo)
+                if (!previewVideo)
                     videoPlaybackDuration = Long.parseLong(duration);
                 String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
                 String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
@@ -271,6 +268,8 @@ public class NewCameraActivity extends Activity
 
             if (previewVideo)
             {
+                if(dynamicVideoView != null)
+                    dynamicVideoView.setVisibility(View.GONE);
                 videoResultPreviewView = new DynamicVideoView(NewCameraActivity.this, videoResultPreview, videoInfo.width, videoInfo.height, videoInfo.rotation);
                 videoResultPreviewView.setVideoPath(videoResultPreview.getPath());
                 cameraPreviewContainer.addView(videoResultPreviewView);
@@ -287,6 +286,7 @@ public class NewCameraActivity extends Activity
                             videoResultPreviewView.start();
                     }
                 });
+                timerText.setText("Share");
             }
             else
             {
@@ -329,8 +329,7 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingDone(File videoFile)
             {
-                if (appActive)
-                    showResultPreview(videoFile);
+                showResultPreview(videoFile);
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
@@ -348,6 +347,8 @@ public class NewCameraActivity extends Activity
         videoResultPreview = null;
         cameraPreviewContainer.removeView(videoResultPreviewView);
         closeVideoPreview.setVisibility(View.GONE);
+        if(dynamicVideoView != null)
+            dynamicVideoView.setVisibility(View.VISIBLE);
     }
 
     private void tearDownSurface()
