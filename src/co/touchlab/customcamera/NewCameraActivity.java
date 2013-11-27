@@ -33,7 +33,6 @@ public class NewCameraActivity extends Activity
     CroppingLayout cameraPreviewContainer, videoViewContainer;
     CameraPreviewView cameraPreviewView;
 
-    private AtomicBoolean isRecording;
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
     private AtomicBoolean previewReady = new AtomicBoolean(false);
     private boolean initialMessageDone;
@@ -57,8 +56,6 @@ public class NewCameraActivity extends Activity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.crop_test);
-
-        isRecording = new AtomicBoolean(false);
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
@@ -85,6 +82,11 @@ public class NewCameraActivity extends Activity
         });
 
         //Kick off attachment load
+        initStartState();
+    }
+
+    private void initStartState()
+    {
         new MessageLoaderTask().execute();
     }
 
@@ -95,7 +97,7 @@ public class NewCameraActivity extends Activity
             sendEmail(videoResultPreview);
             closeResultPreview();
         }
-        else if (!isRecording.get())
+        else if (timerDial.getState() == TimerDial.State.Stopped)
         {
             startTimer();
         }
@@ -107,7 +109,6 @@ public class NewCameraActivity extends Activity
 
     private void startTimer()
     {
-        isRecording.set(true);
         timerText.setText("Stop");
         timerDial.startAnimation(new TimerDial.TimerCallback()
         {
@@ -142,7 +143,6 @@ public class NewCameraActivity extends Activity
 
     private void stopRecording()
     {
-        isRecording.set(false);
         cameraPreviewView.stopRecording();
         timerText.setText("Start");
     }
@@ -268,10 +268,8 @@ public class NewCameraActivity extends Activity
 
             if (previewVideo)
             {
-                if(dynamicVideoView != null)
-                    dynamicVideoView.setVisibility(View.GONE);
                 videoResultPreviewView = new DynamicVideoView(NewCameraActivity.this, videoResultPreview, videoInfo.width, videoInfo.height, videoInfo.rotation);
-                videoResultPreviewView.setVideoPath(videoResultPreview.getPath());
+
                 cameraPreviewContainer.addView(videoResultPreviewView);
                 closeVideoPreview.setVisibility(View.VISIBLE);
                 videoResultPreviewView.start();
@@ -291,14 +289,13 @@ public class NewCameraActivity extends Activity
             else
             {
                 dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
-                dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
                 videoViewContainer.addView(dynamicVideoView);
 
-                if (!initialMessageDone)
+                /*if (!initialMessageDone)
                 {
                     initialMessageDone = true;
                     startTimer();
-                }
+                }*/
             }
             /*dynamicVideoView.start();
 
@@ -338,7 +335,7 @@ public class NewCameraActivity extends Activity
     private void showResultPreview(File videoFile)
     {
         this.videoResultPreview = videoFile;
-//        tearDownSurface();
+        tearDownSurface();
         new LoadAndShowVideoMessageTask(true).execute(videoResultPreview);
     }
 
@@ -347,8 +344,8 @@ public class NewCameraActivity extends Activity
         videoResultPreview = null;
         cameraPreviewContainer.removeView(videoResultPreviewView);
         closeVideoPreview.setVisibility(View.GONE);
-        if(dynamicVideoView != null)
-            dynamicVideoView.setVisibility(View.VISIBLE);
+        initStartState();
+        createSurface();
     }
 
     private void tearDownSurface()

@@ -97,7 +97,7 @@ public class ShareUtils
         catch (Exception e)
         {
             //This appears kind of lazy, but we have no idea what kind of weird patterns we'll be getting in the future. Log and forget.
-            CWLog.i("Failed extracting email from: "+ s, e);
+            CWLog.i(ShareUtils.class, "Failed extracting email from: "+ s, e);
         }
 
         return null;

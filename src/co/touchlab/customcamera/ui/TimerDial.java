@@ -34,6 +34,11 @@ public class TimerDial extends View
     private boolean recordComplete;
     private ValueAnimator valueAnimator;
 
+    public enum State
+    {
+        Stopped, Playing, Recording
+    }
+
     public TimerDial(Context context)
     {
         super(context);
@@ -55,6 +60,18 @@ public class TimerDial extends View
         void playbackComplete();
         void recordStart();
         void recordComplete();
+    }
+
+    public synchronized State getState()
+    {
+        if(valueAnimator != null && valueAnimator.isRunning())
+        {
+            return playbackRecordingComplete ? State.Recording : State.Playing;
+        }
+        else
+        {
+            return State.Stopped;
+        }
     }
 
     public void startAnimation(TimerCallback callback, Integer playback, Integer playbackRecording, Integer record)
