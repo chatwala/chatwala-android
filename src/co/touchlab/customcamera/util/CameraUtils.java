@@ -107,6 +107,24 @@ public class CameraUtils
             return context.getResources().getInteger(R.integer.video_frame_rate);
     }
 
+    public static int findVideoBitDepth(Context context)
+    {
+        //S4 needs higher rate due to bigger resolution
+        if(isDeviceS4())
+            return context.getResources().getInteger(R.integer.video_bid_depth_s4);
+        else
+            return context.getResources().getInteger(R.integer.video_bid_depth);
+    }
+
+    public static int findVideoMinWidth(Context context)
+    {
+        //S4 needs higher rate due to bigger resolution
+        if(isDeviceS4())
+            return context.getResources().getInteger(R.integer.video_min_width_s4);
+        else
+            return context.getResources().getInteger(R.integer.video_min_width);
+    }
+
     public static int findBestCameraProfile(int cameraId)
     {
         if (CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_CIF) != null)
@@ -123,7 +141,9 @@ public class CameraUtils
     {
         if(isDeviceS4())
         {
-            params.setRecordingHint(true);
+//            params.setRecordingHint(true);
+//            params.get
+//            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         }
     }
 }

@@ -35,7 +35,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         initSurface();
         openCamera();
         this.callback = callback;
-        setCameraParams();
+
     }
 
     public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback)
@@ -53,6 +53,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         if(cameraPreviewSize != null)
         {
+            setCameraParams();
             try
             {
                 camera.setPreviewTexture(surface);
@@ -171,7 +172,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
-        mediaRecorder.setVideoEncodingBitRate(getResources().getInteger(R.integer.video_bid_depth));
+        mediaRecorder.setVideoEncodingBitRate(CameraUtils.findVideoBitDepth(getContext()));
 
         Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
@@ -262,7 +263,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         Camera.Parameters params = camera.getParameters();
 
-        int viewWidth = getResources().getInteger(R.integer.video_min_width);
+        int viewWidth = CameraUtils.findVideoMinWidth(getContext());
         cameraPreviewSize = CameraUtils.findCameraPreviewSize(viewWidth, params);
         cameraVideoSize = CameraUtils.findCameraVideoSize(viewWidth, params);
         params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
