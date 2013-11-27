@@ -49,8 +49,11 @@ public class NewCameraActivity extends Activity
     private View mainActionButton;
     private TimerDial timerDial;
     private DynamicVideoView dynamicVideoView;
+    private DynamicVideoView videoResultPreviewView;
     private TextView timerText;
     private boolean appActive;
+    private File videoResultPreview;
+    private View closeVideoPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -58,7 +61,7 @@ public class NewCameraActivity extends Activity
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.crop_test);
 
         isRecording = new AtomicBoolean(false);
@@ -74,6 +77,16 @@ public class NewCameraActivity extends Activity
             public void onClick(View v)
             {
                 triggerButtonAction();
+            }
+        });
+
+        closeVideoPreview = findViewById(R.id.closeVideoPreview);
+        closeVideoPreview.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                closeResultPreview();
             }
         });
 
@@ -197,7 +210,7 @@ public class NewCameraActivity extends Activity
     {
         if (chatMessage != null && chatMessage.messageVideo != null)
         {
-            new LoadAndShowVideoMessageTask().execute(chatMessage.messageVideo);
+            new LoadAndShowVideoMessageTask(false).execute(chatMessage.messageVideo);
         }
     }
 
@@ -211,6 +224,13 @@ public class NewCameraActivity extends Activity
 
     class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoInfo>
     {
+        private boolean previewVideo;
+
+        LoadAndShowVideoMessageTask(boolean previewVideo)
+        {
+            this.previewVideo = previewVideo;
+        }
+
         @Override
         protected VideoInfo doInBackground(File... params)
         {
@@ -222,7 +242,8 @@ public class NewCameraActivity extends Activity
 
                 metaRetriever.setDataSource(inp.getFD());
                 String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                videoPlaybackDuration = Long.parseLong(duration);
+                if (previewVideo)
+                    videoPlaybackDuration = Long.parseLong(duration);
                 String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
                 String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
                 String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
@@ -247,9 +268,38 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoInfo videoInfo)
         {
-            dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
-            videoViewContainer.addView(dynamicVideoView);
-            dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
+
+            if (previewVideo)
+            {
+                videoResultPreviewView = new DynamicVideoView(NewCameraActivity.this, videoResultPreview, videoInfo.width, videoInfo.height, videoInfo.rotation);
+                videoResultPreviewView.setVideoPath(videoResultPreview.getPath());
+                cameraPreviewContainer.addView(videoResultPreviewView);
+                closeVideoPreview.setVisibility(View.VISIBLE);
+                videoResultPreviewView.start();
+                videoResultPreviewView.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        if (videoResultPreviewView.isPlaying())
+                            videoResultPreviewView.pause();
+                        else
+                            videoResultPreviewView.start();
+                    }
+                });
+            }
+            else
+            {
+                dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
+                dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
+                videoViewContainer.addView(dynamicVideoView);
+
+                if (!initialMessageDone)
+                {
+                    initialMessageDone = true;
+                    startTimer();
+                }
+            }
             /*dynamicVideoView.start();
 
             new Handler().postDelayed(new Runnable()
@@ -262,11 +312,7 @@ public class NewCameraActivity extends Activity
                 }
             }, 200);*/
 
-            if (!initialMessageDone)
-            {
-                initialMessageDone = true;
-                startTimer();
-            }
+
         }
     }
 
@@ -283,11 +329,25 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingDone(File videoFile)
             {
-                if(appActive)
-                    sendEmail(videoFile);
+                if (appActive)
+                    showResultPreview(videoFile);
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
+    }
+
+    private void showResultPreview(File videoFile)
+    {
+        this.videoResultPreview = videoFile;
+//        tearDownSurface();
+        new LoadAndShowVideoMessageTask(true).execute(videoResultPreview);
+    }
+
+    private void closeResultPreview()
+    {
+        videoResultPreview = null;
+        cameraPreviewContainer.removeView(videoResultPreviewView);
+        closeVideoPreview.setVisibility(View.GONE);
     }
 
     private void tearDownSurface()
@@ -349,7 +409,7 @@ public class NewCameraActivity extends Activity
 
                     String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
 
-                    if(myEmail == null && chatMessage != null)
+                    if (myEmail == null && chatMessage != null)
                         myEmail = chatMessage.probableEmailSource;
 
                     sendMessageMetadata.senderId = myEmail;

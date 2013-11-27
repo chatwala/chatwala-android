@@ -86,17 +86,20 @@ public class TimerDial extends View
                 if (!playbackStarted)
                 {
                     playbackStarted = true;
-                    TimerDial.this.callback.playbackStart();
+                    if(TimerDial.this.callback != null)
+                        TimerDial.this.callback.playbackStart();
                 }
                 if(!playbackRecordingComplete && currentTime > TimerDial.this.playbackRecording)
                 {
                     playbackRecordingComplete = true;
-                    TimerDial.this.callback.recordStart();
+                    if(TimerDial.this.callback != null)
+                        TimerDial.this.callback.recordStart();
                 }
                 if (!playbackComplete && currentTime > TimerDial.this.playback)
                 {
                     playbackComplete = true;
-                    TimerDial.this.callback.playbackComplete();
+                    if(TimerDial.this.callback != null)
+                        TimerDial.this.callback.playbackComplete();
                 }
 
                 invalidate();
@@ -110,6 +113,7 @@ public class TimerDial extends View
                 resetValues();
                 invalidate();
                 TimerDial.this.callback.recordComplete();
+                TimerDial.this.callback = null;
             }
         });
 
