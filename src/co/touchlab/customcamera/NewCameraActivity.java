@@ -297,9 +297,9 @@ public class NewCameraActivity extends Activity
             {
                 dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
                 videoViewContainer.addView(dynamicVideoView);
-                dynamicVideoThumb = new DynamicVideoThumbImageView(NewCameraActivity.this, videoInfo.width, videoInfo.height);
-                dynamicVideoThumb.setImageBitmap(videoInfo.bitmap);
-                videoViewContainer.addView(dynamicVideoThumb);
+//                dynamicVideoThumb = new DynamicVideoThumbImageView(NewCameraActivity.this, videoInfo.width, videoInfo.height);
+//                dynamicVideoThumb.setImageBitmap(videoInfo.bitmap);
+//                videoViewContainer.addView(dynamicVideoThumb);
                 if (!initialMessageDone)
                 {
                     initialMessageDone = true;
