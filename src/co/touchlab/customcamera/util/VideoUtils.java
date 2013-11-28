@@ -2,7 +2,6 @@ package co.touchlab.customcamera.util;
 
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
-import android.provider.MediaStore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +21,7 @@ public class VideoUtils
         try
         {
             retriever.setDataSource(filePath);
-            bitmap = retriever.getFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+            bitmap = retriever.getFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
         }
         catch (IllegalArgumentException ex)
         {
