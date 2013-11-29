@@ -290,6 +290,8 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.RecordingLimbo);
+        if(messageVideoView != null)
+            messageVideoView.pause();
         cameraPreviewView.startRecording();
     }
 
@@ -448,6 +450,8 @@ public class NewCameraActivity extends Activity
             public void recordingStarted()
             {
                 setAppState(AppState.Recording);
+                if(messageVideoView != null)
+                    messageVideoView.start();
             }
 
             @Override
