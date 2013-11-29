@@ -2,14 +2,9 @@ package co.touchlab.customcamera;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.VideoView;
-import co.touchlab.customcamera.util.VideoUtils;
 
 import java.io.File;
 

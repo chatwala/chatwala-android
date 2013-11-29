@@ -10,13 +10,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
-import co.touchlab.customcamera.ui.TimerDial;
-import co.touchlab.customcamera.util.CameraUtils;
-import co.touchlab.customcamera.util.ShareUtils;
-import co.touchlab.customcamera.util.VideoUtils;
-import co.touchlab.customcamera.util.ZipUtil;
+import co.touchlab.customcamera.util.*;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -33,22 +28,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class NewCameraActivity extends Activity
 {
+    public static final int RECORDING_TIME = 10000;
     CroppingLayout cameraPreviewContainer, videoViewContainer;
     CameraPreviewView cameraPreviewView;
 
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
     private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
+
     private ChatMessage chatMessage;
 
     private long videoPlaybackDuration = 0;
 
-    private View timerButtonContainer;
-    private TimerDial timerDial;
-    private DynamicVideoView dynamicVideoView;
-    private DynamicVideoView videoResultPreviewView;
+    private DynamicVideoView messageVideoView;
+    private DynamicVideoView recordPreviewVideoView;
+
     private TextView timerText;
-    private File videoResultPreview;
-    private View closeVideoPreview;
+    private File recordPreviewFile;
+    private View closeRecordPreviewView;
 
     private AppState appState = AppState.Transition;
 
@@ -64,6 +60,7 @@ public class NewCameraActivity extends Activity
 
     public synchronized void setAppState(AppState appState)
     {
+        CWLog.i(NewCameraActivity.class, "setAppState: "+ appState);
         this.appState = appState;
     }
 
@@ -78,8 +75,7 @@ public class NewCameraActivity extends Activity
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
-        timerButtonContainer = findViewById(R.id.timerContainer);
-        timerDial = (TimerDial) findViewById(R.id.timerDial);
+        View timerButtonContainer = findViewById(R.id.timerContainer);
         timerText = (TextView) findViewById(R.id.timerText);
         timerButtonContainer.setOnClickListener(new View.OnClickListener()
         {
@@ -90,8 +86,8 @@ public class NewCameraActivity extends Activity
             }
         });
 
-        closeVideoPreview = findViewById(R.id.closeVideoPreview);
-        closeVideoPreview.setOnClickListener(new View.OnClickListener()
+        closeRecordPreviewView = findViewById(R.id.closeVideoPreview);
+        closeRecordPreviewView.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -117,64 +113,109 @@ public class NewCameraActivity extends Activity
         if(state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.PreviewLoading)
             return;
 
-        if(videoResultPreview != null)
+        if(state == AppState.ReadyStopped)
         {
-            sendEmail(videoResultPreview);
+            startPlaybackRecording();
+            return;
+        }
+
+        if(state == AppState.PlaybackOnly || state == AppState.PlaybackRecording || state == AppState.Recording)
+        {
+            throw new RuntimeException("do this");
+        }
+
+        if(state == AppState.PreviewReady)
+        {
+            sendEmail(recordPreviewFile);
             closeResultPreview();
         }
-        else if (timerDial.getState() == TimerDial.State.Stopped)
+    }
+
+    class HeartbeatTimer extends Thread
+    {
+        private long startRecordingTime;
+        private boolean recordingStarted;
+        private long endRecordingTime;
+        private long startTime = System.currentTimeMillis();
+
+        HeartbeatTimer(long startRecordingTime, boolean recordingStarted)
         {
-            startTimer();
+            this.startRecordingTime = startRecordingTime;
+            this.recordingStarted = recordingStarted;
+            endRecordingTime = startRecordingTime + RECORDING_TIME;
         }
-        else
+
+        @Override
+        public void run()
         {
-            timerDial.stopAnimation();
+            while(true)
+            {
+                try
+                {
+                    Thread.sleep(20);
+                }
+                catch (InterruptedException e)
+                {}
+
+                long now = System.currentTimeMillis() - startTime;
+                if(!recordingStarted && now >= startRecordingTime)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            startRecording();
+                        }
+                    });
+                }
+
+                if(now >= endRecordingTime)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            stopRecording();
+                        }
+                    });
+                    break;
+                }
+            }
         }
     }
 
     private void startPlaybackRecording()
     {
+        AndroidUtils.isMainThread();
         timerText.setText("Stop");
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
-        if(dynamicVideoView != null)
+        if(messageVideoView != null)
         {
-            dynamicVideoView.seekTo(0);
-            dynamicVideoView.start();
+            setAppState(AppState.PlaybackOnly);
+            messageVideoView.seekTo(0);
+            messageVideoView.start();
         }
 
-        timerDial.startAnimation(new TimerDial.TimerCallback()
+        if(recordingStartMillis == 0)
         {
-            @Override
-            public void playbackStart()
-            {
-                if (dynamicVideoView != null)
-                {
-                    dynamicVideoView.start();
-                }
-            }
+            startRecording();
+        }
 
-            @Override
-            public void playbackComplete()
-            {
+        new HeartbeatTimer(recordingStartMillis, recordingStartMillis == 0).start();
+    }
 
-            }
-
-            @Override
-            public void recordStart()
-            {
-                cameraPreviewView.startRecording();
-            }
-
-            @Override
-            public void recordComplete()
-            {
-                stopRecording();
-            }
-        }, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000), 10000);
+    private void startRecording()
+    {
+        setAppState(AppState.Recording);
+        cameraPreviewView.startRecording();
     }
 
     private void stopRecording()
     {
+        AndroidUtils.isMainThread();
+        setAppState(AppState.PreviewLoading);
         cameraPreviewView.stopRecording();
         timerText.setText("Start");
     }
@@ -292,44 +333,32 @@ public class NewCameraActivity extends Activity
 
             if (previewVideo)
             {
-                videoResultPreviewView = new DynamicVideoView(NewCameraActivity.this, videoResultPreview, videoInfo.width, videoInfo.height, videoInfo.rotation);
+                recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
 
-                cameraPreviewContainer.addView(videoResultPreviewView);
-                closeVideoPreview.setVisibility(View.VISIBLE);
-                videoResultPreviewView.start();
-                videoResultPreviewView.setOnClickListener(new View.OnClickListener()
+                cameraPreviewContainer.addView(recordPreviewVideoView);
+                closeRecordPreviewView.setVisibility(View.VISIBLE);
+                recordPreviewVideoView.start();
+                recordPreviewVideoView.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
                     {
-                        if (videoResultPreviewView.isPlaying())
-                            videoResultPreviewView.pause();
+                        if (recordPreviewVideoView.isPlaying())
+                            recordPreviewVideoView.pause();
                         else
-                            videoResultPreviewView.start();
+                            recordPreviewVideoView.start();
                     }
                 });
                 timerText.setText("Share");
+                setAppState(AppState.PreviewReady);
             }
             else
             {
-                dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
-                videoViewContainer.addView(dynamicVideoView);
+                messageVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
+                videoViewContainer.addView(messageVideoView);
 
                 messageVideoLoaded();
             }
-            /*dynamicVideoView.start();
-
-            new Handler().postDelayed(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    dynamicVideoView.pause();
-                    dynamicVideoView.seekTo(0);
-                }
-            }, 200);*/
-
-
         }
     }
 
@@ -344,6 +373,12 @@ public class NewCameraActivity extends Activity
             }
 
             @Override
+            public void recordingStarted()
+            {
+
+            }
+
+            @Override
             public void recordingDone(File videoFile)
             {
                 showResultPreview(videoFile);
@@ -354,16 +389,16 @@ public class NewCameraActivity extends Activity
 
     private void showResultPreview(File videoFile)
     {
-        this.videoResultPreview = videoFile;
+        this.recordPreviewFile = videoFile;
         tearDownSurface();
-        new LoadAndShowVideoMessageTask(true).execute(videoResultPreview);
+        new LoadAndShowVideoMessageTask(true).execute(recordPreviewFile);
     }
 
     private void closeResultPreview()
     {
-        videoResultPreview = null;
-        cameraPreviewContainer.removeView(videoResultPreviewView);
-        closeVideoPreview.setVisibility(View.GONE);
+        recordPreviewFile = null;
+        cameraPreviewContainer.removeView(recordPreviewVideoView);
+        closeRecordPreviewView.setVisibility(View.GONE);
         initStartState();
         createSurface();
     }

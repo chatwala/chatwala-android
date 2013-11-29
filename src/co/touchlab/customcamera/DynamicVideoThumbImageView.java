@@ -1,13 +1,9 @@
 package co.touchlab.customcamera;
 
 import android.content.Context;
-import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.VideoView;
-
-import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.
