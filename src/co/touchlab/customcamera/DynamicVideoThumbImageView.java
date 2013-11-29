@@ -1,12 +1,9 @@
 package co.touchlab.customcamera;
 
 import android.content.Context;
-import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
-import android.widget.VideoView;
-
-import java.io.File;
+import android.widget.ImageView;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,47 +12,31 @@ import java.io.File;
  * Time: 12:53 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DynamicVideoView extends VideoView
+public class DynamicVideoThumbImageView extends ImageView
 {
-    private File video;
     private int width;
     private int height;
-    private int rotation;
-    public MediaPlayer mediaPlayer;
 
-    public DynamicVideoView(final Context context, File video, int width, int height, int rotation)
+    public DynamicVideoThumbImageView(final Context context, int width, int height)
     {
         super(context);
-        this.video = video;
-        setVideoPath(video.getPath());
         this.width = width;
         this.height = height;
-        this.rotation = rotation;
-        setOnPreparedListener(new MediaPlayer.OnPreparedListener()
-        {
-            @Override
-            public void onPrepared(MediaPlayer mp)
-            {
-                DynamicVideoView.this.mediaPlayer = mp;
-                int volume = context.getResources().getInteger(R.integer.video_playback_volume);
-                mediaPlayer.setVolume((float)volume/100f, (float)volume/100f);
-            }
-        });
     }
 
-    public DynamicVideoView(Context context, AttributeSet attrs)
+    public DynamicVideoThumbImageView(Context context, AttributeSet attrs)
     {
         this();
         throw new UnsupportedOperationException("Can only be set manually");
     }
 
-    public DynamicVideoView(Context context, AttributeSet attrs, int defStyle)
+    public DynamicVideoThumbImageView(Context context, AttributeSet attrs, int defStyle)
     {
         this();
         throw new UnsupportedOperationException("Can only be set manually");
     }
 
-    private DynamicVideoView()
+    private DynamicVideoThumbImageView()
     {
         super(null);
     }

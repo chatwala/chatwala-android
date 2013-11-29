@@ -14,13 +14,13 @@ public class CWLog
 
     public static final String CHAT_WALA = "ChatWala";
 
-    public static void i(String s)
+    public static void i(Class cl, String s)
     {
-        Log.i(CHAT_WALA, s);
+        Log.i(cl.getSimpleName(), s);
     }
 
-    public static void i(String s, Exception e)
+    public static void i(Class cl, String s, Exception e)
     {
-        Log.i(CHAT_WALA, s, e);
+        Log.i(cl.getSimpleName(), s, e);
     }
 }

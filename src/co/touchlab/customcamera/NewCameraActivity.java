@@ -2,20 +2,17 @@ package co.touchlab.customcamera;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
-import co.touchlab.customcamera.ui.TimerDial;
-import co.touchlab.customcamera.util.CameraUtils;
-import co.touchlab.customcamera.util.ShareUtils;
-import co.touchlab.customcamera.util.ZipUtil;
+import co.touchlab.customcamera.util.*;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -32,25 +29,67 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class NewCameraActivity extends Activity
 {
-    CroppingLayout cameraPreviewContainer, videoViewContainer;
-    CameraPreviewView cameraPreviewView;
+    public static final int RECORDING_TIME = 10000;
 
-    private AtomicBoolean isRecording;
+    public enum AppState
+    {
+        Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
+    }
+
+    // ************* onCreate only *************
+    private CroppingLayout cameraPreviewContainer, videoViewContainer;
+    private DynamicVideoView messageVideoView;
+    private DynamicVideoView recordPreviewVideoView;
+    private View closeRecordPreviewView;
+    private ImageView timerKnob;
+    // ************* onCreate only *************
+
+
+    // ************* SEMI DANGEROUS STATE *************
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
-    private AtomicBoolean previewReady = new AtomicBoolean(false);
-    private boolean initialMessageDone;
+    private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
+    // ************* SEMI DANGEROUS STATE *************
+
+
+    // ************* DANGEROUS STATE *************
+    private CameraPreviewView cameraPreviewView;
     private ChatMessage chatMessage;
-
     private long videoPlaybackDuration = 0;
-//    private long myMessageStartTime;
-//    private long myMessageEndTime;
-//    private long replyMessageEndTime;
+    private File recordPreviewFile;
+    private AppState appState = AppState.Off;
+    private HeartbeatTimer heartbeatTimer;
+    // ************* DANGEROUS STATE *************
 
-    private View mainActionButton;
-    private TimerDial timerDial;
-    private DynamicVideoView dynamicVideoView;
-    private TextView timerText;
-    private boolean appActive;
+
+    public synchronized AppState getAppState()
+    {
+        return appState;
+    }
+
+    public synchronized void setAppState(AppState appState)
+    {
+        CWLog.i(NewCameraActivity.class, "setAppState: " + appState +" ("+ System.currentTimeMillis() +")");
+        AndroidUtils.isMainThread();
+        this.appState = appState;
+
+        switch (this.appState)
+        {
+            case ReadyStopped:
+                timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.setImageResource(R.drawable.ic_action_video);
+                break;
+            case Recording:
+                timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.setImageResource(R.drawable.ic_action_playback_stop);
+                break;
+            case PreviewReady:
+                timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.setImageResource(R.drawable.ic_action_share_2);
+                break;
+            default:
+                timerKnob.setVisibility(View.INVISIBLE);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -58,17 +97,14 @@ public class NewCameraActivity extends Activity
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.crop_test);
-
-        isRecording = new AtomicBoolean(false);
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
-        mainActionButton = findViewById(R.id.timerContainer);
-        timerDial = (TimerDial) findViewById(R.id.timerDial);
-        timerText = (TextView) findViewById(R.id.timerText);
-        mainActionButton.setOnClickListener(new View.OnClickListener()
+        View timerButtonContainer = findViewById(R.id.timerContainer);
+        timerKnob = (ImageView) findViewById(R.id.timerText);
+        timerButtonContainer.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -77,70 +113,26 @@ public class NewCameraActivity extends Activity
             }
         });
 
-        //Kick off attachment load
-        new MessageLoaderTask().execute();
-    }
-
-    private void triggerButtonAction()
-    {
-        if (!isRecording.get())
-        {
-            startTimer();
-        }
-        else
-        {
-            timerDial.stopAnimation();
-        }
-    }
-
-    private void startTimer()
-    {
-        isRecording.set(true);
-        timerText.setText("Stop");
-        timerDial.startAnimation(new TimerDial.TimerCallback()
+        closeRecordPreviewView = findViewById(R.id.closeVideoPreview);
+        closeRecordPreviewView.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void countdownComplete()
+            public void onClick(View v)
             {
-                if (dynamicVideoView != null)
-                {
-                    dynamicVideoView.start();
-                }
+                closeResultPreview();
             }
-
-            @Override
-            public void playbackComplete()
-            {
-
-            }
-
-            @Override
-            public void recordStart()
-            {
-                cameraPreviewView.startRecording();
-            }
-
-            @Override
-            public void recordComplete()
-            {
-                stopRecording();
-            }
-        }, 3000, (int) videoPlaybackDuration, chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000), 10000);
-    }
-
-    private void stopRecording()
-    {
-        isRecording.set(false);
-        cameraPreviewView.stopRecording();
-        timerText.setText("Start");
+        });
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        appActive = true;
-        disableInterface();
+
+        setAppState(AppState.Transition);
+
+        //Kick off attachment load
+        initStartState();
         createSurface();
     }
 
@@ -148,32 +140,191 @@ public class NewCameraActivity extends Activity
     protected void onPause()
     {
         super.onPause();
-        appActive = false;
+        setAppState(AppState.Off);
         tearDownSurface();
     }
 
-    private void disableInterface()
+    private void initStartState()
     {
-        mainActionButton.setActivated(false);
+        setAppState(AppState.LoadingFileCamera);
+
+        chatMessage = null;
+        videoPlaybackDuration = 0;
+        recordPreviewFile = null;
+
+        new MessageLoaderTask().execute();
     }
 
-    private void enableInterface()
+    private void triggerButtonAction()
     {
-        mainActionButton.setActivated(true);
-        timerText.setText("Start");
+        //Don't do anything.  These should be very short states.
+        AppState state = getAppState();
+        if (state == AppState.Off || state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading)
+            return;
+
+        if (state == AppState.ReadyStopped)
+        {
+            startPlaybackRecording();
+            return;
+        }
+
+        if (state == AppState.PlaybackOnly)
+        {
+            abortBeforeRecording();
+            return;
+        }
+
+        if(state == AppState.Recording)
+        {
+            stopRecording();
+            return;
+        }
+
+        if (state == AppState.PreviewReady)
+        {
+            sendEmail(recordPreviewFile);
+            closeResultPreview();
+        }
+    }
+
+    private void abortBeforeRecording()
+    {
+        AndroidUtils.isMainThread();
+        setAppState(AppState.Transition);
+        heartbeatTimer.abort();
+//        cameraPreviewView.abortBeforeRecording();
+        tearDownSurface();
+        initStartState();
+        createSurface();
+    }
+
+    class HeartbeatTimer extends Thread
+    {
+        private long startRecordingTime;
+        private boolean recordingStarted;
+        private long endRecordingTime;
+        private long startTime = System.currentTimeMillis();
+        private AtomicBoolean cancel = new AtomicBoolean(false);
+
+        HeartbeatTimer(long startRecordingTime, boolean recordingStarted)
+        {
+            this.startRecordingTime = startRecordingTime;
+            this.recordingStarted = recordingStarted;
+            endRecordingTime = startRecordingTime + RECORDING_TIME;
+        }
+
+        public void abort()
+        {
+            cancel.set(true);
+        }
+
+        @Override
+        public void run()
+        {
+            while (true)
+            {
+                try
+                {
+                    Thread.sleep(20);
+                }
+                catch (InterruptedException e)
+                {
+                }
+
+                if(cancel.get())
+                    break;
+
+                long now = System.currentTimeMillis() - startTime;
+                if (!recordingStarted && now >= startRecordingTime)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            startRecording();
+                        }
+                    });
+                }
+
+                if (now >= endRecordingTime)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            stopRecording();
+                        }
+                    });
+
+                    heartbeatTimer = null;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void startPlaybackRecording()
+    {
+        AndroidUtils.isMainThread();
+        int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
+        if (messageVideoView != null)
+        {
+            setAppState(AppState.PlaybackOnly);
+            messageVideoView.seekTo(0);
+            messageVideoView.start();
+        }
+
+        if (recordingStartMillis == 0)
+        {
+            startRecording();
+        }
+
+        assert heartbeatTimer == null; //Just checking. This would be bad.
+        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, recordingStartMillis == 0);
+        heartbeatTimer.start();
+    }
+
+    private void startRecording()
+    {
+        AndroidUtils.isMainThread();
+        setAppState(AppState.RecordingLimbo);
+        if(messageVideoView != null)
+            messageVideoView.pause();
+        cameraPreviewView.startRecording();
+    }
+
+    private void stopRecording()
+    {
+        AndroidUtils.isMainThread();
+        setAppState(AppState.PreviewLoading);
+        if(heartbeatTimer != null)
+            heartbeatTimer.abort();
+        cameraPreviewView.stopRecording();
     }
 
     private void messageLoaded(ChatMessage message)
     {
         this.chatMessage = message;
 
+        if (chatMessage == null || chatMessage.messageVideo == null)
+            messageVideoLoaded();
+        else
+        {
+            new LoadAndShowVideoMessageTask(false).execute(chatMessage.messageVideo);
+        }
+    }
+
+    private void messageVideoLoaded()
+    {
         messageLoadComplete.set(true);
         liveForRecording();
     }
 
     private void previewSurfaceReady()
     {
-        previewReady.set(true);
+        cameraPreviewReady.set(true);
         liveForRecording();
     }
 
@@ -184,21 +335,17 @@ public class NewCameraActivity extends Activity
             @Override
             public void run()
             {
-                if (previewReady.get() && messageLoadComplete.get())
+                if (cameraPreviewReady.get() && messageLoadComplete.get())
                 {
-                    enableInterface();
-                    showMessageVideo();
+                    messageLoadComplete.set(false);
+                    cameraPreviewReady.set(false);
+                    if(getAppState() == AppState.LoadingFileCamera)
+                    {
+                        setAppState(AppState.ReadyStopped);
+                    }
                 }
             }
         });
-    }
-
-    private void showMessageVideo()
-    {
-        if (chatMessage != null && chatMessage.messageVideo != null)
-        {
-            new LoadAndShowVideoMessageTask().execute(chatMessage.messageVideo);
-        }
     }
 
     class VideoInfo
@@ -207,10 +354,18 @@ public class NewCameraActivity extends Activity
         public int width;
         public int height;
         public int rotation;
+        public Bitmap bitmap;
     }
 
     class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoInfo>
     {
+        private boolean previewVideo;
+
+        LoadAndShowVideoMessageTask(boolean previewVideo)
+        {
+            this.previewVideo = previewVideo;
+        }
+
         @Override
         protected VideoInfo doInBackground(File... params)
         {
@@ -222,7 +377,8 @@ public class NewCameraActivity extends Activity
 
                 metaRetriever.setDataSource(inp.getFD());
                 String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                videoPlaybackDuration = Long.parseLong(duration);
+                if (!previewVideo)
+                    videoPlaybackDuration = Long.parseLong(duration);
                 String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
                 String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
                 String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
@@ -231,6 +387,7 @@ public class NewCameraActivity extends Activity
 
                 VideoInfo videoInfo = new VideoInfo();
                 videoInfo.videoFile = videoFile;
+                videoInfo.bitmap = VideoUtils.createVideoFrame(videoFile.getPath(), 0);
                 videoInfo.rotation = rotation == null ? 0 : Integer.parseInt(rotation);
                 videoInfo.width = Integer.parseInt(width);
                 videoInfo.height = Integer.parseInt(height);
@@ -247,31 +404,40 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoInfo videoInfo)
         {
-            dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
-            videoViewContainer.addView(dynamicVideoView);
-            dynamicVideoView.setVideoPath(videoInfo.videoFile.getPath());
-            dynamicVideoView.start();
 
-            new Handler().postDelayed(new Runnable()
+            if (previewVideo)
             {
-                @Override
-                public void run()
+                recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
+
+                cameraPreviewContainer.addView(recordPreviewVideoView);
+                closeRecordPreviewView.setVisibility(View.VISIBLE);
+                recordPreviewVideoView.start();
+                recordPreviewVideoView.setOnClickListener(new View.OnClickListener()
                 {
-                    dynamicVideoView.pause();
-                    dynamicVideoView.seekTo(0);
-                }
-            }, 200);
-
-            if (!initialMessageDone)
+                    @Override
+                    public void onClick(View v)
+                    {
+                        if (recordPreviewVideoView.isPlaying())
+                            recordPreviewVideoView.pause();
+                        else
+                            recordPreviewVideoView.start();
+                    }
+                });
+                setAppState(AppState.PreviewReady);
+            }
+            else
             {
-                initialMessageDone = true;
-                startTimer();
+                messageVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
+                videoViewContainer.addView(messageVideoView);
+
+                messageVideoLoaded();
             }
         }
     }
 
     private void createSurface()
     {
+        AndroidUtils.isMainThread();
         cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
         {
             @Override
@@ -281,20 +447,49 @@ public class NewCameraActivity extends Activity
             }
 
             @Override
+            public void recordingStarted()
+            {
+                setAppState(AppState.Recording);
+                if(messageVideoView != null)
+                    messageVideoView.start();
+            }
+
+            @Override
             public void recordingDone(File videoFile)
             {
-                if(appActive)
-                    sendEmail(videoFile);
+                showResultPreview(videoFile);
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
     }
 
+    private void showResultPreview(File videoFile)
+    {
+        AndroidUtils.isMainThread();
+        this.recordPreviewFile = videoFile;
+        tearDownSurface();
+        new LoadAndShowVideoMessageTask(true).execute(recordPreviewFile);
+    }
+
+    private void closeResultPreview()
+    {
+        AndroidUtils.isMainThread();
+        recordPreviewFile = null;
+        cameraPreviewContainer.removeView(recordPreviewVideoView);
+        closeRecordPreviewView.setVisibility(View.GONE);
+        initStartState();
+        createSurface();
+    }
+
     private void tearDownSurface()
     {
+        AndroidUtils.isMainThread();
         cameraPreviewContainer.removeAllViews();
-        cameraPreviewView.releaseResources();
-        cameraPreviewView = null;
+        if (cameraPreviewView != null)
+        {
+            cameraPreviewView.releaseResources();
+            cameraPreviewView = null;
+        }
         videoViewContainer.removeAllViews();
     }
 
@@ -349,7 +544,7 @@ public class NewCameraActivity extends Activity
 
                     String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
 
-                    if(myEmail == null && chatMessage != null)
+                    if (myEmail == null && chatMessage != null)
                         myEmail = chatMessage.probableEmailSource;
 
                     sendMessageMetadata.senderId = myEmail;

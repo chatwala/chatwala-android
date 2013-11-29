@@ -19,6 +19,8 @@ import java.util.List;
  */
 public class CameraUtils
 {
+    private static String BUILD_DEVICE_S4 = "jflte";
+
     public static File getRootDataFolder(Context context)
     {
         File filesDir = context.getFilesDir();
@@ -82,22 +84,45 @@ public class CameraUtils
 
         assert best.width <= containerHeight;
 
-        CWLog.i("BEST: width: " + best.width + "/height: " + best.height);
+        CWLog.i(CameraUtils.class, "BEST: width: " + best.width + "/height: " + best.height);
 
         return best;
     }
 
+    private static boolean isDeviceS4()
+    {
+        return Build.DEVICE.startsWith(BUILD_DEVICE_S4);
+    }
+
     public static int findVideoFrameRate(Context context)
     {
-        CWLog.i("Build.MODEL: "+ Build.MODEL);
-        CWLog.i("Build.DEVICE: "+ Build.DEVICE);
-        CWLog.i("Build.PRODUCT: "+ Build.PRODUCT);
+        CWLog.i(CameraUtils.class, "Build.MODEL: "+ Build.MODEL);
+        CWLog.i(CameraUtils.class, "Build.DEVICE: "+ Build.DEVICE);
+        CWLog.i(CameraUtils.class, "Build.PRODUCT: "+ Build.PRODUCT);
 
         //S4 can't handle 24 fps
-        if(Build.DEVICE.startsWith("jflte"))
+        if(isDeviceS4())
             return context.getResources().getInteger(R.integer.video_frame_rate_s4);
         else
             return context.getResources().getInteger(R.integer.video_frame_rate);
+    }
+
+    public static int findVideoBitDepth(Context context)
+    {
+        //S4 needs higher rate due to bigger resolution
+        if(isDeviceS4())
+            return context.getResources().getInteger(R.integer.video_bid_depth_s4);
+        else
+            return context.getResources().getInteger(R.integer.video_bid_depth);
+    }
+
+    public static int findVideoMinWidth(Context context)
+    {
+        //S4 needs higher rate due to bigger resolution
+        if(isDeviceS4())
+            return context.getResources().getInteger(R.integer.video_min_width_s4);
+        else
+            return context.getResources().getInteger(R.integer.video_min_width);
     }
 
     public static int findBestCameraProfile(int cameraId)
@@ -110,5 +135,15 @@ public class CameraUtils
             return CamcorderProfile.QUALITY_480P;
         else
             throw new RuntimeException("No compatible camera");
+    }
+
+    public static void setRecordingHintIfNecessary(Camera.Parameters params)
+    {
+        if(isDeviceS4())
+        {
+//            params.setRecordingHint(true);
+//            params.get
+//            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        }
     }
 }

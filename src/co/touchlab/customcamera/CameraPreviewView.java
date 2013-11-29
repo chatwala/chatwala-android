@@ -12,6 +12,7 @@ import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,6 +30,14 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     private Camera.Size cameraVideoSize = null;
     private File recordingFile;
     private final CameraPreviewCallback callback;
+    private AtomicBoolean recordStarting = new AtomicBoolean(false);
+
+    public interface CameraPreviewCallback
+    {
+        void surfaceReady();
+        void recordingStarted();
+        void recordingDone(File videoFile);
+    }
 
     public CameraPreviewView(Context context, CameraPreviewCallback callback)
     {
@@ -36,7 +45,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         initSurface();
         openCamera();
         this.callback = callback;
-        //setCameraParams();
     }
 
     public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback)
@@ -55,6 +63,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureAvailable: "+ surface);
         if(cameraPreviewSize != null)
         {
+            setCameraParams();
             try
             {
                 camera.setPreviewTexture(surface);
@@ -68,7 +77,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             prepareMediaRecorder();
 
             //http://stackoverflow.com/questions/3841122/android-camera-preview-is-sideways/5110406#5110406
-            Display display = ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
             if (display.getRotation() == Surface.ROTATION_0)
             {
@@ -87,7 +96,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureSizeChanged");
+        
     }
 
     @Override
@@ -101,12 +110,11 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
         Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureUpdated: " + surface);
-    }
-
-    public interface CameraPreviewCallback
-    {
-        void surfaceReady();
-        void recordingDone(File videoFile);
+//        Log.i(CameraPreviewCallback.class.getSimpleName(), "updated: " + System.currentTimeMillis());
+        if(recordStarting.getAndSet(false))
+        {
+            callback.recordingStarted();
+        }
     }
 
     public void initSurface()
@@ -143,7 +151,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         Camera.Parameters params = camera.getParameters();
 
         //These all kind of suck because they cause crashes, but we may need to use them to smooth out the recording process
-        //params.setRecordingHint(true);
+        CameraUtils.setRecordingHintIfNecessary(params);
         //params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         //params.setPreviewFpsRange(15, 15);
 
@@ -182,7 +190,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
-        mediaRecorder.setVideoEncodingBitRate(getResources().getInteger(R.integer.video_bid_depth));
+        mediaRecorder.setVideoEncodingBitRate(CameraUtils.findVideoBitDepth(getContext()));
 
         Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
@@ -228,13 +236,20 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     public void startRecording()
     {
         camera.unlock();
+        Log.i(CameraPreviewCallback.class.getSimpleName(), "startRecording: " + System.currentTimeMillis());
         mediaRecorder.start();
+        recordStarting.set(true);
     }
 
     public void stopRecording()
     {
         mediaRecorder.stop();
         callback.recordingDone(recordingFile);
+    }
+
+    public void abortRecording()
+    {
+        mediaRecorder.stop();
     }
 
     /*@Override
@@ -246,12 +261,12 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        if(((ViewGroup)getParent()).getHeight() != 0)
+        if (((ViewGroup) getParent()).getHeight() != 0)
         {
             findCameraSizes();
 
             //either scale up the height of the preview, so that is at least the size of the container
-            int viewWidth = ((ViewGroup)getParent()).getWidth();
+            int viewWidth = ((ViewGroup) getParent()).getWidth();
             int previewHeight = cameraPreviewSize.width;
             int previewWidth = cameraPreviewSize.height;
             double ratio = (double) viewWidth / (double) previewWidth;
@@ -260,7 +275,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             double newPreviewWidth = (double) previewWidth * ratio;
 
             //Preview is rotated 90 degrees, so swap width/height
-            setMeasuredDimension((int)newPreviewWidth, (int)newPreviewHeight);
+            setMeasuredDimension((int) newPreviewWidth, (int) newPreviewHeight);
         }
         else
         {
@@ -273,7 +288,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         Camera.Parameters params = camera.getParameters();
 
-        int viewWidth = getResources().getInteger(R.integer.video_min_width);
+        int viewWidth = CameraUtils.findVideoMinWidth(getContext());
         cameraPreviewSize = CameraUtils.findCameraPreviewSize(viewWidth, params);
         cameraVideoSize = CameraUtils.findCameraVideoSize(viewWidth, params);
         params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
