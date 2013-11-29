@@ -7,7 +7,6 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -165,9 +164,16 @@ public class NewCameraActivity extends Activity
             return;
         }
 
-        if (state == AppState.PlaybackOnly || /*state == AppState.PlaybackRecording ||*/ state == AppState.Recording)
+        if (state == AppState.PlaybackOnly)
         {
-            abortRecording();
+            abortBeforeRecording();
+            return;
+        }
+
+        if(state == AppState.Recording)
+        {
+            stopRecording();
+            return;
         }
 
         if (state == AppState.PreviewReady)
@@ -177,12 +183,12 @@ public class NewCameraActivity extends Activity
         }
     }
 
-    private void abortRecording()
+    private void abortBeforeRecording()
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.Transition);
         heartbeatTimer.abort();
-        cameraPreviewView.abortRecording();
+//        cameraPreviewView.abortBeforeRecording();
         tearDownSurface();
         initStartState();
         createSurface();
@@ -287,6 +293,8 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.PreviewLoading);
+        if(heartbeatTimer != null)
+            heartbeatTimer.abort();
         cameraPreviewView.stopRecording();
     }
 
