@@ -59,7 +59,6 @@ public class NewCameraActivity extends Activity
     // ************* DANGEROUS STATE *************
 
 
-
     public synchronized AppState getAppState()
     {
         return appState;
@@ -67,7 +66,8 @@ public class NewCameraActivity extends Activity
 
     public synchronized void setAppState(AppState appState)
     {
-        CWLog.i(NewCameraActivity.class, "setAppState: " + appState);
+        CWLog.i(NewCameraActivity.class, "setAppState: " + appState +" ("+ System.currentTimeMillis() +")");
+        AndroidUtils.isMainThread();
         this.appState = appState;
     }
 
@@ -129,6 +129,11 @@ public class NewCameraActivity extends Activity
     private void initStartState()
     {
         setAppState(AppState.LoadingFileCamera);
+
+        chatMessage = null;
+        videoPlaybackDuration = 0;
+        recordPreviewFile = null;
+
         new MessageLoaderTask().execute();
     }
 
@@ -235,6 +240,7 @@ public class NewCameraActivity extends Activity
 
     private void startRecording()
     {
+        AndroidUtils.isMainThread();
         setAppState(AppState.RecordingLimbo);
         cameraPreviewView.startRecording();
     }
@@ -280,7 +286,12 @@ public class NewCameraActivity extends Activity
             {
                 if (cameraPreviewReady.get() && messageLoadComplete.get())
                 {
-                    setAppState(AppState.ReadyStopped);
+                    messageLoadComplete.set(false);
+                    cameraPreviewReady.set(false);
+                    if(getAppState() == AppState.LoadingFileCamera)
+                    {
+                        setAppState(AppState.ReadyStopped);
+                    }
                 }
             }
         });
@@ -376,6 +387,7 @@ public class NewCameraActivity extends Activity
 
     private void createSurface()
     {
+        AndroidUtils.isMainThread();
         cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
         {
             @Override
@@ -401,6 +413,7 @@ public class NewCameraActivity extends Activity
 
     private void showResultPreview(File videoFile)
     {
+        AndroidUtils.isMainThread();
         this.recordPreviewFile = videoFile;
         tearDownSurface();
         new LoadAndShowVideoMessageTask(true).execute(recordPreviewFile);
@@ -408,6 +421,7 @@ public class NewCameraActivity extends Activity
 
     private void closeResultPreview()
     {
+        AndroidUtils.isMainThread();
         recordPreviewFile = null;
         cameraPreviewContainer.removeView(recordPreviewVideoView);
         closeRecordPreviewView.setVisibility(View.GONE);
@@ -417,6 +431,7 @@ public class NewCameraActivity extends Activity
 
     private void tearDownSurface()
     {
+        AndroidUtils.isMainThread();
         cameraPreviewContainer.removeAllViews();
         if (cameraPreviewView != null)
         {
