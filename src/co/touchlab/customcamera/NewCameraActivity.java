@@ -29,29 +29,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
-    CroppingLayout cameraPreviewContainer, videoViewContainer;
-    CameraPreviewView cameraPreviewView;
-
-    private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
-    private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
-
-    private ChatMessage chatMessage;
-
-    private long videoPlaybackDuration = 0;
-
-    private DynamicVideoView messageVideoView;
-    private DynamicVideoView recordPreviewVideoView;
-
-    private TextView timerText;
-    private File recordPreviewFile;
-    private View closeRecordPreviewView;
-
-    private AppState appState = AppState.Transition;
 
     public enum AppState
     {
-        Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
+        Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
     }
+
+    // ************* onCreate only *************
+    private CroppingLayout cameraPreviewContainer, videoViewContainer;
+    private DynamicVideoView messageVideoView;
+    private DynamicVideoView recordPreviewVideoView;
+    private View closeRecordPreviewView;
+    private TextView timerText;
+    // ************* onCreate only *************
+
+
+    // ************* SEMI DANGEROUS STATE *************
+    private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
+    private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
+    // ************* SEMI DANGEROUS STATE *************
+
+
+    // ************* DANGEROUS STATE *************
+    private CameraPreviewView cameraPreviewView;
+    private ChatMessage chatMessage;
+    private long videoPlaybackDuration = 0;
+    private File recordPreviewFile;
+    private AppState appState = AppState.Off;
+    // ************* DANGEROUS STATE *************
+
+
 
     public synchronized AppState getAppState()
     {
@@ -60,7 +67,7 @@ public class NewCameraActivity extends Activity
 
     public synchronized void setAppState(AppState appState)
     {
-        CWLog.i(NewCameraActivity.class, "setAppState: "+ appState);
+        CWLog.i(NewCameraActivity.class, "setAppState: " + appState);
         this.appState = appState;
     }
 
@@ -96,8 +103,27 @@ public class NewCameraActivity extends Activity
             }
         });
 
+
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+
+        setAppState(AppState.Transition);
+
         //Kick off attachment load
         initStartState();
+        createSurface();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        setAppState(AppState.Off);
+        tearDownSurface();
     }
 
     private void initStartState()
@@ -110,21 +136,21 @@ public class NewCameraActivity extends Activity
     {
         //Don't do anything.  These should be very short states.
         AppState state = getAppState();
-        if(state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading)
+        if (state == AppState.Off || state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading)
             return;
 
-        if(state == AppState.ReadyStopped)
+        if (state == AppState.ReadyStopped)
         {
             startPlaybackRecording();
             return;
         }
 
-        if(state == AppState.PlaybackOnly || /*state == AppState.PlaybackRecording ||*/ state == AppState.Recording)
+        if (state == AppState.PlaybackOnly || /*state == AppState.PlaybackRecording ||*/ state == AppState.Recording)
         {
             throw new RuntimeException("do this");
         }
 
-        if(state == AppState.PreviewReady)
+        if (state == AppState.PreviewReady)
         {
             sendEmail(recordPreviewFile);
             closeResultPreview();
@@ -148,17 +174,18 @@ public class NewCameraActivity extends Activity
         @Override
         public void run()
         {
-            while(true)
+            while (true)
             {
                 try
                 {
                     Thread.sleep(20);
                 }
                 catch (InterruptedException e)
-                {}
+                {
+                }
 
                 long now = System.currentTimeMillis() - startTime;
-                if(!recordingStarted && now >= startRecordingTime)
+                if (!recordingStarted && now >= startRecordingTime)
                 {
                     runOnUiThread(new Runnable()
                     {
@@ -170,7 +197,7 @@ public class NewCameraActivity extends Activity
                     });
                 }
 
-                if(now >= endRecordingTime)
+                if (now >= endRecordingTime)
                 {
                     runOnUiThread(new Runnable()
                     {
@@ -191,14 +218,14 @@ public class NewCameraActivity extends Activity
         AndroidUtils.isMainThread();
         timerText.setText("Stop");
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
-        if(messageVideoView != null)
+        if (messageVideoView != null)
         {
             setAppState(AppState.PlaybackOnly);
             messageVideoView.seekTo(0);
             messageVideoView.start();
         }
 
-        if(recordingStartMillis == 0)
+        if (recordingStartMillis == 0)
         {
             startRecording();
         }
@@ -220,26 +247,11 @@ public class NewCameraActivity extends Activity
         timerText.setText("Start");
     }
 
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        createSurface();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-        setAppState(AppState.Transition);
-        tearDownSurface();
-    }
-
     private void messageLoaded(ChatMessage message)
     {
         this.chatMessage = message;
 
-        if(chatMessage == null || chatMessage.messageVideo == null)
+        if (chatMessage == null || chatMessage.messageVideo == null)
             messageVideoLoaded();
         else
         {
@@ -406,7 +418,7 @@ public class NewCameraActivity extends Activity
     private void tearDownSurface()
     {
         cameraPreviewContainer.removeAllViews();
-        if(cameraPreviewView != null)
+        if (cameraPreviewView != null)
         {
             cameraPreviewView.releaseResources();
             cameraPreviewView = null;
