@@ -3,15 +3,15 @@ package co.touchlab.customcamera;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
+import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.*;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -31,6 +31,7 @@ public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
 
+
     public enum AppState
     {
         Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
@@ -42,6 +43,7 @@ public class NewCameraActivity extends Activity
     private DynamicVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
+    private TimerDial timerDial;
     // ************* onCreate only *************
 
 
@@ -76,14 +78,17 @@ public class NewCameraActivity extends Activity
         {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
                 timerKnob.setImageResource(R.drawable.ic_action_video);
                 break;
             case Recording:
                 timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
                 timerKnob.setImageResource(R.drawable.ic_action_playback_stop);
                 break;
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
                 timerKnob.setImageResource(R.drawable.ic_action_share_2);
                 break;
             default:
@@ -103,6 +108,7 @@ public class NewCameraActivity extends Activity
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
         View timerButtonContainer = findViewById(R.id.timerContainer);
+        timerDial = (TimerDial) findViewById(R.id.timerDial);
         timerKnob = (ImageView) findViewById(R.id.timerText);
         timerButtonContainer.setOnClickListener(new View.OnClickListener()
         {
@@ -220,9 +226,30 @@ public class NewCameraActivity extends Activity
             cancel.set(true);
         }
 
+        class UpdateTimerRunnable implements Runnable
+        {
+            int now;
+
+            @Override
+            public void run()
+            {
+                timerDial.updateOffset((int)now);
+            }
+        }
+
         @Override
         public void run()
         {
+            runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    timerDial.resetAnimation((int)startRecordingTime, (int)endRecordingTime);
+                }
+            });
+
+            UpdateTimerRunnable updateTimerRunnable = new UpdateTimerRunnable();
             while (true)
             {
                 try
@@ -237,6 +264,9 @@ public class NewCameraActivity extends Activity
                     break;
 
                 long now = System.currentTimeMillis() - startTime;
+                updateTimerRunnable.now = (int)now;
+                runOnUiThread(updateTimerRunnable);
+
                 if (!recordingStarted && now >= startRecordingTime)
                 {
                     runOnUiThread(new Runnable()
@@ -264,6 +294,14 @@ public class NewCameraActivity extends Activity
                     break;
                 }
             }
+            runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    timerDial.resetAnimation(null, null);
+                }
+            });
         }
     }
 
