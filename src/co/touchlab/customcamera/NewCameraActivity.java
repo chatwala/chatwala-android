@@ -37,8 +37,7 @@ public class NewCameraActivity extends Activity
     CameraPreviewView cameraPreviewView;
 
     private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
-    private AtomicBoolean previewReady = new AtomicBoolean(false);
-    private boolean initialMessageDone;
+    private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
     private ChatMessage chatMessage;
 
     private long videoPlaybackDuration = 0;
@@ -46,12 +45,27 @@ public class NewCameraActivity extends Activity
     private View timerButtonContainer;
     private TimerDial timerDial;
     private DynamicVideoView dynamicVideoView;
-    private ImageView dynamicVideoThumb;
     private DynamicVideoView videoResultPreviewView;
-    private ImageView videoResultPreviewThumb;
     private TextView timerText;
     private File videoResultPreview;
     private View closeVideoPreview;
+
+    private AppState appState = AppState.Transition;
+
+    public enum AppState
+    {
+        Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, PlaybackRecording, Recording, PreviewLoading, PreviewReady
+    }
+
+    public synchronized AppState getAppState()
+    {
+        return appState;
+    }
+
+    public synchronized void setAppState(AppState appState)
+    {
+        this.appState = appState;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -92,11 +106,17 @@ public class NewCameraActivity extends Activity
 
     private void initStartState()
     {
+        setAppState(AppState.LoadingFileCamera);
         new MessageLoaderTask().execute();
     }
 
     private void triggerButtonAction()
     {
+        //Don't do anything.  These should be very short states.
+        AppState state = getAppState();
+        if(state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.PreviewLoading)
+            return;
+
         if(videoResultPreview != null)
         {
             sendEmail(videoResultPreview);
@@ -112,9 +132,16 @@ public class NewCameraActivity extends Activity
         }
     }
 
-    private void startTimer()
+    private void startPlaybackRecording()
     {
         timerText.setText("Stop");
+        int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
+        if(dynamicVideoView != null)
+        {
+            dynamicVideoView.seekTo(0);
+            dynamicVideoView.start();
+        }
+
         timerDial.startAnimation(new TimerDial.TimerCallback()
         {
             @Override
@@ -156,7 +183,6 @@ public class NewCameraActivity extends Activity
     protected void onResume()
     {
         super.onResume();
-        disableInterface();
         createSurface();
     }
 
@@ -164,31 +190,31 @@ public class NewCameraActivity extends Activity
     protected void onPause()
     {
         super.onPause();
+        setAppState(AppState.Transition);
         tearDownSurface();
-    }
-
-    private void disableInterface()
-    {
-        timerButtonContainer.setActivated(false);
-    }
-
-    private void enableInterface()
-    {
-        timerButtonContainer.setActivated(true);
-        timerText.setText("Start");
     }
 
     private void messageLoaded(ChatMessage message)
     {
         this.chatMessage = message;
 
+        if(chatMessage == null || chatMessage.messageVideo == null)
+            messageVideoLoaded();
+        else
+        {
+            new LoadAndShowVideoMessageTask(false).execute(chatMessage.messageVideo);
+        }
+    }
+
+    private void messageVideoLoaded()
+    {
         messageLoadComplete.set(true);
         liveForRecording();
     }
 
     private void previewSurfaceReady()
     {
-        previewReady.set(true);
+        cameraPreviewReady.set(true);
         liveForRecording();
     }
 
@@ -199,21 +225,12 @@ public class NewCameraActivity extends Activity
             @Override
             public void run()
             {
-                if (previewReady.get() && messageLoadComplete.get())
+                if (cameraPreviewReady.get() && messageLoadComplete.get())
                 {
-                    enableInterface();
-                    showMessageVideo();
+                    setAppState(AppState.ReadyStopped);
                 }
             }
         });
-    }
-
-    private void showMessageVideo()
-    {
-        if (chatMessage != null && chatMessage.messageVideo != null)
-        {
-            new LoadAndShowVideoMessageTask(false).execute(chatMessage.messageVideo);
-        }
     }
 
     class VideoInfo
@@ -297,14 +314,8 @@ public class NewCameraActivity extends Activity
             {
                 dynamicVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
                 videoViewContainer.addView(dynamicVideoView);
-//                dynamicVideoThumb = new DynamicVideoThumbImageView(NewCameraActivity.this, videoInfo.width, videoInfo.height);
-//                dynamicVideoThumb.setImageBitmap(videoInfo.bitmap);
-//                videoViewContainer.addView(dynamicVideoThumb);
-                if (!initialMessageDone)
-                {
-                    initialMessageDone = true;
-                    startTimer();
-                }
+
+                messageVideoLoaded();
             }
             /*dynamicVideoView.start();
 

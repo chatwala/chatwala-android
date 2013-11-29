@@ -11,6 +11,7 @@ import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +29,14 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     private Camera.Size cameraVideoSize = null;
     private File recordingFile;
     private final CameraPreviewCallback callback;
+    private AtomicBoolean recordStarting = new AtomicBoolean(false);
+
+    public interface CameraPreviewCallback
+    {
+        void surfaceReady();
+        void recordingStarted();
+        void recordingDone(File videoFile);
+    }
 
     public CameraPreviewView(Context context, CameraPreviewCallback callback)
     {
@@ -35,7 +44,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         initSurface();
         openCamera();
         this.callback = callback;
-
     }
 
     public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback)
@@ -51,7 +59,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        if(cameraPreviewSize != null)
+        if (cameraPreviewSize != null)
         {
             setCameraParams();
             try
@@ -67,7 +75,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             prepareMediaRecorder();
 
             //http://stackoverflow.com/questions/3841122/android-camera-preview-is-sideways/5110406#5110406
-            Display display = ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
             if (display.getRotation() == Surface.ROTATION_0)
             {
@@ -86,7 +94,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
     {
-        System.out.println("asdf");
     }
 
     @Override
@@ -98,13 +105,11 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        System.out.println("asdf");
-    }
-
-    public interface CameraPreviewCallback
-    {
-        void surfaceReady();
-        void recordingDone(File videoFile);
+//        Log.i(CameraPreviewCallback.class.getSimpleName(), "updated: " + System.currentTimeMillis());
+        if(recordStarting.getAndSet(false))
+        {
+            callback.recordingStarted();
+        }
     }
 
     public void initSurface()
@@ -218,7 +223,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     public void startRecording()
     {
         camera.unlock();
+        Log.i(CameraPreviewCallback.class.getSimpleName(), "startRecording: " + System.currentTimeMillis());
         mediaRecorder.start();
+        recordStarting.set(true);
     }
 
     public void stopRecording()
@@ -236,12 +243,12 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        if(((ViewGroup)getParent()).getHeight() != 0)
+        if (((ViewGroup) getParent()).getHeight() != 0)
         {
             findCameraSizes();
 
             //either scale up the height of the preview, so that is at least the size of the container
-            int viewWidth = ((ViewGroup)getParent()).getWidth();
+            int viewWidth = ((ViewGroup) getParent()).getWidth();
             int previewHeight = cameraPreviewSize.width;
             int previewWidth = cameraPreviewSize.height;
             double ratio = (double) viewWidth / (double) previewWidth;
@@ -250,7 +257,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             double newPreviewWidth = (double) previewWidth * ratio;
 
             //Preview is rotated 90 degrees, so swap width/height
-            setMeasuredDimension((int)newPreviewWidth, (int)newPreviewHeight);
+            setMeasuredDimension((int) newPreviewWidth, (int) newPreviewHeight);
         }
         else
         {
