@@ -138,8 +138,9 @@ public class NewCameraActivity extends Activity
         setAppState(AppState.Transition);
 
         //Kick off attachment load
-        initStartState();
+        setAppState(AppState.LoadingFileCamera);
         createSurface();
+        initStartState();
     }
 
     @Override
@@ -152,8 +153,6 @@ public class NewCameraActivity extends Activity
 
     private void initStartState()
     {
-        setAppState(AppState.LoadingFileCamera);
-
         chatMessage = null;
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
@@ -361,12 +360,14 @@ public class NewCameraActivity extends Activity
     private void messageVideoLoaded()
     {
         messageLoadComplete.set(true);
+        CWLog.i(NewCameraActivity.class, "messageVideoLoaded called");
         liveForRecording();
     }
 
     private void previewSurfaceReady()
     {
         cameraPreviewReady.set(true);
+        CWLog.i(NewCameraActivity.class, "previewSurfaceReady called");
         liveForRecording();
     }
 
@@ -377,26 +378,21 @@ public class NewCameraActivity extends Activity
             @Override
             public void run()
             {
-                if (cameraPreviewReady.get() && messageLoadComplete.get())
+                boolean cameraPreviewReadyTest = cameraPreviewReady.get();
+                boolean messageLoadCompleteTest = messageLoadComplete.get();
+                AppState appStateTest = getAppState();
+                CWLog.i(NewCameraActivity.class, "liveForRecording (ui) cameraPreviewReady: "+ cameraPreviewReadyTest +"/messageLoadComplete: "+ messageLoadCompleteTest +"/appState: "+ appStateTest);
+                if (cameraPreviewReadyTest && messageLoadCompleteTest)
                 {
                     messageLoadComplete.set(false);
                     cameraPreviewReady.set(false);
-                    if (getAppState() == AppState.LoadingFileCamera)
+                    if (appStateTest == AppState.LoadingFileCamera)
                     {
                         setAppState(AppState.ReadyStopped);
                     }
                 }
             }
         });
-    }
-
-    class VideoInfo
-    {
-        public File videoFile;
-        public int width;
-        public int height;
-        public int rotation;
-        public Bitmap bitmap;
     }
 
     class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoUtils.VideoMetadata>
@@ -445,6 +441,7 @@ public class NewCameraActivity extends Activity
     private void createSurface()
     {
         AndroidUtils.isMainThread();
+        CWLog.i(NewCameraActivity.class, "createSurface started");
         cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
         {
             @Override
@@ -468,6 +465,7 @@ public class NewCameraActivity extends Activity
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
+        CWLog.i(NewCameraActivity.class, "createSurface view added");
     }
 
     private void showResultPreview(File videoFile)
@@ -505,6 +503,14 @@ public class NewCameraActivity extends Activity
         @Override
         protected ChatMessage doInBackground(Void... params)
         {
+            try
+            {
+                Thread.sleep(300);
+            }
+            catch (InterruptedException e)
+            {
+
+            }
             ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
             if (cm != null)
             {
