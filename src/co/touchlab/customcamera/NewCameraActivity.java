@@ -40,6 +40,7 @@ public class NewCameraActivity extends Activity
     // ************* onCreate only *************
     private CroppingLayout cameraPreviewContainer, videoViewContainer;
     private DynamicVideoView messageVideoView;
+    private DynamicVideoThumbImageView messageVideoThumbnailView;
     private DynamicVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
@@ -57,6 +58,7 @@ public class NewCameraActivity extends Activity
     private CameraPreviewView cameraPreviewView;
     private ChatMessage chatMessage;
     private VideoUtils.VideoMetadata chatMessageVideoMetadata;
+    private Bitmap chatMessageVideoBitmap;
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
@@ -310,6 +312,8 @@ public class NewCameraActivity extends Activity
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
         if (messageVideoView != null)
         {
+            messageVideoThumbnailView.setVisibility(View.GONE);
+            messageVideoView.setVisibility(View.VISIBLE);
             setAppState(AppState.PlaybackOnly);
             messageVideoView.seekTo(0);
             messageVideoView.start();
@@ -367,6 +371,11 @@ public class NewCameraActivity extends Activity
         {
             messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
             videoViewContainer.addView(messageVideoView);
+            messageVideoThumbnailView = new DynamicVideoThumbImageView(NewCameraActivity.this, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
+            videoViewContainer.addView(messageVideoThumbnailView);
+            messageVideoView.setVisibility(View.GONE);
+            messageVideoThumbnailView.setVisibility(View.VISIBLE);
+            messageVideoThumbnailView.setImageBitmap(chatMessageVideoBitmap);
         }
 
         CWLog.i(NewCameraActivity.class, "messageLoaded complete");
@@ -450,6 +459,11 @@ public class NewCameraActivity extends Activity
             public void recordingStarted()
             {
                 setAppState(AppState.Recording);
+                if(messageVideoThumbnailView != null && messageVideoThumbnailView.getVisibility() == View.VISIBLE)
+                {
+                    messageVideoThumbnailView.setVisibility(View.GONE);
+                    messageVideoView.setVisibility(View.VISIBLE);
+                }
                 if (messageVideoView != null)
                     messageVideoView.start();
             }
@@ -492,6 +506,9 @@ public class NewCameraActivity extends Activity
             cameraPreviewView = null;
         }
         videoViewContainer.removeAllViews();
+        messageVideoView = null;
+        messageVideoThumbnailView = null;
+        chatMessageVideoBitmap = null;
     }
 
     class MessageLoaderTask extends AsyncTask<Void, Void, ChatMessage>
@@ -505,6 +522,7 @@ public class NewCameraActivity extends Activity
                 try
                 {
                     chatMessageVideoMetadata = VideoUtils.findMetadata(cm.messageVideo);
+                    chatMessageVideoBitmap = VideoUtils.createVideoFrame(cm.messageVideo.getPath(), 0l);
                 }
                 catch (IOException e)
                 {
