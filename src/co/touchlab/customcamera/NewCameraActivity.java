@@ -50,7 +50,7 @@ public class NewCameraActivity extends Activity
 
     public enum AppState
     {
-        Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, PlaybackRecording, Recording, PreviewLoading, PreviewReady
+        Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
     }
 
     public synchronized AppState getAppState()
@@ -110,7 +110,7 @@ public class NewCameraActivity extends Activity
     {
         //Don't do anything.  These should be very short states.
         AppState state = getAppState();
-        if(state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.PreviewLoading)
+        if(state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading)
             return;
 
         if(state == AppState.ReadyStopped)
@@ -119,7 +119,7 @@ public class NewCameraActivity extends Activity
             return;
         }
 
-        if(state == AppState.PlaybackOnly || state == AppState.PlaybackRecording || state == AppState.Recording)
+        if(state == AppState.PlaybackOnly || /*state == AppState.PlaybackRecording ||*/ state == AppState.Recording)
         {
             throw new RuntimeException("do this");
         }
@@ -208,7 +208,7 @@ public class NewCameraActivity extends Activity
 
     private void startRecording()
     {
-        setAppState(AppState.Recording);
+        setAppState(AppState.RecordingLimbo);
         cameraPreviewView.startRecording();
     }
 
@@ -375,7 +375,7 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingStarted()
             {
-
+                setAppState(AppState.Recording);
             }
 
             @Override
@@ -406,8 +406,11 @@ public class NewCameraActivity extends Activity
     private void tearDownSurface()
     {
         cameraPreviewContainer.removeAllViews();
-        cameraPreviewView.releaseResources();
-        cameraPreviewView = null;
+        if(cameraPreviewView != null)
+        {
+            cameraPreviewView.releaseResources();
+            cameraPreviewView = null;
+        }
         videoViewContainer.removeAllViews();
     }
 
