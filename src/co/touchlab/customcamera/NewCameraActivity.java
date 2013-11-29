@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import co.touchlab.customcamera.util.*;
 import org.apache.commons.io.IOUtils;
@@ -40,7 +41,7 @@ public class NewCameraActivity extends Activity
     private DynamicVideoView messageVideoView;
     private DynamicVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
-    private TextView timerText;
+    private ImageView timerKnob;
     // ************* onCreate only *************
 
 
@@ -74,16 +75,19 @@ public class NewCameraActivity extends Activity
         switch (this.appState)
         {
             case ReadyStopped:
-                timerText.setText("Start");
+                timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.setImageResource(R.drawable.ic_action_video);
                 break;
             case Recording:
-                timerText.setText("Stop");
+                timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.setImageResource(R.drawable.ic_action_playback_stop);
                 break;
             case PreviewReady:
-                timerText.setText("Share");
+                timerKnob.setVisibility(View.VISIBLE);
+                timerKnob.setImageResource(R.drawable.ic_action_share_2);
                 break;
             default:
-                timerText.setText("");
+                timerKnob.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -99,7 +103,7 @@ public class NewCameraActivity extends Activity
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
         View timerButtonContainer = findViewById(R.id.timerContainer);
-        timerText = (TextView) findViewById(R.id.timerText);
+        timerKnob = (ImageView) findViewById(R.id.timerText);
         timerButtonContainer.setOnClickListener(new View.OnClickListener()
         {
             @Override
