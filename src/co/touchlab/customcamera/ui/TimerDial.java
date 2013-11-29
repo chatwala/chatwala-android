@@ -19,7 +19,7 @@ import co.touchlab.customcamera.R;
 public class TimerDial extends View
 {
     Integer playOnlyDuration;
-    Integer recordDuration;
+    Integer endRecordTime;
     int currentOffset;
     private float timerBarSize;
 
@@ -46,11 +46,11 @@ public class TimerDial extends View
         timerBarSize = getResources().getDimension(R.dimen.timer_bar_size);
     }
 
-    public void resetAnimation(Integer playOnlyDuration, Integer recordDuration)
+    public void resetAnimation(Integer playOnlyDuration, Integer endRecordTime)
     {
         currentOffset = 0;
         this.playOnlyDuration = playOnlyDuration;
-        this.recordDuration = recordDuration;
+        this.endRecordTime = endRecordTime;
         invalidate();
     }
 
@@ -67,12 +67,13 @@ public class TimerDial extends View
 
         RectF arcRect = new RectF(timerBarSize, timerBarSize, getWidth() - timerBarSize, getHeight() - timerBarSize);
 
-        if(recordDuration != null)
+        if(endRecordTime != null)
         {
             RectF timerArcRect = new RectF(0, 0, getWidth(), getHeight());
             int playOnly = playOnlyDuration == null ? 0 : playOnlyDuration;
 
-            int totalDuration = playOnly + recordDuration;
+            int totalDuration = endRecordTime;
+            int recordDuration = endRecordTime - playOnly;
 
             int playOnlyAngleTotal = (playOnly * 360) / totalDuration;
             int recordAngleTotal = 360 - playOnlyAngleTotal;
@@ -105,7 +106,7 @@ public class TimerDial extends View
             else
             {
                 int currentRecordOffset = currentOffset - playOnly;
-                recordAngle = (int)(((double)currentRecordOffset/(double)recordDuration) * (double) recordAngleTotal);
+                recordAngle = (int)(((double)currentRecordOffset/(double) recordDuration) * (double) recordAngleTotal);
             }
 
             if(recordAngle > 0)

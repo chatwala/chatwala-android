@@ -141,8 +141,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         }
         catch (Exception e)
         {
-            Log.d("##################", "Error opening camera: " + e.getMessage());
-            camera.release();
+            if(camera != null)
+                camera.release();
+            throw new RuntimeException(e);
         }
     }
 

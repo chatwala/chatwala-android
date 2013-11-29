@@ -212,6 +212,7 @@ public class NewCameraActivity extends Activity
         private boolean recordingStarted;
         private long endRecordingTime;
         private long startTime = System.currentTimeMillis();
+        private Long pauseStart;
         private AtomicBoolean cancel = new AtomicBoolean(false);
 
         HeartbeatTimer(long startRecordingTime, long messageVideoDuration, boolean recordingStarted)
@@ -235,6 +236,17 @@ public class NewCameraActivity extends Activity
             public void run()
             {
                 timerDial.updateOffset((int)now);
+            }
+        }
+
+        public synchronized void endPause()
+        {
+            if(pauseStart != null)
+            {
+                long calcStartAdjust = startTime + (System.currentTimeMillis() - pauseStart);
+
+                startTime = calcStartAdjust > System.currentTimeMillis() ? System.currentTimeMillis() : calcStartAdjust;
+                pauseStart = null;
             }
         }
 
@@ -265,16 +277,26 @@ public class NewCameraActivity extends Activity
                     break;
 
                 long now = System.currentTimeMillis() - startTime;
+
+                synchronized (this)
+                {
+                    if(pauseStart != null)
+                        continue;
+                }
+
                 updateTimerRunnable.now = (int)now;
                 runOnUiThread(updateTimerRunnable);
 
+
                 if (!recordingStarted && now >= startRecordingTime)
                 {
+                    recordingStarted = true;
                     runOnUiThread(new Runnable()
                     {
                         @Override
                         public void run()
                         {
+                            pauseStart = System.currentTimeMillis();
                             startRecording();
                         }
                     });
@@ -466,6 +488,8 @@ public class NewCameraActivity extends Activity
                 }
                 if (messageVideoView != null)
                     messageVideoView.start();
+
+                heartbeatTimer.endPause();
             }
 
             @Override
