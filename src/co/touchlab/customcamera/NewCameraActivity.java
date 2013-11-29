@@ -48,8 +48,8 @@ public class NewCameraActivity extends Activity
 
 
     // ************* SEMI DANGEROUS STATE *************
-    private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
-    private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
+//    private AtomicBoolean messageLoadComplete = new AtomicBoolean(false);
+//    private AtomicBoolean cameraPreviewReady = new AtomicBoolean(false);
     // ************* SEMI DANGEROUS STATE *************
 
 
@@ -140,7 +140,7 @@ public class NewCameraActivity extends Activity
         //Kick off attachment load
         setAppState(AppState.LoadingFileCamera);
         createSurface();
-        initStartState();
+
     }
 
     @Override
@@ -149,15 +149,6 @@ public class NewCameraActivity extends Activity
         super.onPause();
         setAppState(AppState.Off);
         tearDownSurface();
-    }
-
-    private void initStartState()
-    {
-        chatMessage = null;
-        chatMessageVideoMetadata = null;
-        recordPreviewFile = null;
-
-        new MessageLoaderTask().execute();
     }
 
     private void triggerButtonAction()
@@ -199,7 +190,7 @@ public class NewCameraActivity extends Activity
         heartbeatTimer.abort();
 //        cameraPreviewView.abortBeforeRecording();
         tearDownSurface();
-        initStartState();
+
         createSurface();
     }
 
@@ -344,6 +335,21 @@ public class NewCameraActivity extends Activity
         cameraPreviewView.stopRecording();
     }
 
+    private void previewSurfaceReady()
+    {
+        CWLog.i(NewCameraActivity.class, "previewSurfaceReady called");
+        initStartState();
+    }
+
+    private void initStartState()
+    {
+        chatMessage = null;
+        chatMessageVideoMetadata = null;
+        recordPreviewFile = null;
+
+        new MessageLoaderTask().execute();
+    }
+
     private void messageLoaded(ChatMessage message)
     {
         this.chatMessage = message;
@@ -354,20 +360,7 @@ public class NewCameraActivity extends Activity
             videoViewContainer.addView(messageVideoView);
         }
 
-        messageVideoLoaded();
-    }
-
-    private void messageVideoLoaded()
-    {
-        messageLoadComplete.set(true);
-        CWLog.i(NewCameraActivity.class, "messageVideoLoaded called");
-        liveForRecording();
-    }
-
-    private void previewSurfaceReady()
-    {
-        cameraPreviewReady.set(true);
-        CWLog.i(NewCameraActivity.class, "previewSurfaceReady called");
+        CWLog.i(NewCameraActivity.class, "messageLoaded complete");
         liveForRecording();
     }
 
@@ -378,18 +371,11 @@ public class NewCameraActivity extends Activity
             @Override
             public void run()
             {
-                boolean cameraPreviewReadyTest = cameraPreviewReady.get();
-                boolean messageLoadCompleteTest = messageLoadComplete.get();
                 AppState appStateTest = getAppState();
-                CWLog.i(NewCameraActivity.class, "liveForRecording (ui) cameraPreviewReady: "+ cameraPreviewReadyTest +"/messageLoadComplete: "+ messageLoadCompleteTest +"/appState: "+ appStateTest);
-                if (cameraPreviewReadyTest && messageLoadCompleteTest)
+                CWLog.i(NewCameraActivity.class, "appState: "+ appStateTest);
+                if (appStateTest == AppState.LoadingFileCamera)
                 {
-                    messageLoadComplete.set(false);
-                    cameraPreviewReady.set(false);
-                    if (appStateTest == AppState.LoadingFileCamera)
-                    {
-                        setAppState(AppState.ReadyStopped);
-                    }
+                    setAppState(AppState.ReadyStopped);
                 }
             }
         });
@@ -482,7 +468,7 @@ public class NewCameraActivity extends Activity
         recordPreviewFile = null;
         cameraPreviewContainer.removeView(recordPreviewVideoView);
         closeRecordPreviewView.setVisibility(View.GONE);
-        initStartState();
+
         createSurface();
     }
 
@@ -503,14 +489,6 @@ public class NewCameraActivity extends Activity
         @Override
         protected ChatMessage doInBackground(Void... params)
         {
-            try
-            {
-                Thread.sleep(300);
-            }
-            catch (InterruptedException e)
-            {
-
-            }
             ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
             if (cm != null)
             {
