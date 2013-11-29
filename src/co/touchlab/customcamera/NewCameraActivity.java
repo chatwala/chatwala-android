@@ -138,7 +138,6 @@ public class NewCameraActivity extends Activity
         setAppState(AppState.Transition);
 
         //Kick off attachment load
-        setAppState(AppState.LoadingFileCamera);
         createSurface();
 
     }
@@ -181,6 +180,16 @@ public class NewCameraActivity extends Activity
             sendEmail(recordPreviewFile);
             closeResultPreview();
         }
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        AppState state = getAppState();
+        if(state == AppState.PreviewReady)
+            closeResultPreview();
+        else
+            super.onBackPressed();
     }
 
     private void abortBeforeRecording()
@@ -427,6 +436,7 @@ public class NewCameraActivity extends Activity
     private void createSurface()
     {
         AndroidUtils.isMainThread();
+        setAppState(AppState.LoadingFileCamera);
         CWLog.i(NewCameraActivity.class, "createSurface started");
         cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
         {
