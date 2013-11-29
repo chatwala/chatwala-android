@@ -7,6 +7,7 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -56,6 +57,7 @@ public class NewCameraActivity extends Activity
     private long videoPlaybackDuration = 0;
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
+    private HeartbeatTimer heartbeatTimer;
     // ************* DANGEROUS STATE *************
 
 
@@ -69,6 +71,21 @@ public class NewCameraActivity extends Activity
         CWLog.i(NewCameraActivity.class, "setAppState: " + appState +" ("+ System.currentTimeMillis() +")");
         AndroidUtils.isMainThread();
         this.appState = appState;
+
+        switch (this.appState)
+        {
+            case ReadyStopped:
+                timerText.setText("Start");
+                break;
+            case Recording:
+                timerText.setText("Stop");
+                break;
+            case PreviewReady:
+                timerText.setText("Share");
+                break;
+            default:
+                timerText.setText("");
+        }
     }
 
     @Override
@@ -102,8 +119,6 @@ public class NewCameraActivity extends Activity
                 closeResultPreview();
             }
         });
-
-
     }
 
     @Override
@@ -152,7 +167,7 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PlaybackOnly || /*state == AppState.PlaybackRecording ||*/ state == AppState.Recording)
         {
-            throw new RuntimeException("do this");
+            abortRecording();
         }
 
         if (state == AppState.PreviewReady)
@@ -162,18 +177,35 @@ public class NewCameraActivity extends Activity
         }
     }
 
+    private void abortRecording()
+    {
+        AndroidUtils.isMainThread();
+        setAppState(AppState.Transition);
+        heartbeatTimer.abort();
+        cameraPreviewView.abortRecording();
+        tearDownSurface();
+        initStartState();
+        createSurface();
+    }
+
     class HeartbeatTimer extends Thread
     {
         private long startRecordingTime;
         private boolean recordingStarted;
         private long endRecordingTime;
         private long startTime = System.currentTimeMillis();
+        private AtomicBoolean cancel = new AtomicBoolean(false);
 
         HeartbeatTimer(long startRecordingTime, boolean recordingStarted)
         {
             this.startRecordingTime = startRecordingTime;
             this.recordingStarted = recordingStarted;
             endRecordingTime = startRecordingTime + RECORDING_TIME;
+        }
+
+        public void abort()
+        {
+            cancel.set(true);
         }
 
         @Override
@@ -188,6 +220,9 @@ public class NewCameraActivity extends Activity
                 catch (InterruptedException e)
                 {
                 }
+
+                if(cancel.get())
+                    break;
 
                 long now = System.currentTimeMillis() - startTime;
                 if (!recordingStarted && now >= startRecordingTime)
@@ -212,6 +247,8 @@ public class NewCameraActivity extends Activity
                             stopRecording();
                         }
                     });
+
+                    heartbeatTimer = null;
                     break;
                 }
             }
@@ -221,7 +258,6 @@ public class NewCameraActivity extends Activity
     private void startPlaybackRecording()
     {
         AndroidUtils.isMainThread();
-        timerText.setText("Stop");
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
         if (messageVideoView != null)
         {
@@ -235,7 +271,9 @@ public class NewCameraActivity extends Activity
             startRecording();
         }
 
-        new HeartbeatTimer(recordingStartMillis, recordingStartMillis == 0).start();
+        assert heartbeatTimer == null; //Just checking. This would be bad.
+        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, recordingStartMillis == 0);
+        heartbeatTimer.start();
     }
 
     private void startRecording()
@@ -250,7 +288,6 @@ public class NewCameraActivity extends Activity
         AndroidUtils.isMainThread();
         setAppState(AppState.PreviewLoading);
         cameraPreviewView.stopRecording();
-        timerText.setText("Start");
     }
 
     private void messageLoaded(ChatMessage message)
@@ -372,7 +409,6 @@ public class NewCameraActivity extends Activity
                             recordPreviewVideoView.start();
                     }
                 });
-                timerText.setText("Share");
                 setAppState(AppState.PreviewReady);
             }
             else

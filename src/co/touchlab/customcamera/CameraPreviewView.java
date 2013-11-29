@@ -234,6 +234,11 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         callback.recordingDone(recordingFile);
     }
 
+    public void abortRecording()
+    {
+        mediaRecorder.stop();
+    }
+
     /*@Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
