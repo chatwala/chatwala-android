@@ -54,7 +54,7 @@ public class NewCameraActivity extends Activity
     // ************* DANGEROUS STATE *************
     private CameraPreviewView cameraPreviewView;
     private ChatMessage chatMessage;
-    private long videoPlaybackDuration = 0;
+    private VideoUtils.VideoMetadata chatMessageVideoMetadata;
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
@@ -68,7 +68,7 @@ public class NewCameraActivity extends Activity
 
     public synchronized void setAppState(AppState appState)
     {
-        CWLog.i(NewCameraActivity.class, "setAppState: " + appState +" ("+ System.currentTimeMillis() +")");
+        CWLog.i(NewCameraActivity.class, "setAppState: " + appState + " (" + System.currentTimeMillis() + ")");
         AndroidUtils.isMainThread();
         this.appState = appState;
 
@@ -149,7 +149,7 @@ public class NewCameraActivity extends Activity
         setAppState(AppState.LoadingFileCamera);
 
         chatMessage = null;
-        videoPlaybackDuration = 0;
+        chatMessageVideoMetadata = null;
         recordPreviewFile = null;
 
         new MessageLoaderTask().execute();
@@ -174,7 +174,7 @@ public class NewCameraActivity extends Activity
             return;
         }
 
-        if(state == AppState.Recording)
+        if (state == AppState.Recording)
         {
             stopRecording();
             return;
@@ -201,16 +201,18 @@ public class NewCameraActivity extends Activity
     class HeartbeatTimer extends Thread
     {
         private long startRecordingTime;
+        private long messageVideoDuration;
         private boolean recordingStarted;
         private long endRecordingTime;
         private long startTime = System.currentTimeMillis();
         private AtomicBoolean cancel = new AtomicBoolean(false);
 
-        HeartbeatTimer(long startRecordingTime, boolean recordingStarted)
+        HeartbeatTimer(long startRecordingTime, long messageVideoDuration, boolean recordingStarted)
         {
             this.startRecordingTime = startRecordingTime;
             this.recordingStarted = recordingStarted;
-            endRecordingTime = startRecordingTime + RECORDING_TIME;
+            this.messageVideoDuration = messageVideoDuration;
+            endRecordingTime = messageVideoDuration + RECORDING_TIME;
         }
 
         public void abort()
@@ -231,7 +233,7 @@ public class NewCameraActivity extends Activity
                 {
                 }
 
-                if(cancel.get())
+                if (cancel.get())
                     break;
 
                 long now = System.currentTimeMillis() - startTime;
@@ -281,8 +283,9 @@ public class NewCameraActivity extends Activity
             startRecording();
         }
 
+        int chatMessageDuration = chatMessageVideoMetadata == null ? 0 : chatMessageVideoMetadata.duration;
         assert heartbeatTimer == null; //Just checking. This would be bad.
-        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, recordingStartMillis == 0);
+        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, chatMessageDuration, recordingStartMillis == 0);
         heartbeatTimer.start();
     }
 
@@ -290,7 +293,7 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.RecordingLimbo);
-        if(messageVideoView != null)
+        if (messageVideoView != null)
             messageVideoView.pause();
         cameraPreviewView.startRecording();
     }
@@ -299,7 +302,7 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.PreviewLoading);
-        if(heartbeatTimer != null)
+        if (heartbeatTimer != null)
             heartbeatTimer.abort();
         cameraPreviewView.stopRecording();
     }
@@ -308,12 +311,13 @@ public class NewCameraActivity extends Activity
     {
         this.chatMessage = message;
 
-        if (chatMessage == null || chatMessage.messageVideo == null)
-            messageVideoLoaded();
-        else
+        if (chatMessage != null)
         {
-            new LoadAndShowVideoMessageTask(false).execute(chatMessage.messageVideo);
+            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
+            videoViewContainer.addView(messageVideoView);
         }
+
+        messageVideoLoaded();
     }
 
     private void messageVideoLoaded()
@@ -339,7 +343,7 @@ public class NewCameraActivity extends Activity
                 {
                     messageLoadComplete.set(false);
                     cameraPreviewReady.set(false);
-                    if(getAppState() == AppState.LoadingFileCamera)
+                    if (getAppState() == AppState.LoadingFileCamera)
                     {
                         setAppState(AppState.ReadyStopped);
                     }
@@ -357,42 +361,18 @@ public class NewCameraActivity extends Activity
         public Bitmap bitmap;
     }
 
-    class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoInfo>
+    class LoadAndShowVideoMessageTask extends AsyncTask<File, Void, VideoUtils.VideoMetadata>
     {
-        private boolean previewVideo;
-
-        LoadAndShowVideoMessageTask(boolean previewVideo)
+        LoadAndShowVideoMessageTask()
         {
-            this.previewVideo = previewVideo;
         }
 
         @Override
-        protected VideoInfo doInBackground(File... params)
+        protected VideoUtils.VideoMetadata doInBackground(File... params)
         {
             try
             {
-                MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-                File videoFile = params[0];
-                FileInputStream inp = new FileInputStream(videoFile);
-
-                metaRetriever.setDataSource(inp.getFD());
-                String duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                if (!previewVideo)
-                    videoPlaybackDuration = Long.parseLong(duration);
-                String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
-                String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
-                String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
-
-                inp.close();
-
-                VideoInfo videoInfo = new VideoInfo();
-                videoInfo.videoFile = videoFile;
-                videoInfo.bitmap = VideoUtils.createVideoFrame(videoFile.getPath(), 0);
-                videoInfo.rotation = rotation == null ? 0 : Integer.parseInt(rotation);
-                videoInfo.width = Integer.parseInt(width);
-                videoInfo.height = Integer.parseInt(height);
-
-                return videoInfo;
+                return VideoUtils.findMetadata(params[0]);
             }
             catch (IOException e)
             {
@@ -402,36 +382,25 @@ public class NewCameraActivity extends Activity
         }
 
         @Override
-        protected void onPostExecute(VideoInfo videoInfo)
+        protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
+            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height);
 
-            if (previewVideo)
+            cameraPreviewContainer.addView(recordPreviewVideoView);
+            closeRecordPreviewView.setVisibility(View.VISIBLE);
+            recordPreviewVideoView.start();
+            recordPreviewVideoView.setOnClickListener(new View.OnClickListener()
             {
-                recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
-
-                cameraPreviewContainer.addView(recordPreviewVideoView);
-                closeRecordPreviewView.setVisibility(View.VISIBLE);
-                recordPreviewVideoView.start();
-                recordPreviewVideoView.setOnClickListener(new View.OnClickListener()
+                @Override
+                public void onClick(View v)
                 {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        if (recordPreviewVideoView.isPlaying())
-                            recordPreviewVideoView.pause();
-                        else
-                            recordPreviewVideoView.start();
-                    }
-                });
-                setAppState(AppState.PreviewReady);
-            }
-            else
-            {
-                messageVideoView = new DynamicVideoView(NewCameraActivity.this, videoInfo.videoFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
-                videoViewContainer.addView(messageVideoView);
-
-                messageVideoLoaded();
-            }
+                    if (recordPreviewVideoView.isPlaying())
+                        recordPreviewVideoView.pause();
+                    else
+                        recordPreviewVideoView.start();
+                }
+            });
+            setAppState(AppState.PreviewReady);
         }
     }
 
@@ -450,7 +419,7 @@ public class NewCameraActivity extends Activity
             public void recordingStarted()
             {
                 setAppState(AppState.Recording);
-                if(messageVideoView != null)
+                if (messageVideoView != null)
                     messageVideoView.start();
             }
 
@@ -468,7 +437,7 @@ public class NewCameraActivity extends Activity
         AndroidUtils.isMainThread();
         this.recordPreviewFile = videoFile;
         tearDownSurface();
-        new LoadAndShowVideoMessageTask(true).execute(recordPreviewFile);
+        new LoadAndShowVideoMessageTask().execute(recordPreviewFile);
     }
 
     private void closeResultPreview()
@@ -498,7 +467,19 @@ public class NewCameraActivity extends Activity
         @Override
         protected ChatMessage doInBackground(Void... params)
         {
-            return ShareUtils.extractFileAttachment(NewCameraActivity.this);
+            ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
+            if (cm != null)
+            {
+                try
+                {
+                    chatMessageVideoMetadata = VideoUtils.findMetadata(cm.messageVideo);
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+            return cm;
         }
 
         @Override
@@ -540,7 +521,8 @@ public class NewCameraActivity extends Activity
                     sendMessageMetadata.incrementForNewMessage();
 
                     long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
-                    sendMessageMetadata.startRecording = ((double) Math.max(videoPlaybackDuration - startRecordingMillis, 0)) / 1000d;
+                    long chatMessageDuration = chatMessageVideoMetadata == null ? 0 : chatMessageVideoMetadata.duration;
+                    sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
 
                     String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
 

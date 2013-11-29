@@ -20,17 +20,15 @@ public class DynamicVideoView extends VideoView
     private File video;
     private int width;
     private int height;
-    private int rotation;
     public MediaPlayer mediaPlayer;
 
-    public DynamicVideoView(final Context context, File video, int width, int height, int rotation)
+    public DynamicVideoView(final Context context, File video, int width, int height)
     {
         super(context);
         this.video = video;
         setVideoPath(video.getPath());
         this.width = width;
         this.height = height;
-        this.rotation = rotation;
         setOnPreparedListener(new MediaPlayer.OnPreparedListener()
         {
             @Override
