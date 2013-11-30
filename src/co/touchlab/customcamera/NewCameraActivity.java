@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import co.touchlab.customcamera.ui.TimerDial;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
+    private View coverAnimation;
 
 
     public enum AppState
@@ -39,6 +41,8 @@ public class NewCameraActivity extends Activity
 
     // ************* onCreate only *************
     private CroppingLayout cameraPreviewContainer, videoViewContainer;
+    private View cameraPreviewFriendReplyText;
+    private View messageVideoFriendReplyText;
     private DynamicVideoView messageVideoView;
     private DynamicVideoThumbImageView messageVideoThumbnailView;
     private DynamicVideoView recordPreviewVideoView;
@@ -78,19 +82,32 @@ public class NewCameraActivity extends Activity
 
         switch (this.appState)
         {
+            case Transition:
+            case LoadingFileCamera:
+//            case RecordingLimbo:
+//            case PreviewLoading:
+                coverAnimation.setVisibility(View.VISIBLE);
+                break;
+            default:
+                coverAnimation.setVisibility(View.GONE);
+        }
+
+        switch (this.appState)
+        {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
+//                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
                 timerKnob.setImageResource(R.drawable.ic_action_video);
                 break;
+            case PlaybackOnly:
             case Recording:
                 timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
+//                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
                 timerKnob.setImageResource(R.drawable.ic_action_playback_stop);
                 break;
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
+//                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
                 timerKnob.setImageResource(R.drawable.ic_action_share_2);
                 break;
             default:
@@ -120,6 +137,10 @@ public class NewCameraActivity extends Activity
                 triggerButtonAction();
             }
         });
+
+        cameraPreviewFriendReplyText = findViewById(R.id.cameraPreviewFriendReplyText);
+        messageVideoFriendReplyText = findViewById(R.id.messageVideoFriendReplyText);
+        coverAnimation = findViewById(R.id.coverAnimation);
 
         closeRecordPreviewView = findViewById(R.id.closeVideoPreview);
         closeRecordPreviewView.setOnClickListener(new View.OnClickListener()
@@ -188,7 +209,7 @@ public class NewCameraActivity extends Activity
     public void onBackPressed()
     {
         AppState state = getAppState();
-        if(state == AppState.PreviewReady)
+        if (state == AppState.PreviewReady)
             closeResultPreview();
         else
             super.onBackPressed();
@@ -235,13 +256,13 @@ public class NewCameraActivity extends Activity
             @Override
             public void run()
             {
-                timerDial.updateOffset((int)now);
+                timerDial.updateOffset((int) now);
             }
         }
 
         public synchronized void endPause()
         {
-            if(pauseStart != null)
+            if (pauseStart != null)
             {
                 long calcStartAdjust = startTime + (System.currentTimeMillis() - pauseStart);
 
@@ -258,7 +279,7 @@ public class NewCameraActivity extends Activity
                 @Override
                 public void run()
                 {
-                    timerDial.resetAnimation((int)startRecordingTime, (int)endRecordingTime);
+                    timerDial.resetAnimation((int) startRecordingTime, (int) endRecordingTime);
                 }
             });
 
@@ -280,11 +301,11 @@ public class NewCameraActivity extends Activity
 
                 synchronized (this)
                 {
-                    if(pauseStart != null)
+                    if (pauseStart != null)
                         continue;
                 }
 
-                updateTimerRunnable.now = (int)now;
+                updateTimerRunnable.now = (int) now;
                 runOnUiThread(updateTimerRunnable);
 
 
@@ -355,6 +376,9 @@ public class NewCameraActivity extends Activity
     private void startRecording()
     {
         AndroidUtils.isMainThread();
+        hideMessage(cameraPreviewFriendReplyText);
+        if (messageVideoView != null)
+            showMessage(messageVideoFriendReplyText);
         setAppState(AppState.RecordingLimbo);
         if (messageVideoView != null)
             messageVideoView.pause();
@@ -365,6 +389,7 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.PreviewLoading);
+        hideMessage(messageVideoFriendReplyText);
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
         cameraPreviewView.stopRecording();
@@ -412,9 +437,13 @@ public class NewCameraActivity extends Activity
             public void run()
             {
                 AppState appStateTest = getAppState();
-                CWLog.i(NewCameraActivity.class, "appState: "+ appStateTest);
+                CWLog.i(NewCameraActivity.class, "appState: " + appStateTest);
                 if (appStateTest == AppState.LoadingFileCamera)
                 {
+                    if (chatMessage != null && chatMessage.metadata.startRecording > 0d)
+                    {
+                        showMessage(cameraPreviewFriendReplyText);
+                    }
                     setAppState(AppState.ReadyStopped);
                 }
             }
@@ -468,6 +497,8 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         setAppState(AppState.LoadingFileCamera);
+        hideMessage(cameraPreviewFriendReplyText);
+        hideMessage(messageVideoFriendReplyText);
         CWLog.i(NewCameraActivity.class, "createSurface started");
         cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
         {
@@ -481,7 +512,7 @@ public class NewCameraActivity extends Activity
             public void recordingStarted()
             {
                 setAppState(AppState.Recording);
-                if(messageVideoThumbnailView != null && messageVideoThumbnailView.getVisibility() == View.VISIBLE)
+                if (messageVideoThumbnailView != null && messageVideoThumbnailView.getVisibility() == View.VISIBLE)
                 {
                     messageVideoThumbnailView.setVisibility(View.GONE);
                     messageVideoView.setVisibility(View.VISIBLE);
@@ -654,5 +685,65 @@ public class NewCameraActivity extends Activity
                 startActivity(Intent.createChooser(intent, "Send email..."));
             }
         }.execute();
+    }
+
+    private void showMessage(View messageView)
+    {
+        if (messageView.getVisibility() != View.GONE)
+            return;
+
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.message_fade_in);
+        /*animation.setAnimationListener(new Animation.AnimationListener()
+        {
+            @Override
+            public void onAnimationStart(Animation animation)
+            {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation)
+            {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation)
+            {
+
+            }
+        });*/
+        messageView.startAnimation(animation);
+        messageView.setVisibility(View.VISIBLE);
+    }
+
+    private void hideMessage(View messageView)
+    {
+        if (messageView.getVisibility() != View.VISIBLE)
+            return;
+
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.message_fade_out);
+                /*animation.setAnimationListener(new Animation.AnimationListener()
+                {
+                    @Override
+                    public void onAnimationStart(Animation animation)
+                    {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation)
+                    {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation)
+                    {
+
+                    }
+                });*/
+        messageView.startAnimation(animation);
+        messageView.setVisibility(View.GONE);
     }
 }

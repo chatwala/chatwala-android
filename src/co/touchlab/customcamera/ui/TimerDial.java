@@ -22,6 +22,9 @@ public class TimerDial extends View
     Integer endRecordTime;
     int currentOffset;
     private float timerBarSize;
+    private Paint baseRedPaint;
+    private Paint clearPaint;
+    private Paint lightRedPaint;
 
     public TimerDial(Context context)
     {
@@ -44,6 +47,22 @@ public class TimerDial extends View
     private void init()
     {
         timerBarSize = getResources().getDimension(R.dimen.timer_bar_size);
+
+        clearPaint = new Paint();
+
+        clearPaint.setColor(Color.WHITE);
+        clearPaint.setAlpha(100);
+        clearPaint.setStyle(Paint.Style.FILL);
+
+        baseRedPaint = new Paint();
+
+        baseRedPaint.setColor(getResources().getColor(R.color.dot_red));
+        baseRedPaint.setStyle(Paint.Style.FILL);
+
+        lightRedPaint = new Paint();
+
+        lightRedPaint.setColor(getResources().getColor(R.color.dot_red_light));
+        lightRedPaint.setStyle(Paint.Style.FILL);
     }
 
     public void resetAnimation(Integer playOnlyDuration, Integer endRecordTime)
@@ -65,37 +84,16 @@ public class TimerDial extends View
     {
         super.onDraw(canvas);
 
-        RectF arcRect = new RectF(timerBarSize, timerBarSize, getWidth() - timerBarSize, getHeight() - timerBarSize);
+        RectF outerArcRect = new RectF(0, 0, getWidth(), getHeight());
+        RectF innerArcRect = new RectF(timerBarSize, timerBarSize, getWidth() - timerBarSize, getHeight() - timerBarSize);
+
+        canvas.drawOval(outerArcRect, clearPaint);
 
         if(endRecordTime != null)
         {
-            RectF timerArcRect = new RectF(0, 0, getWidth(), getHeight());
             int playOnly = playOnlyDuration == null ? 0 : playOnlyDuration;
 
-            int totalDuration = endRecordTime;
             int recordDuration = endRecordTime - playOnly;
-
-            int playOnlyAngleTotal = (playOnly * 360) / totalDuration;
-            int recordAngleTotal = 360 - playOnlyAngleTotal;
-
-            int playOnlyAngle;
-
-            if(currentOffset >= playOnly)
-            {
-                playOnlyAngle = playOnlyAngleTotal;
-            }
-            else
-            {
-                playOnlyAngle = (int)(((double)currentOffset/(double)playOnly) * (double) playOnlyAngleTotal);
-            }
-
-            if(playOnlyAngle > 0)
-            {
-                Paint playPaint = new Paint();
-                playPaint.setColor(Color.GRAY);
-                playPaint.setStyle(Paint.Style.FILL);
-                canvas.drawArc(timerArcRect, 0f, (float)playOnlyAngle, true, playPaint);
-            }
 
             int recordAngle;
 
@@ -106,23 +104,25 @@ public class TimerDial extends View
             else
             {
                 int currentRecordOffset = currentOffset - playOnly;
-                recordAngle = (int)(((double)currentRecordOffset/(double) recordDuration) * (double) recordAngleTotal);
+                recordAngle = (int)(((double)currentRecordOffset/(double) recordDuration) * (double) 360);
             }
 
+            //Draw remainder base red because drawing arcs over ovals didn't exactly match up.
             if(recordAngle > 0)
             {
-                Paint playPaint = new Paint();
-                playPaint.setColor(Color.RED);
-                playPaint.setStyle(Paint.Style.FILL);
-                canvas.drawArc(timerArcRect, playOnlyAngleTotal, (float)recordAngle, true, playPaint);
+                canvas.drawArc(innerArcRect, 0, (float)recordAngle, true, lightRedPaint);
+                canvas.drawArc(innerArcRect, (float)recordAngle, 360-recordAngle, true, baseRedPaint);
+            }
+            else
+            {
+                canvas.drawOval(innerArcRect, baseRedPaint);
             }
         }
+        else
+        {
+            canvas.drawOval(innerArcRect, baseRedPaint);
+        }
 
-        Paint clearPaint = new Paint();
 
-        clearPaint.setColor(Color.BLACK);
-        clearPaint.setStyle(Paint.Style.FILL);
-
-        canvas.drawOval(arcRect, clearPaint);
     }
 }
