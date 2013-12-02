@@ -19,9 +19,9 @@ import java.util.zip.ZipOutputStream;
  */
 public class ZipUtil
 {
-    public static void zipFiles(FileOutputStream outFileStream, List<File> filesIn) throws IOException
+    public static void zipFiles(File outFile, List<File> filesIn) throws IOException
     {
-        final ZipOutputStream out = new ZipOutputStream(outFileStream);
+        final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFile));
         for (File file : filesIn)
         {
             FileInputStream inp = new FileInputStream(file);

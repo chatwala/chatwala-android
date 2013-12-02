@@ -711,16 +711,11 @@ public class NewCameraActivity extends Activity
 
                     fileWriter.close();
 
-                    String shareFileName = "chat.wala";
-                    File shareFile = getFileStreamPath(shareFileName);
-                    if(shareFile.exists())
-                        shareFile.delete();
+                    File shareDir = new File(NewCameraActivity.this.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
+                    shareDir.mkdirs();
+                    outZip = new File(shareDir, "chat.wala");
 
-                    FileOutputStream shareFileStream = openFileOutput(shareFileName, MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
-
-                    ZipUtil.zipFiles(shareFileStream, Arrays.asList(buildDir.listFiles()));
-                    shareFileStream.close();
-                    outZip = shareFile;
+                    ZipUtil.zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
                 }
                 catch (IOException e)
                 {
@@ -751,20 +746,9 @@ public class NewCameraActivity extends Activity
 
                 Uri uri = Uri.fromFile(outZip);
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
-                startActivityForResult(Intent.createChooser(intent, "Send email..."), SHARE_FILE_REQUEST);
+                startActivity(Intent.createChooser(intent, "Send email..."));
             }
         }.execute();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if(requestCode == SHARE_FILE_REQUEST)
-        {
-            String shareFileName = "chat.wala";
-            File shareFile = getFileStreamPath(shareFileName);
-            shareFile.delete();
-        }
     }
 
     private void showMessage(View messageView)
