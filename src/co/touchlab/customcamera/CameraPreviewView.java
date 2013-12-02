@@ -8,6 +8,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
+import co.touchlab.customcamera.util.CWLog;
 import co.touchlab.customcamera.util.CameraUtils;
 
 import java.io.File;
@@ -31,6 +32,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     private File recordingFile;
     private final CameraPreviewCallback callback;
     private AtomicBoolean recordStarting = new AtomicBoolean(false);
+    private int cameraFrameRate;
 
     public interface CameraPreviewCallback
     {
@@ -109,7 +111,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureUpdated: " + surface);
+//        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureUpdated: " + surface);
 //        Log.i(CameraPreviewCallback.class.getSimpleName(), "updated: " + System.currentTimeMillis());
         if(recordStarting.getAndSet(false))
         {
@@ -155,7 +157,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         CameraUtils.setRecordingHintIfNecessary(params);
         //params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         //params.setPreviewFpsRange(15, 15);
-
         camera.setParameters(params);
     }
 
@@ -184,14 +185,15 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setVideoFrameRate(CameraUtils.findVideoFrameRate(getContext()));
+        mediaRecorder.setVideoFrameRate(cameraFrameRate);
 
         mediaRecorder.setVideoSize(cameraVideoSize.width, cameraVideoSize.height);
 
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
-        mediaRecorder.setVideoEncodingBitRate(CameraUtils.findVideoBitDepth(getContext()));
+        int bitDepth = AppPrefs.getInstance(getContext()).getPrefBitDepth();
+        mediaRecorder.setVideoEncodingBitRate(bitDepth);
 
         Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
@@ -223,11 +225,13 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         catch (IllegalStateException e)
         {
             releaseMediaRecorder();
+            Log.e(CameraPreviewView.class.getSimpleName(), "", e);
             return false;
         }
         catch (IOException e)
         {
             releaseMediaRecorder();
+            Log.e(CameraPreviewView.class.getSimpleName(), "", e);
             return false;
         }
 
@@ -292,6 +296,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         int viewWidth = CameraUtils.findVideoMinWidth(getContext());
         cameraPreviewSize = CameraUtils.findCameraPreviewSize(viewWidth, params);
         cameraVideoSize = CameraUtils.findCameraVideoSize(viewWidth, params);
+        cameraFrameRate = CameraUtils.findCameraFrameRate(getContext(), params);
+        CWLog.i(CameraPreviewView.class, "Frame rate: "+ cameraFrameRate);
         params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
 
         camera.setParameters(params);

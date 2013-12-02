@@ -110,8 +110,9 @@ public class TimerDial extends View
             //Draw remainder base red because drawing arcs over ovals didn't exactly match up.
             if(recordAngle > 0)
             {
-                canvas.drawArc(innerArcRect, 0, (float)recordAngle, true, lightRedPaint);
-                canvas.drawArc(innerArcRect, (float)recordAngle, 360-recordAngle, true, baseRedPaint);
+                int adjustedRecordAngle = recordAngle < 90 ? recordAngle + 270 : recordAngle - 90;
+                canvas.drawArc(innerArcRect, 270, (float)recordAngle, true, lightRedPaint);
+                canvas.drawArc(innerArcRect, (float)adjustedRecordAngle, 360-recordAngle, true, baseRedPaint);
             }
             else
             {

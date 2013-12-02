@@ -1,8 +1,11 @@
 package co.touchlab.customcamera;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,13 +14,16 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.*;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
+    public static final int SHARE_FILE_REQUEST = 4421312;
     private View coverAnimation;
 
 
@@ -43,9 +50,9 @@ public class NewCameraActivity extends Activity
     private CroppingLayout cameraPreviewContainer, videoViewContainer;
     private View cameraPreviewFriendReplyText;
     private View messageVideoFriendReplyText;
-    private DynamicVideoView messageVideoView;
+    private DynamicTextureVideoView messageVideoView;
     private DynamicVideoThumbImageView messageVideoThumbnailView;
-    private DynamicVideoView recordPreviewVideoView;
+    private DynamicTextureVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
     private TimerDial timerDial;
@@ -135,6 +142,40 @@ public class NewCameraActivity extends Activity
             public void onClick(View v)
             {
                 triggerButtonAction();
+            }
+        });
+
+        timerButtonContainer.setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v)
+            {
+                final View bitDepthView = getLayoutInflater().inflate(R.layout.bit_depth_dialog, null);
+                int prefBitDepth = AppPrefs.getInstance(NewCameraActivity.this).getPrefBitDepth();
+                ((EditText) bitDepthView.findViewById(R.id.bitDepth)).setText(Integer.toString(prefBitDepth));
+                new AlertDialog.Builder(NewCameraActivity.this)
+                        .setView(bitDepthView)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                String bitDepth = ((EditText) bitDepthView.findViewById(R.id.bitDepth)).getText().toString();
+                                int bd = Integer.parseInt(bitDepth);
+                                if (bd > 10000)
+                                {
+                                    AppPrefs.getInstance(NewCameraActivity.this).setPrefBitDepth(bd);
+                                    dialog.dismiss();
+                                    tearDownSurface();
+                                    createSurface();
+                                }
+                                else
+                                {
+                                    Toast.makeText(NewCameraActivity.this, "Bit depth must be greater than 10000", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }).show();
+                return false;
             }
         });
 
@@ -360,6 +401,7 @@ public class NewCameraActivity extends Activity
             setAppState(AppState.PlaybackOnly);
             messageVideoView.seekTo(0);
             messageVideoView.start();
+
         }
 
         if (recordingStartMillis == 0)
@@ -376,9 +418,7 @@ public class NewCameraActivity extends Activity
     private void startRecording()
     {
         AndroidUtils.isMainThread();
-        hideMessage(cameraPreviewFriendReplyText);
-        if (messageVideoView != null)
-            showMessage(messageVideoFriendReplyText);
+
         setAppState(AppState.RecordingLimbo);
         if (messageVideoView != null)
             messageVideoView.pause();
@@ -416,8 +456,18 @@ public class NewCameraActivity extends Activity
 
         if (chatMessage != null)
         {
-            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
+            messageVideoView = new DynamicTextureVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, chatMessageVideoMetadata.rotation);
             videoViewContainer.addView(messageVideoView);
+            messageVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+            {
+                @Override
+                public void onCompletion(MediaPlayer mp)
+                {
+                    hideMessage(cameraPreviewFriendReplyText);
+                    showMessage(messageVideoFriendReplyText);
+                }
+            });
+            showMessage(cameraPreviewFriendReplyText);
             messageVideoThumbnailView = new DynamicVideoThumbImageView(NewCameraActivity.this, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
             videoViewContainer.addView(messageVideoThumbnailView);
             messageVideoView.setVisibility(View.GONE);
@@ -440,10 +490,6 @@ public class NewCameraActivity extends Activity
                 CWLog.i(NewCameraActivity.class, "appState: " + appStateTest);
                 if (appStateTest == AppState.LoadingFileCamera)
                 {
-                    if (chatMessage != null && chatMessage.metadata.startRecording > 0d)
-                    {
-                        showMessage(cameraPreviewFriendReplyText);
-                    }
                     setAppState(AppState.ReadyStopped);
                 }
             }
@@ -473,20 +519,32 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
-            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height);
+            recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);
             recordPreviewVideoView.start();
-            recordPreviewVideoView.setOnClickListener(new View.OnClickListener()
+            recordPreviewVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+            {
+                @Override
+                public void onCompletion(MediaPlayer mp)
+                {
+                    recordPreviewVideoView.seekTo(0);
+                }
+            });
+            findViewById(R.id.recordPreviewClick).setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View v)
                 {
                     if (recordPreviewVideoView.isPlaying())
+                    {
                         recordPreviewVideoView.pause();
+                    }
                     else
+                    {
                         recordPreviewVideoView.start();
+                    }
                 }
             });
             setAppState(AppState.PreviewReady);
@@ -545,7 +603,9 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         recordPreviewFile = null;
+        recordPreviewVideoView.setOnCompletionListener(null);
         cameraPreviewContainer.removeView(recordPreviewVideoView);
+        findViewById(R.id.recordPreviewClick).setOnClickListener(null);
         closeRecordPreviewView.setVisibility(View.GONE);
 
         createSurface();
@@ -554,6 +614,13 @@ public class NewCameraActivity extends Activity
     private void tearDownSurface()
     {
         AndroidUtils.isMainThread();
+        if (heartbeatTimer != null)
+            heartbeatTimer.abort();
+        if (messageVideoView != null)
+            messageVideoView.pause();
+        if (recordPreviewVideoView != null)
+            recordPreviewVideoView.pause();
+
         cameraPreviewContainer.removeAllViews();
         if (cameraPreviewView != null)
         {
@@ -564,6 +631,7 @@ public class NewCameraActivity extends Activity
         messageVideoView = null;
         messageVideoThumbnailView = null;
         chatMessageVideoBitmap = null;
+        findViewById(R.id.recordPreviewClick).setOnClickListener(null);
     }
 
     class MessageLoaderTask extends AsyncTask<Void, Void, ChatMessage>
@@ -602,7 +670,8 @@ public class NewCameraActivity extends Activity
             @Override
             protected Object doInBackground(Object... params)
             {
-                File buildDir = new File(CameraUtils.getRootDataFolder(NewCameraActivity.this), "chat_" + System.currentTimeMillis());
+                File rootDataFolder = CameraUtils.getRootDataFolder(NewCameraActivity.this);
+                File buildDir = new File(rootDataFolder, "chat_" + System.currentTimeMillis());
                 buildDir.mkdirs();
 
                 File walaFile = new File(buildDir, "video.mp4");
@@ -642,11 +711,16 @@ public class NewCameraActivity extends Activity
 
                     fileWriter.close();
 
-                    File shareDir = new File(NewCameraActivity.this.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
-                    shareDir.mkdirs();
-                    outZip = new File(shareDir, "chat.wala");
+                    String shareFileName = "chat.wala";
+                    File shareFile = getFileStreamPath(shareFileName);
+                    if(shareFile.exists())
+                        shareFile.delete();
 
-                    ZipUtil.zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
+                    FileOutputStream shareFileStream = openFileOutput(shareFileName, MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+
+                    ZipUtil.zipFiles(shareFileStream, Arrays.asList(buildDir.listFiles()));
+                    shareFileStream.close();
+                    outZip = shareFile;
                 }
                 catch (IOException e)
                 {
@@ -664,27 +738,33 @@ public class NewCameraActivity extends Activity
             protected void onPostExecute(Object o)
             {
                 File outZip = (File) o;
-                Intent intent = new Intent(Intent.ACTION_SEND);
 
-                intent.setType("text/plain");
-                String toEmail = null;
+                String uriText =
+                        "mailto:" +
+                                "?subject=" + URLEncoder.encode("subject") +
+                                "&body=" + URLEncoder.encode("body");
 
-                if (chatMessage != null)
-                {
-                    toEmail = chatMessage.metadata.senderId;
-                }
+                Uri mailtoUri = Uri.parse(uriText);
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
 
-                if (toEmail != null)
-                    intent.putExtra(Intent.EXTRA_EMAIL, new String[]{toEmail});
-
-                intent.putExtra(Intent.EXTRA_SUBJECT, "test reply");
-                intent.putExtra(Intent.EXTRA_TEXT, "the video");
+                intent.setData(mailtoUri);
 
                 Uri uri = Uri.fromFile(outZip);
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
-                startActivity(Intent.createChooser(intent, "Send email..."));
+                startActivityForResult(Intent.createChooser(intent, "Send email..."), SHARE_FILE_REQUEST);
             }
         }.execute();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if(requestCode == SHARE_FILE_REQUEST)
+        {
+            String shareFileName = "chat.wala";
+            File shareFile = getFileStreamPath(shareFileName);
+            shareFile.delete();
+        }
     }
 
     private void showMessage(View messageView)

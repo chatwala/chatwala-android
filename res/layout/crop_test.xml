@@ -41,6 +41,12 @@
                         android:layout_gravity="center"
                         android:text="Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!"/>
             </FrameLayout>
+            <FrameLayout
+                    android:layout_width="fill_parent"
+                                        android:layout_height="fill_parent"
+                            android:id="@+id/recordPreviewClick"
+                            >
+                    </FrameLayout>
         </FrameLayout>
         <FrameLayout
                 android:layout_width="fill_parent"
@@ -71,6 +77,8 @@
                         android:text="Now record your reply!"/>
             </FrameLayout>
         </FrameLayout>
+
+
 
     </LinearLayout>
     <FrameLayout

@@ -56,6 +56,7 @@ public class VideoUtils
         public int height;
         public int width;
         public int duration;
+        public int rotation;
     }
 
     public static VideoMetadata findMetadata(File videoFile) throws IOException
@@ -68,7 +69,9 @@ public class VideoUtils
 
         String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
         String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+        String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
 
+        CWLog.i(VideoUtils.class, "rotation: "+ rotation);
         inp.close();
         VideoMetadata metadata = new VideoMetadata();
 
@@ -76,6 +79,7 @@ public class VideoUtils
         metadata.height = Integer.parseInt(height);
         metadata.width = Integer.parseInt(width);
         metadata.duration = Integer.parseInt(duration);
+        metadata.rotation = Integer.parseInt(rotation);
 
         return metadata;
     }

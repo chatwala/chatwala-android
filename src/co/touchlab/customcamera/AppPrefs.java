@@ -1,8 +1,11 @@
 package co.touchlab.customcamera;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import co.touchlab.customcamera.util.CameraUtils;
+import co.touchlab.customcamera.util.VideoUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,8 +17,11 @@ import android.preference.PreferenceManager;
 public class AppPrefs
 {
     private static AppPrefs INSTANCE;
+    private Application application;
 
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
+    public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
+
 
     public static synchronized AppPrefs getInstance(Context context)
     {
@@ -31,6 +37,7 @@ public class AppPrefs
     private AppPrefs(Context context)
     {
         mSp = PreferenceManager.getDefaultSharedPreferences(context);
+        application = (Application) context.getApplicationContext();
     }
 
     /*public SharedPreferences getPrefs()
@@ -46,5 +53,15 @@ public class AppPrefs
     public void setPrefSelectedEmail(String email)
     {
         mSp.edit().putString(PREF_SELECTED_EMAIL, email).apply();
+    }
+
+    public int getPrefBitDepth()
+    {
+        return mSp.getInt(PREF_BIT_DEPTH, CameraUtils.findVideoBitDepth(application));
+    }
+
+    public void setPrefBitDepth(int bitDepth)
+    {
+        mSp.edit().putInt(PREF_BIT_DEPTH, bitDepth).apply();
     }
 }
