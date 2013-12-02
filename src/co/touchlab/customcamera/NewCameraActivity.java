@@ -1,5 +1,6 @@
 package co.touchlab.customcamera;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -38,6 +39,7 @@ public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
     public static final int SHARE_FILE_REQUEST = 4421312;
+    public static final int GET_EMAIL_ADDRESS_REQUEST = 333603;
     private View coverAnimation;
 
 
@@ -70,7 +72,7 @@ public class NewCameraActivity extends Activity
     private ChatMessage chatMessage;
     private VideoUtils.VideoMetadata chatMessageVideoMetadata;
     private Bitmap chatMessageVideoBitmap;
-    private File recordPreviewFile;
+    private File recordPreviewFile, pendingSendFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
     // ************* DANGEROUS STATE *************
@@ -241,7 +243,7 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PreviewReady)
         {
-            sendEmail(recordPreviewFile);
+            prepareEmail(recordPreviewFile);
             closeResultPreview();
         }
     }
@@ -662,6 +664,21 @@ public class NewCameraActivity extends Activity
         }
     }
 
+    private void prepareEmail(final File videoFile)
+    {
+        pendingSendFile = videoFile;
+
+        if(AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
+        {
+            sendEmail(pendingSendFile);
+        }
+        else
+        {
+            Intent intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);
+            startActivityForResult(intent, GET_EMAIL_ADDRESS_REQUEST);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private void sendEmail(final File videoFile)
     {
@@ -726,6 +743,7 @@ public class NewCameraActivity extends Activity
                     throw new RuntimeException(e);
                 }
 
+                pendingSendFile = null;
                 return outZip;
             }
 
@@ -749,6 +767,21 @@ public class NewCameraActivity extends Activity
                 startActivity(Intent.createChooser(intent, "Send email..."));
             }
         }.execute();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK)
+        {
+            if(requestCode == GET_EMAIL_ADDRESS_REQUEST)
+            {
+                AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+                sendEmail(pendingSendFile);
+            }
+        }
     }
 
     private void showMessage(View messageView)
