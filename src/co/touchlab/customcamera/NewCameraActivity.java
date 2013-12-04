@@ -73,7 +73,7 @@ public class NewCameraActivity extends Activity
     private ChatMessage chatMessage;
     private VideoUtils.VideoMetadata chatMessageVideoMetadata;
     private Bitmap chatMessageVideoBitmap;
-    private File recordPreviewFile, pendingSendFile;
+    private File recordPreviewFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
     // ************* DANGEROUS STATE *************
@@ -244,7 +244,7 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PreviewReady)
         {
-            prepareEmail(recordPreviewFile);
+            prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
             closeResultPreview();
         }
     }
@@ -666,13 +666,19 @@ public class NewCameraActivity extends Activity
         }
     }
 
-    private void prepareEmail(final File videoFile)
+    File pendingSendFile;
+    ChatMessage pendingMessage;
+    VideoUtils.VideoMetadata pendingMetadata;
+
+    private void prepareEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
         pendingSendFile = videoFile;
+        pendingMessage = originalMessage;
+        pendingMetadata = originalVideoMetadata;
 
         if(AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
         {
-            sendEmail(pendingSendFile);
+            sendEmail(pendingSendFile, pendingMessage, pendingMetadata);
         }
         else
         {
@@ -682,7 +688,7 @@ public class NewCameraActivity extends Activity
     }
 
     @SuppressWarnings("unchecked")
-    private void sendEmail(final File videoFile)
+    private void sendEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
         new AsyncTask()
         {
@@ -707,20 +713,20 @@ public class NewCameraActivity extends Activity
 
                     File metadataFile = new File(buildDir, "metadata.json");
 
-                    MessageMetadata openedMessageMetadata = chatMessage == null ? null : chatMessage.metadata;
+                    MessageMetadata openedMessageMetadata = originalMessage == null ? null : originalMessage.metadata;
 
                     MessageMetadata sendMessageMetadata = openedMessageMetadata == null ? new MessageMetadata() : openedMessageMetadata.copy();
 
                     sendMessageMetadata.incrementForNewMessage();
 
                     long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
-                    long chatMessageDuration = chatMessageVideoMetadata == null ? 0 : chatMessageVideoMetadata.duration;
+                    long chatMessageDuration = originalVideoMetadata == null ? 0 : originalVideoMetadata.duration;
                     sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
 
                     String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
 
-                    if (myEmail == null && chatMessage != null)
-                        myEmail = chatMessage.probableEmailSource;
+                    if (myEmail == null && originalMessage != null)
+                        myEmail = originalMessage.probableEmailSource;
 
                     sendMessageMetadata.senderId = myEmail;
 
@@ -755,8 +761,8 @@ public class NewCameraActivity extends Activity
                 File outZip = (File) o;
 
                 String sendTo = "";
-                if(chatMessage != null && chatMessage.metadata.senderId != null)
-                    sendTo = chatMessage.metadata.senderId.trim();
+                if(originalMessage != null && originalMessage.metadata.senderId != null)
+                    sendTo = originalMessage.metadata.senderId.trim();
 
                 String uriText =
                         "mailto:" +
@@ -786,7 +792,7 @@ public class NewCameraActivity extends Activity
             if(requestCode == GET_EMAIL_ADDRESS_REQUEST)
             {
                 AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
-                sendEmail(pendingSendFile);
+                sendEmail(pendingSendFile, pendingMessage, pendingMetadata);
             }
         }
     }
