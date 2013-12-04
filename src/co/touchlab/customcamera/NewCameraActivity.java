@@ -670,19 +670,11 @@ public class NewCameraActivity extends Activity
         }
     }
 
-    File pendingSendFile;
-    ChatMessage pendingMessage;
-    VideoUtils.VideoMetadata pendingMetadata;
-
     private void prepareEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        pendingSendFile = videoFile;
-        pendingMessage = originalMessage;
-        pendingMetadata = originalVideoMetadata;
-
         if(AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
         {
-            sendEmail(pendingSendFile, pendingMessage, pendingMetadata);
+            sendEmail(videoFile, originalMessage, originalVideoMetadata);
         }
         else
         {
@@ -709,7 +701,7 @@ public class NewCameraActivity extends Activity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(((AlertDialog)dialog).getListView().getCheckedItemPosition()));
-                        sendEmail(pendingSendFile);
+                        sendEmail(videoFile, originalMessage, originalVideoMetadata);
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
@@ -728,7 +720,7 @@ public class NewCameraActivity extends Activity
                 {
                     AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(0));
                 }
-                sendEmail(pendingSendFile);
+                sendEmail(videoFile, originalMessage, originalVideoMetadata);
             }
         }
     }
@@ -797,7 +789,6 @@ public class NewCameraActivity extends Activity
                     throw new RuntimeException(e);
                 }
 
-                pendingSendFile = null;
                 return outZip;
             }
 
