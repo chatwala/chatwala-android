@@ -1,5 +1,6 @@
 package co.touchlab.customcamera;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,6 +11,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -25,8 +28,10 @@ import org.json.JSONException;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,7 +44,6 @@ public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
     public static final int SHARE_FILE_REQUEST = 4421312;
-    public static final int GET_EMAIL_ADDRESS_REQUEST = 333603;
     private View coverAnimation;
 
 
@@ -674,8 +678,50 @@ public class NewCameraActivity extends Activity
         }
         else
         {
-            Intent intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);
-            startActivityForResult(intent, GET_EMAIL_ADDRESS_REQUEST);
+            Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
+            String googleAccountTypeString = "com.google";
+            Account[] accounts = AccountManager.get(NewCameraActivity.this).getAccounts();
+            final ArrayList<String> emailList = new ArrayList<String>();
+            for (Account account : accounts)
+            {
+                if (emailPattern.matcher(account.name).matches() && account.type.startsWith(googleAccountTypeString))
+                {
+                    emailList.add(account.name);
+                }
+            }
+
+            if(emailList.size() > 1)
+            {
+                AlertDialog.Builder builder = new AlertDialog.Builder(NewCameraActivity.this);
+                builder.setTitle("Select your account");
+                builder.setSingleChoiceItems(emailList.toArray(new String[emailList.size()]), 0, null);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(((AlertDialog)dialog).getListView().getCheckedItemPosition()));
+                        sendEmail(pendingSendFile);
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+            }
+            else
+            {
+                if(emailList.size() == 1)
+                {
+                    AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(0));
+                }
+                sendEmail(pendingSendFile);
+            }
         }
     }
 
@@ -767,21 +813,6 @@ public class NewCameraActivity extends Activity
                 startActivity(Intent.createChooser(intent, "Send email..."));
             }
         }.execute();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(resultCode == RESULT_OK)
-        {
-            if(requestCode == GET_EMAIL_ADDRESS_REQUEST)
-            {
-                AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
-                sendEmail(pendingSendFile);
-            }
-        }
     }
 
     private void showMessage(View messageView)
