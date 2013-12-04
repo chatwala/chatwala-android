@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -421,6 +422,8 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
 
+        hideMessage(cameraPreviewFriendReplyText);
+
         setAppState(AppState.RecordingLimbo);
         if (messageVideoView != null)
             messageVideoView.pause();
@@ -465,7 +468,6 @@ public class NewCameraActivity extends Activity
                 @Override
                 public void onCompletion(MediaPlayer mp)
                 {
-                    hideMessage(cameraPreviewFriendReplyText);
                     showMessage(messageVideoFriendReplyText);
                 }
             });
@@ -752,8 +754,13 @@ public class NewCameraActivity extends Activity
             {
                 File outZip = (File) o;
 
+                String sendTo = "";
+                if(chatMessage != null && chatMessage.metadata.senderId != null)
+                    sendTo = chatMessage.metadata.senderId.trim();
+
                 String uriText =
                         "mailto:" +
+                                sendTo +
                                 "?subject=" + URLEncoder.encode("subject") +
                                 "&body=" + URLEncoder.encode("body");
 
