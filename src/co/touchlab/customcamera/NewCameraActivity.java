@@ -45,8 +45,6 @@ public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
     public static final int SHARE_FILE_REQUEST = 4421312;
-    private View coverAnimation;
-
 
     public enum AppState
     {
@@ -96,28 +94,16 @@ public class NewCameraActivity extends Activity
 
         switch (this.appState)
         {
-            case Transition:
-            case LoadingFileCamera:
-//            case RecordingLimbo:
-//            case PreviewLoading:
-                coverAnimation.setVisibility(View.VISIBLE);
-                break;
-            default:
-                coverAnimation.setVisibility(View.GONE);
-        }
-
-        switch (this.appState)
-        {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
 //                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
-                timerKnob.setImageResource(R.drawable.ic_action_video);
+                timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
             case Recording:
                 timerKnob.setVisibility(View.VISIBLE);
 //                timerKnob.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_and_in));
-                timerKnob.setImageResource(R.drawable.ic_action_playback_stop);
+                timerKnob.setImageResource(R.drawable.record_stop);
                 break;
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
@@ -188,7 +174,6 @@ public class NewCameraActivity extends Activity
 
         cameraPreviewFriendReplyText = findViewById(R.id.cameraPreviewFriendReplyText);
         messageVideoFriendReplyText = findViewById(R.id.messageVideoFriendReplyText);
-        coverAnimation = findViewById(R.id.coverAnimation);
 
         closeRecordPreviewView = findViewById(R.id.closeVideoPreview);
         closeRecordPreviewView.setOnClickListener(new View.OnClickListener()
@@ -538,9 +523,10 @@ public class NewCameraActivity extends Activity
                 public void onCompletion(MediaPlayer mp)
                 {
                     recordPreviewVideoView.seekTo(0);
+                    recordPreviewVideoView.start();
                 }
             });
-            findViewById(R.id.recordPreviewClick).setOnClickListener(new View.OnClickListener()
+            /*findViewById(R.id.recordPreviewClick).setOnClickListener(new View.OnClickListener()
             {
                 @Override
                 public void onClick(View v)
@@ -554,7 +540,7 @@ public class NewCameraActivity extends Activity
                         recordPreviewVideoView.start();
                     }
                 }
-            });
+            });*/
             setAppState(AppState.PreviewReady);
         }
     }

@@ -12,7 +12,17 @@
                 android:layout_width="fill_parent"
                 android:layout_height="0dip"
                 android:layout_weight="1">
-
+            <FrameLayout
+                    android:id="@+id/cameraPreviewWalaWatermark"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    >
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/chat_watermark_top"
+                        android:layout_gravity="bottom|center_horizontal"/>
+            </FrameLayout>
             <co.touchlab.customcamera.CroppingLayout
                     android:id="@+id/surface_view_container"
                     android:layout_width="fill_parent"
@@ -43,10 +53,10 @@
             </FrameLayout>
             <FrameLayout
                     android:layout_width="fill_parent"
-                                        android:layout_height="fill_parent"
-                            android:id="@+id/recordPreviewClick"
-                            >
-                    </FrameLayout>
+                    android:layout_height="fill_parent"
+                    android:id="@+id/recordPreviewClick"
+                    >
+            </FrameLayout>
         </FrameLayout>
         <FrameLayout
                 android:layout_width="fill_parent"
@@ -59,7 +69,17 @@
                     android:layout_height="fill_parent"
                     >
             </co.touchlab.customcamera.CroppingLayout>
-
+            <FrameLayout
+                    android:id="@+id/messageVideoWalaWatermark"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    >
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/chat_watermark"
+                        android:layout_gravity="top|center_horizontal"/>
+            </FrameLayout>
             <FrameLayout
                     android:id="@+id/messageVideoFriendReplyText"
                     android:layout_width="fill_parent"
@@ -79,7 +99,6 @@
         </FrameLayout>
 
 
-
     </LinearLayout>
     <FrameLayout
             android:layout_width="wrap_content"
@@ -89,8 +108,8 @@
             >
         <co.touchlab.customcamera.ui.TimerDial
                 android:id="@+id/timerDial"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="@dimen/timer_dial_diameter"
+                android:layout_height="@dimen/timer_dial_diameter"
                 android:layout_gravity="center"
                 />
         <ImageView
@@ -107,16 +126,4 @@
             android:src="@drawable/ic_action_cancel"
             android:visibility="gone"
             android:id="@+id/closeVideoPreview"/>
-    <FrameLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/coverAnimation"
-            android:background="@color/app_background"
-            android:visibility="gone"
-            >
-        <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"/>
-    </FrameLayout>
 </FrameLayout>
