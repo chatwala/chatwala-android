@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -658,7 +659,7 @@ public class NewCameraActivity extends Activity
 
     private void prepareEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        if(AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
+        if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
         {
             sendEmail(videoFile, originalMessage, originalVideoMetadata);
         }
@@ -676,7 +677,7 @@ public class NewCameraActivity extends Activity
                 }
             }
 
-            if(emailList.size() > 1)
+            if (emailList.size() > 1)
             {
                 AlertDialog.Builder builder = new AlertDialog.Builder(NewCameraActivity.this);
                 builder.setTitle("Select your account");
@@ -686,7 +687,7 @@ public class NewCameraActivity extends Activity
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(((AlertDialog)dialog).getListView().getCheckedItemPosition()));
+                        AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(((AlertDialog) dialog).getListView().getCheckedItemPosition()));
                         sendEmail(videoFile, originalMessage, originalVideoMetadata);
                     }
                 });
@@ -702,7 +703,7 @@ public class NewCameraActivity extends Activity
             }
             else
             {
-                if(emailList.size() == 1)
+                if (emailList.size() == 1)
                 {
                     AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(0));
                 }
@@ -784,7 +785,7 @@ public class NewCameraActivity extends Activity
                 File outZip = (File) o;
 
                 String sendTo = "";
-                if(originalMessage != null && originalMessage.metadata.senderId != null)
+                if (originalMessage != null && originalMessage.metadata.senderId != null)
                     sendTo = originalMessage.metadata.senderId.trim();
 
                 String uriText =
@@ -794,13 +795,35 @@ public class NewCameraActivity extends Activity
                                 "&body=" + URLEncoder.encode("body");
 
                 Uri mailtoUri = Uri.parse(uriText);
-                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                Uri dataUri = Uri.fromFile(outZip);
 
-                intent.setData(mailtoUri);
+                if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
+                {
+                    Intent gmailIntent = new Intent();
+                    gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
+                    gmailIntent.setData(mailtoUri);
 
-                Uri uri = Uri.fromFile(outZip);
-                intent.putExtra(Intent.EXTRA_STREAM, uri);
-                startActivity(Intent.createChooser(intent, "Send email..."));
+                    gmailIntent.putExtra(Intent.EXTRA_STREAM, dataUri);
+
+                    try
+                    {
+                        startActivity(gmailIntent);
+                    }
+                    catch (ActivityNotFoundException ex)
+                    {
+                        // handle error
+                    }
+                }
+                else
+                {
+                    Intent intent = new Intent(Intent.ACTION_SENDTO);
+
+                    intent.setData(mailtoUri);
+
+                    intent.putExtra(Intent.EXTRA_STREAM, dataUri);
+                    startActivity(Intent.createChooser(intent, "Send email..."));
+                }
+
             }
         }.execute();
     }
