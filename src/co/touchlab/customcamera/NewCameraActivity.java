@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +23,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.*;
@@ -47,6 +49,8 @@ public class NewCameraActivity extends Activity
     public static final int RECORDING_TIME = 10000;
     public static final int SHARE_FILE_REQUEST = 4421312;
 
+
+
     public enum AppState
     {
         Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
@@ -55,7 +59,9 @@ public class NewCameraActivity extends Activity
     // ************* onCreate only *************
     private CroppingLayout cameraPreviewContainer, videoViewContainer;
     private View cameraPreviewFriendReplyText;
+    private TextView cameraPreviewFriendReplyTextView;
     private View messageVideoFriendReplyText;
+    private TextView messageVideoFriendReplyTextView;
     private DynamicTextureVideoView messageVideoView;
     private DynamicVideoThumbImageView messageVideoThumbnailView;
     private DynamicTextureVideoView recordPreviewVideoView;
@@ -174,7 +180,12 @@ public class NewCameraActivity extends Activity
         });
 
         cameraPreviewFriendReplyText = findViewById(R.id.cameraPreviewFriendReplyText);
+        cameraPreviewFriendReplyTextView = (TextView)findViewById(R.id.cameraPreviewFriendReplyTextView);
+        Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
+        cameraPreviewFriendReplyTextView.setTypeface(fontDemi);
         messageVideoFriendReplyText = findViewById(R.id.messageVideoFriendReplyText);
+        messageVideoFriendReplyTextView = (TextView)findViewById(R.id.messageVideoFriendReplyTextView);
+        messageVideoFriendReplyTextView.setTypeface(fontDemi);
 
         closeRecordPreviewView = findViewById(R.id.closeVideoPreview);
         closeRecordPreviewView.setOnClickListener(new View.OnClickListener()

@@ -43,6 +43,7 @@
                     android:background="#ffffff"
                     android:visibility="gone">
                 <TextView
+                        android:id="@+id/cameraPreviewFriendReplyTextView"
                         android:layout_margin="20dp"
                         android:textSize="22sp"
                         android:gravity="center"
@@ -62,13 +63,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="0dip"
                 android:layout_weight="1">
-
-            <co.touchlab.customcamera.CroppingLayout
-                    android:id="@+id/video_view_container"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    >
-            </co.touchlab.customcamera.CroppingLayout>
             <FrameLayout
                     android:id="@+id/messageVideoWalaWatermark"
                     android:layout_width="fill_parent"
@@ -80,17 +74,25 @@
                         android:src="@drawable/chat_watermark"
                         android:layout_gravity="top|center_horizontal"/>
             </FrameLayout>
+            <co.touchlab.customcamera.CroppingLayout
+                    android:id="@+id/video_view_container"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    >
+            </co.touchlab.customcamera.CroppingLayout>
+
             <FrameLayout
                     android:id="@+id/messageVideoFriendReplyText"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:alpha=".7"
-                    android:background="#ffffff"
+                    android:background="#aaffffff"
                     android:visibility="gone">
                 <TextView
+                        android:id="@+id/messageVideoFriendReplyTextView"
                         android:layout_margin="20dp"
                         android:textSize="22sp"
                         android:gravity="center"
+                        android:textColor="#000000"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
