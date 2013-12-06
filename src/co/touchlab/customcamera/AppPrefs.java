@@ -21,6 +21,8 @@ public class AppPrefs
 
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
+    public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
+    public static final String PREF_SHARE_COUNT = "PREF_SHARE_COUNT";
 
 
     public static synchronized AppPrefs getInstance(Context context)
@@ -63,5 +65,25 @@ public class AppPrefs
     public void setPrefBitDepth(int bitDepth)
     {
         mSp.edit().putInt(PREF_BIT_DEPTH, bitDepth).apply();
+    }
+
+    public boolean getPrefCheckedHappy()
+    {
+        return mSp.getBoolean(PREF_CHECKED_HAPPY, false);
+    }
+
+    public void setPrefCheckedHappy(boolean bitDepth)
+    {
+        mSp.edit().putBoolean(PREF_CHECKED_HAPPY, bitDepth).apply();
+    }
+
+    public int getPrefShareCount()
+    {
+        return mSp.getInt(PREF_SHARE_COUNT, 0);
+    }
+
+    public void setPrefShareCount(int bitDepth)
+    {
+        mSp.edit().putInt(PREF_SHARE_COUNT, bitDepth).apply();
     }
 }

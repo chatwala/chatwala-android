@@ -21,10 +21,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import co.touchlab.customcamera.ui.TimerDial;
 import co.touchlab.customcamera.util.*;
 import org.apache.commons.io.IOUtils;
@@ -47,6 +44,7 @@ import java.util.regex.Pattern;
 public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
+    private ViewGroup blueMessageDialag;
 
     public enum AppState
     {
@@ -108,6 +106,74 @@ public class NewCameraActivity extends Activity
         }
     }
 
+    class DialagButton
+    {
+        View.OnClickListener listener;
+        int stringRes;
+
+        DialagButton(View.OnClickListener listener, int stringRes)
+        {
+            this.listener = listener;
+            this.stringRes = stringRes;
+        }
+    }
+
+    private void showDialag(int messageRes, DialagButton... buttons)
+    {
+        hideDialag();
+
+        blueMessageDialag = (ViewGroup) getLayoutInflater().inflate(R.layout.message_dialag, null);
+
+        blueMessageDialag.findViewById(R.id.messageClose).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                hideDialag();
+            }
+        });
+        Typeface fontMd = ((ChatwalaApplication) getApplication()).fontMd;
+        ((TextView) blueMessageDialag.findViewById(R.id.feedbackTitle)).setTypeface(fontMd);
+        TextView messageText = (TextView) blueMessageDialag.findViewById(R.id.message_dialag_text);
+        TextView messageFiller = (TextView) blueMessageDialag.findViewById(R.id.message_dialag_filler);
+
+        messageText.setTypeface(fontMd);
+        messageText.setText(messageRes);
+
+        messageFiller.setTypeface(fontMd);
+        messageFiller.setText(messageRes);
+
+        ViewGroup buttonLayout = (ViewGroup) blueMessageDialag.findViewById(R.id.messageDialagButtonContainer);
+        for (DialagButton button : buttons)
+        {
+            View buttonView = makeDialagButton(buttonLayout, button);
+        }
+
+        findViewRoot().addView(blueMessageDialag);
+    }
+
+    private void hideDialag()
+    {
+        if(blueMessageDialag != null)
+        {
+            findViewRoot().removeView(blueMessageDialag);
+            blueMessageDialag = null;
+        }
+    }
+
+    private View makeDialagButton(ViewGroup parent, DialagButton buttonDef)
+    {
+        View button = getLayoutInflater().inflate(R.layout.message_dialag_button, null);
+
+        Button buttonText = (Button) button.findViewById(R.id.buttonText);
+        buttonText.setTypeface(((ChatwalaApplication) getApplication()).fontDemi);
+        buttonText.setText(buttonDef.stringRes);
+        parent.addView(button);
+        buttonText.setOnClickListener(buttonDef.listener);
+
+        return button;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -118,34 +184,9 @@ public class NewCameraActivity extends Activity
         setContentView(R.layout.crop_test);
 
         ChatwalaApplication application = (ChatwalaApplication) getApplication();
-        if(!application.isSplashRan())
+        if (!application.isSplashRan())
         {
-            application.setSplashRan(true);
-            final View splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
-            final ViewGroup root = (ViewGroup)getWindow().getDecorView().findViewById(android.R.id.content);
-            root.addView(splash);
-            new Handler().postDelayed(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
-                    root.removeView(splash);
-                    ViewGroup message = (ViewGroup)getLayoutInflater().inflate(R.layout.message_dialag, null);
-                    TextView messageText = (TextView) message.findViewById(R.id.message_dialag_text);
-                    messageText.setTypeface(((ChatwalaApplication) getApplication()).fontMd);
-                    messageText.setText("I like messages!");
-                    View button = getLayoutInflater().inflate(R.layout.message_dialag_button, null);
-                    TextView buttonText = (TextView) button.findViewById(R.id.buttonText);
-                    buttonText.setTypeface(((ChatwalaApplication) getApplication()).fontDemi);
-                    buttonText.setText("Sure!");
-
-                    ViewGroup buttonLayout = (ViewGroup) message.findViewById(R.id.messageDialagButtonContainer);
-                    buttonLayout.addView(button);
-
-                    root.addView(message);
-                }
-            }, 3000);
+            runWaterSplash(application);
         }
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
@@ -197,11 +238,11 @@ public class NewCameraActivity extends Activity
         });
 
         topFrameMessage = findViewById(R.id.topFrameMessage);
-        topFrameMessageText = (TextView)findViewById(R.id.topFrameMessageText);
+        topFrameMessageText = (TextView) findViewById(R.id.topFrameMessageText);
         Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         topFrameMessageText.setTypeface(fontDemi);
         bottomFrameMessage = findViewById(R.id.bottomFrameMessage);
-        bottomFrameMessageText = (TextView)findViewById(R.id.bottomFrameMessageText);
+        bottomFrameMessageText = (TextView) findViewById(R.id.bottomFrameMessageText);
         bottomFrameMessageText.setTypeface(fontDemi);
 
         closeRecordPreviewView = findViewById(R.id.closeVideoPreview);
@@ -213,6 +254,43 @@ public class NewCameraActivity extends Activity
                 closeResultPreview();
             }
         });
+    }
+
+    private void runWaterSplash(ChatwalaApplication application)
+    {
+        application.setSplashRan(true);
+        final View splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
+        final ViewGroup root = findViewRoot();
+        root.addView(splash);
+        new Handler().postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
+                root.removeView(splash);
+                /*showDialag(R.string.play_message_record_reaction, new DialagButton(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
+                    }
+                }, R.string.sure), new DialagButton(new View.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(View v)
+                                    {
+                                        Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
+                                    }
+                                }, R.string.sure));*/
+            }
+        }, 3000);
+    }
+
+    private ViewGroup findViewRoot()
+    {
+        return (ViewGroup) getWindow().getDecorView().findViewById(android.R.id.content);
     }
 
     @Override

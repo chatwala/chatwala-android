@@ -4,15 +4,19 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_gravity="center"
-              android:background="@drawable/message_dialag_button"
+
         >
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+    <Button
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:textColor="#ffffff"
             android:id="@+id/buttonText"
             android:layout_gravity="center"
+            android:gravity="center"
             android:textSize="@dimen/message_text_size"
+            android:background="@drawable/message_dialag_button_states"
             />
 
 </FrameLayout>
