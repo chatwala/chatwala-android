@@ -34,12 +34,19 @@
         <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/timer_dial_diameter"
+                android:id="@+id/messageDialagButtonContainer"
+                android:layout_gravity="center_horizontal"
                 android:orientation="horizontal"/>
 
         <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:text="I\'m filler!"
                 android:textColor="@color/message_dialag_text_color"
+                                android:textSize="@dimen/message_text_size"
+                                android:lineSpacingExtra="@dimen/message_text_spacing"
+
+                android:visibility="invisible"
                 android:layout_weight="1"/>
     </LinearLayout>
 </FrameLayout>

@@ -131,10 +131,18 @@ public class NewCameraActivity extends Activity
                 {
                     splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
                     root.removeView(splash);
-                    View message = getLayoutInflater().inflate(R.layout.message_dialag, null);
+                    ViewGroup message = (ViewGroup)getLayoutInflater().inflate(R.layout.message_dialag, null);
                     TextView messageText = (TextView) message.findViewById(R.id.message_dialag_text);
                     messageText.setTypeface(((ChatwalaApplication) getApplication()).fontMd);
                     messageText.setText("I like messages!");
+                    View button = getLayoutInflater().inflate(R.layout.message_dialag_button, null);
+                    TextView buttonText = (TextView) button.findViewById(R.id.buttonText);
+                    buttonText.setTypeface(((ChatwalaApplication) getApplication()).fontDemi);
+                    buttonText.setText("Sure!");
+
+                    ViewGroup buttonLayout = (ViewGroup) message.findViewById(R.id.messageDialagButtonContainer);
+                    buttonLayout.addView(button);
+
                     root.addView(message);
                 }
             }, 3000);
