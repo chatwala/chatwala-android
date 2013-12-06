@@ -82,7 +82,7 @@ public class NewCameraActivity extends Activity
 
     public synchronized void setAppState(AppState appState)
     {
-        CWLog.i(NewCameraActivity.class, "setAppState: " + appState + " (" + System.currentTimeMillis() + ")");
+        CWLog.b(NewCameraActivity.class, "setAppState: " + appState + " (" + System.currentTimeMillis() + ")");
         AndroidUtils.isMainThread();
         this.appState = appState;
 
@@ -178,6 +178,7 @@ public class NewCameraActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        CWLog.b(NewCameraActivity.class, "onCreate start");
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -254,6 +255,7 @@ public class NewCameraActivity extends Activity
                 closeResultPreview();
             }
         });
+        CWLog.b(NewCameraActivity.class, "onCreate end");
     }
 
     private void runWaterSplash(ChatwalaApplication application)
@@ -286,6 +288,7 @@ public class NewCameraActivity extends Activity
                                 }, R.string.sure));*/
             }
         }, 3000);
+        CWLog.b(NewCameraActivity.class, "runWaterSplash end");
     }
 
     private ViewGroup findViewRoot()
@@ -297,11 +300,13 @@ public class NewCameraActivity extends Activity
     protected void onResume()
     {
         super.onResume();
+        CWLog.b(NewCameraActivity.class, "onResume");
 
         setAppState(AppState.Transition);
 
         //Kick off attachment load
         createSurface();
+
     }
 
     @Override
@@ -643,6 +648,7 @@ public class NewCameraActivity extends Activity
     private void createSurface()
     {
         AndroidUtils.isMainThread();
+        CWLog.b(NewCameraActivity.class, "createSurface");
         setAppState(AppState.LoadingFileCamera);
         hideMessage(topFrameMessage);
         hideMessage(bottomFrameMessage);
@@ -682,6 +688,7 @@ public class NewCameraActivity extends Activity
 
     private void showResultPreview(File videoFile)
     {
+        CWLog.b(NewCameraActivity.class, "showResultPreview");
         AndroidUtils.isMainThread();
         this.recordPreviewFile = videoFile;
         tearDownSurface();
@@ -690,9 +697,11 @@ public class NewCameraActivity extends Activity
 
     private void closeResultPreview()
     {
+        CWLog.b(NewCameraActivity.class, "showResultPreview");
         AndroidUtils.isMainThread();
         recordPreviewFile = null;
         recordPreviewVideoView.setOnCompletionListener(null);
+        recordPreviewVideoView.pause();
         cameraPreviewContainer.removeView(recordPreviewVideoView);
         findViewById(R.id.recordPreviewClick).setOnClickListener(null);
         closeRecordPreviewView.setVisibility(View.GONE);
@@ -702,6 +711,7 @@ public class NewCameraActivity extends Activity
 
     private void tearDownSurface()
     {
+        CWLog.b(NewCameraActivity.class, "tearDownSurface: start");
         AndroidUtils.isMainThread();
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
@@ -721,6 +731,7 @@ public class NewCameraActivity extends Activity
         messageVideoThumbnailView = null;
         chatMessageVideoBitmap = null;
         findViewById(R.id.recordPreviewClick).setOnClickListener(null);
+        CWLog.b(NewCameraActivity.class, "tearDownSurface: end");
     }
 
     class MessageLoaderTask extends AsyncTask<Void, Void, ChatMessage>

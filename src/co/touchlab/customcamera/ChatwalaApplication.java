@@ -2,6 +2,7 @@ package co.touchlab.customcamera;
 
 import android.app.Application;
 import android.graphics.Typeface;
+import com.crashlytics.android.Crashlytics;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,6 +26,8 @@ public class ChatwalaApplication extends Application
     public void onCreate()
     {
         super.onCreate();
+
+        Crashlytics.start(this);
 
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);

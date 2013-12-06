@@ -111,8 +111,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-//        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureUpdated: " + surface);
-//        Log.i(CameraPreviewCallback.class.getSimpleName(), "updated: " + System.currentTimeMillis());
         if(recordStarting.getAndSet(false))
         {
             callback.recordingStarted();
@@ -159,18 +157,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         //params.setPreviewFpsRange(15, 15);
         camera.setParameters(params);
     }
-
-    /*@Override
-    public void surfaceCreated(SurfaceHolder holder)
-    {
-
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
-    {
-
-    }*/
 
     private boolean prepareMediaRecorder()
     {
@@ -225,13 +211,13 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         catch (IllegalStateException e)
         {
             releaseMediaRecorder();
-            Log.e(CameraPreviewView.class.getSimpleName(), "", e);
+            CWLog.softExceptionLog(CameraPreviewView.class, "", e);
             return false;
         }
         catch (IOException e)
         {
             releaseMediaRecorder();
-            Log.e(CameraPreviewView.class.getSimpleName(), "", e);
+            CWLog.softExceptionLog(CameraPreviewView.class, "", e);
             return false;
         }
 
@@ -256,12 +242,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         mediaRecorder.stop();
     }
-
-    /*@Override
-    public void surfaceDestroyed(SurfaceHolder holder)
-    {
-
-    }*/
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
