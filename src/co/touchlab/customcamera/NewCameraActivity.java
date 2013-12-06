@@ -131,6 +131,11 @@ public class NewCameraActivity extends Activity
                 {
                     splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
                     root.removeView(splash);
+                    View message = getLayoutInflater().inflate(R.layout.message_dialag, null);
+                    TextView messageText = (TextView) message.findViewById(R.id.message_dialag_text);
+                    messageText.setTypeface(((ChatwalaApplication) getApplication()).fontMd);
+                    messageText.setText("I like messages!");
+                    root.addView(message);
                 }
             }, 3000);
         }
