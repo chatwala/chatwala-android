@@ -3,4 +3,7 @@
     <color name="dot_red">#d60037</color>
     <color name="dot_red_light">#ff6082</color>
     <color name="app_background">#ede8e2</color>
+    <color name="message_background_alpha">#aaffffff</color>
+    <color name="message_background_clear">#00ffffff</color>
+
 </resources>

@@ -16,9 +16,10 @@ public class ChatwalaApplication extends Application
     private static final String ITCAG_DEMI = "ITCAvantGardeStd-Demi.otf",
                 ITCAG_MD = "ITCAvantGardeStd-Md.otf";
 
-
     public Typeface fontMd;
     public Typeface fontDemi;
+
+    private boolean splashRan;
 
     @Override
     public void onCreate()
@@ -27,5 +28,15 @@ public class ChatwalaApplication extends Application
 
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
+    }
+
+    public boolean isSplashRan()
+    {
+        return splashRan;
+    }
+
+    public void setSplashRan(boolean splashRan)
+    {
+        this.splashRan = splashRan;
     }
 }

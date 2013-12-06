@@ -36,21 +36,22 @@
             </co.touchlab.customcamera.CroppingLayout>
 
             <FrameLayout
-                    android:id="@+id/cameraPreviewFriendReplyText"
+                    android:id="@+id/topFrameMessage"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:alpha=".7"
-                    android:background="#ffffff"
+                    android:background="#aaffffff"
                     android:visibility="gone">
                 <TextView
-                        android:id="@+id/cameraPreviewFriendReplyTextView"
+                        android:id="@+id/topFrameMessageText"
                         android:layout_margin="20dp"
                         android:textSize="22sp"
                         android:gravity="center"
+                        android:textColor="#000000"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:lineSpacingExtra="14sp"
                         android:layout_gravity="center"
-                        android:text="Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!"/>
+                        />
             </FrameLayout>
             <FrameLayout
                     android:layout_width="fill_parent"
@@ -82,21 +83,22 @@
             </co.touchlab.customcamera.CroppingLayout>
 
             <FrameLayout
-                    android:id="@+id/messageVideoFriendReplyText"
+                    android:id="@+id/bottomFrameMessage"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:background="#aaffffff"
                     android:visibility="gone">
                 <TextView
-                        android:id="@+id/messageVideoFriendReplyTextView"
+                        android:id="@+id/bottomFrameMessageText"
                         android:layout_margin="20dp"
                         android:textSize="22sp"
                         android:gravity="center"
                         android:textColor="#000000"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:lineSpacingExtra="14sp"
                         android:layout_gravity="center"
-                        android:text="Now record your reply!"/>
+                        />
             </FrameLayout>
         </FrameLayout>
 
@@ -128,4 +130,5 @@
             android:src="@drawable/ic_action_cancel"
             android:visibility="gone"
             android:id="@+id/closeVideoPreview"/>
+
 </FrameLayout>
