@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Html;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,7 +92,10 @@ public class NewCameraActivity extends Activity
         {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.setImageResource(R.drawable.record_circle);
+                if(chatMessage != null)
+                    timerKnob.setImageResource(R.drawable.ic_action_playback_play);
+                else
+                    timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
             case Recording:
@@ -100,7 +104,7 @@ public class NewCameraActivity extends Activity
                 break;
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.setImageResource(R.drawable.ic_action_share_2);
+                timerKnob.setImageResource(R.drawable.ic_action_send_ios);
                 break;
             default:
                 timerKnob.setVisibility(View.INVISIBLE);
@@ -188,7 +192,7 @@ public class NewCameraActivity extends Activity
         ChatwalaApplication application = (ChatwalaApplication) getApplication();
         if (!application.isSplashRan())
         {
-            runWaterSplash(application);
+//            runWaterSplash(application);
         }
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
@@ -496,6 +500,8 @@ public class NewCameraActivity extends Activity
     private void startPlaybackRecording()
     {
         AndroidUtils.isMainThread();
+
+        hideMessage(topFrameMessage);
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
         if (messageVideoView != null)
         {
@@ -522,7 +528,8 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
 
-        hideMessage(topFrameMessage);
+        if(chatMessage == null)
+            hideMessage(bottomFrameMessage);
 
         setAppState(AppState.RecordingLimbo);
         if (messageVideoView != null)
@@ -894,11 +901,11 @@ public class NewCameraActivity extends Activity
                 if (originalMessage != null && originalMessage.metadata.senderId != null)
                     sendTo = originalMessage.metadata.senderId.trim();
 
-                String uriText =
-                        "mailto:" +
-                                sendTo +
-                                "?subject=" + URLEncoder.encode("subject") +
-                                "&body=" + URLEncoder.encode("body");
+                //Not sure how this would creep in there, but deal with it.
+                if(sendTo.equalsIgnoreCase("null"))
+                    sendTo = "";
+
+                String uriText = "mailto:" + sendTo;
 
                 Uri mailtoUri = Uri.parse(uriText);
                 Uri dataUri = Uri.fromFile(outZip);
@@ -908,6 +915,8 @@ public class NewCameraActivity extends Activity
                     Intent gmailIntent = new Intent();
                     gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
                     gmailIntent.setData(mailtoUri);
+                    gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
+                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>."));
 
                     gmailIntent.putExtra(Intent.EXTRA_STREAM, dataUri);
 
@@ -925,6 +934,8 @@ public class NewCameraActivity extends Activity
                     Intent intent = new Intent(Intent.ACTION_SENDTO);
 
                     intent.setData(mailtoUri);
+                    intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
+                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>."));
 
                     intent.putExtra(Intent.EXTRA_STREAM, dataUri);
                     startActivity(Intent.createChooser(intent, "Send email..."));

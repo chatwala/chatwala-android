@@ -1,6 +1,9 @@
 package com.chatwala.android.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.media.MediaMetadataRetriever;
 
 import java.io.File;
@@ -25,7 +28,25 @@ public class VideoUtils
         try
         {
             retriever.setDataSource(filePath);
+            int sourceRotation = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+
             bitmap = retriever.getFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+
+            int rotation = sourceRotation - 270;
+            if(rotation < 0)
+                rotation += 360;
+
+            if(rotation != 0)
+            {
+                int targetWidth = rotation == 180 ? bitmap.getWidth() : bitmap.getHeight();
+                int targetHeight = rotation == 180 ? bitmap.getHeight() : bitmap.getWidth();
+                Bitmap targetBitmap = Bitmap.createBitmap(targetWidth, targetHeight, bitmap.getConfig());
+                Canvas canvas = new Canvas(targetBitmap);
+                Matrix matrix = new Matrix();
+                matrix.setRotate((float)rotation, bitmap.getWidth()/2,bitmap.getHeight()/2);
+                canvas.drawBitmap(bitmap, matrix, new Paint());
+                bitmap = targetBitmap;
+            }
         }
         catch (IllegalArgumentException ex)
         {
