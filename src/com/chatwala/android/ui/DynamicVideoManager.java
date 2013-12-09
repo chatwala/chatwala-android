@@ -1,10 +1,10 @@
-package co.touchlab.customcamera.ui;
+package com.chatwala.android.ui;
 
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import co.touchlab.customcamera.DynamicVideoThumbImageView;
-import co.touchlab.customcamera.DynamicVideoView;
+import com.chatwala.android.DynamicVideoThumbImageView;
+import com.chatwala.android.DynamicVideoView;
 
 import java.io.File;
 

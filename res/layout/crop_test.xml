@@ -23,7 +23,7 @@
                         android:src="@drawable/chat_watermark_top"
                         android:layout_gravity="bottom|center_horizontal"/>
             </FrameLayout>
-            <co.touchlab.customcamera.CroppingLayout
+            <com.chatwala.android.CroppingLayout
                     android:id="@+id/surface_view_container"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
@@ -33,7 +33,7 @@
                 <!--android:layout_width="wrap_content"-->
                 <!--android:layout_height="wrap_content"-->
                 <!--android:keepScreenOn="true"/>-->
-            </co.touchlab.customcamera.CroppingLayout>
+            </com.chatwala.android.CroppingLayout>
 
             <FrameLayout
                     android:id="@+id/topFrameMessage"
@@ -75,12 +75,12 @@
                         android:src="@drawable/chat_watermark"
                         android:layout_gravity="top|center_horizontal"/>
             </FrameLayout>
-            <co.touchlab.customcamera.CroppingLayout
+            <com.chatwala.android.CroppingLayout
                     android:id="@+id/video_view_container"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     >
-            </co.touchlab.customcamera.CroppingLayout>
+            </com.chatwala.android.CroppingLayout>
 
             <FrameLayout
                     android:id="@+id/bottomFrameMessage"
@@ -110,7 +110,7 @@
             android:layout_gravity="center"
             android:id="@+id/timerContainer"
             >
-        <co.touchlab.customcamera.ui.TimerDial
+        <com.chatwala.android.ui.TimerDial
                 android:id="@+id/timerDial"
                 android:layout_width="@dimen/timer_dial_diameter"
                 android:layout_height="@dimen/timer_dial_diameter"

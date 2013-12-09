@@ -1,4 +1,4 @@
-package co.touchlab.customcamera.util;
+package com.chatwala.android.util;
 
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;

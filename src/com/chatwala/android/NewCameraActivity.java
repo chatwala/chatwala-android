@@ -1,4 +1,4 @@
-package co.touchlab.customcamera;
+package com.chatwala.android;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -22,8 +22,9 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
-import co.touchlab.customcamera.ui.TimerDial;
-import co.touchlab.customcamera.util.*;
+import com.chatwala.android.R;
+import com.chatwala.android.ui.TimerDial;
+import com.chatwala.android.util.*;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 

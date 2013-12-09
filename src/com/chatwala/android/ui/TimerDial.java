@@ -1,4 +1,4 @@
-package co.touchlab.customcamera.ui;
+package com.chatwala.android.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -7,7 +7,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
-import co.touchlab.customcamera.R;
+import com.chatwala.android.R;
 
 /**
  * Created with IntelliJ IDEA.

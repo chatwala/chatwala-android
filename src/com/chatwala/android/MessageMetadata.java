@@ -1,4 +1,4 @@
-package co.touchlab.customcamera;
+package com.chatwala.android;
 
 import org.json.JSONException;
 import org.json.JSONObject;

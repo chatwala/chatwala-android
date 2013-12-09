@@ -1,4 +1,4 @@
-package co.touchlab.customcamera.util;
+package com.chatwala.android.util;
 
 import org.apache.commons.io.IOUtils;
 

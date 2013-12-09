@@ -1,4 +1,4 @@
-package co.touchlab.customcamera;
+package com.chatwala.android;
 
 import android.app.Application;
 import android.graphics.Typeface;
