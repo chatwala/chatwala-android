@@ -1,10 +1,11 @@
-package co.touchlab.customcamera;
+package com.chatwala.android;
 
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.VideoView;
+import com.chatwala.android.R;
 
 import java.io.File;
 

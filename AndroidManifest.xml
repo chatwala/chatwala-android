@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="co.touchlab.customcamera"
+          package="com.chatwala.android"
           android:versionCode="602"
           android:versionName="0.6.2">
     <uses-sdk android:minSdkVersion="15"/>
@@ -19,9 +19,9 @@
     <application
             android:label="@string/app_name"
             android:icon="@drawable/appicon"
-            android:name=".ChatwalaApplication"
+            android:name="com.chatwala.android.ChatwalaApplication"
             >
-        <activity android:name=".NewCameraActivity"
+        <activity android:name="com.chatwala.android.NewCameraActivity"
                   android:label="@string/app_name"
                 android:screenOrientation="portrait"
                 >

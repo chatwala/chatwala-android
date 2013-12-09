@@ -1,11 +1,10 @@
-package co.touchlab.customcamera;
+package com.chatwala.android;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import co.touchlab.customcamera.util.CameraUtils;
-import co.touchlab.customcamera.util.VideoUtils;
+import com.chatwala.android.util.CameraUtils;
 
 /**
  * Created with IntelliJ IDEA.

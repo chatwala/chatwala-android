@@ -1,4 +1,4 @@
-package co.touchlab.customcamera;
+package com.chatwala.android;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -8,8 +8,8 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
-import co.touchlab.customcamera.util.CWLog;
-import co.touchlab.customcamera.util.CameraUtils;
+import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.CameraUtils;
 
 import java.io.File;
 import java.io.IOException;

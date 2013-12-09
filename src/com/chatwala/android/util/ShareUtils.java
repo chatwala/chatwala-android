@@ -1,10 +1,10 @@
-package co.touchlab.customcamera.util;
+package com.chatwala.android.util;
 
 import android.app.Activity;
 import android.net.Uri;
 import android.text.TextUtils;
-import co.touchlab.customcamera.ChatMessage;
-import co.touchlab.customcamera.MessageMetadata;
+import com.chatwala.android.ChatMessage;
+import com.chatwala.android.MessageMetadata;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
