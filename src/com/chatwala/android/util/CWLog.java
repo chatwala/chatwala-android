@@ -14,6 +14,8 @@ public class CWLog
 {
     public static final String CHAT_WALA = "ChatWala";
 
+    public static final String USER_ACTION = "USER_ACTION";
+
     private static final String PREVIEW_WIDTH = "PREVIEW_WIDTH";
     private static final String PREVIEW_HEIGHT = "PREVIEW_HEIGHT";
     private static final String VIDEO_WIDTH = "VIDEO_WIDTH";
@@ -28,6 +30,12 @@ public class CWLog
     public static void i(Class cl, String s, Exception e)
     {
         Log.i(cl.getSimpleName(), s, e);
+    }
+
+    public static void userAction(Class cl, String s)
+    {
+        Log.d(cl.getSimpleName(), s);
+        Crashlytics.log(Log.DEBUG, USER_ACTION, s);
     }
 
     public static void b(Class cl, String s)

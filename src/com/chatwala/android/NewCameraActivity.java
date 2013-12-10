@@ -259,6 +259,7 @@ public class NewCameraActivity extends Activity
             @Override
             public void onClick(View v)
             {
+                CWLog.userAction(NewCameraActivity.class, "Close record preview pressed in state: " + getAppState().name());
                 closeResultPreview();
             }
         });
@@ -326,8 +327,10 @@ public class NewCameraActivity extends Activity
 
     private void triggerButtonAction()
     {
-        //Don't do anything.  These should be very short states.
         AppState state = getAppState();
+        CWLog.userAction(NewCameraActivity.class, "Timer button pressed in state: " + state.name());
+
+        //Don't do anything.  These should be very short states.
         if (state == AppState.Off || state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading)
             return;
 
