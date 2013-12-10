@@ -517,7 +517,6 @@ public class NewCameraActivity extends Activity
         if (messageVideoView != null)
         {
             setAppState(AppState.PlaybackOnly);
-            messageVideoView.seekTo(0);
             messageVideoView.start();
 
         }

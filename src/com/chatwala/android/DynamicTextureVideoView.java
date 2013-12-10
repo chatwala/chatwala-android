@@ -34,6 +34,8 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
     private boolean initComplete;
     private boolean startCalled;
 
+    private final int VIDEO_DISPLAY_DELAY = 100;
+
     public interface InitCallback
     {
         void initCalled();
@@ -191,12 +193,19 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
 
     private void initDone()
     {
-        setVisibility(View.VISIBLE);
-        if (startCalled)
+        getHandler().postDelayed(new Runnable()
         {
-            mMediaPlayer.start();
-            startCalled = false;
-        }
+            @Override
+            public void run()
+            {
+                setVisibility(View.VISIBLE);
+                if (startCalled)
+                {
+                    mMediaPlayer.start();
+                    startCalled = false;
+                }
+            }
+        }, VIDEO_DISPLAY_DELAY);
     }
 
     @Override
