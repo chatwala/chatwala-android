@@ -5,8 +5,10 @@ import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Handler;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.view.ViewGroup;
 import com.chatwala.android.util.CWLog;
 
@@ -22,6 +24,8 @@ import java.io.IOException;
  */
 public class DynamicTextureVideoView extends TextureView implements TextureView.SurfaceTextureListener, MediaPlayer.OnBufferingUpdateListener
 {
+    public static final int GIVE_UP_THUMB = 5000;
+    private final Handler handler;
     private File video;
     private int width;
     private int height;
@@ -29,6 +33,11 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
     public MediaPlayer mMediaPlayer;
     private boolean initComplete;
     private boolean startCalled;
+
+    public interface InitCallback
+    {
+        void initCalled();
+    }
 
     public DynamicTextureVideoView(final Context context, File video, int width, int height, int rotation)
     {
@@ -39,20 +48,11 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
         this.width = rotation == 180 ? height : width;
         this.height = rotation == 180 ? width : height;
 
+        handler = new Handler();
         setSurfaceTextureListener(this);
         mMediaPlayer = new MediaPlayer();
         if (isAvailable())
             onSurfaceTextureAvailable(getSurfaceTexture(), this.width, this.height);
-//            setOnPreparedListener(new MediaPlayer.OnPreparedListener()
-//            {
-//                @Override
-//                public void onPrepared(MediaPlayer mp)
-//                {
-//                    DynamicVideoView.this.mediaPlayer = mp;
-//                    int volume = context.getResources().getInteger(R.integer.video_playback_volume);
-//                    mediaPlayer.setVolume((float)volume/100f, (float)volume/100f);
-//                }
-//            });
     }
 
     @Override
@@ -123,28 +123,79 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
                 setTransform(matrix);
             }
 
-
             mMediaPlayer.setDataSource(video.getPath());
             mMediaPlayer.setSurface(s);
             mMediaPlayer.prepare();
 
-
-            initComplete = true;
-            if (startCalled)
+            mMediaPlayer.start();
+            mMediaPlayer.setVolume(0f, 0f);
+            setVisibility(View.INVISIBLE);
+            handler.post(new Runnable()
             {
-                mMediaPlayer.start();
-                startCalled = false;
-            }
-            mMediaPlayer.setOnBufferingUpdateListener(this);
-//               mMediaPlayer.setOnCompletionListener(this);
-//               mMediaPlayer.setOnPreparedListener(this);
-//               mMediaPlayer.setOnVideoSizeChangedListener(this);
-//               mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                @Override
+                public void run()
+                {
+                    long start = System.currentTimeMillis();
+                    while (System.currentTimeMillis() - start < GIVE_UP_THUMB)
+                    {
+                        try
+                        {
+                            Thread.sleep(250);
+                        }
+                        catch (InterruptedException e)
+                        {
+                        }
 
+                        if (mMediaPlayer.getCurrentPosition() > 0)
+                        {
+                            mMediaPlayer.pause();
+                            break;
+                        }
+                    }
+                    mMediaPlayer.setVolume(1f, 1f);
+                    initReset();
+                }
+            });
+
+            mMediaPlayer.setOnBufferingUpdateListener(this);
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void initReset()
+    {
+        initComplete = true;
+
+        if (mMediaPlayer.getCurrentPosition() == 0)
+        {
+            initDone();
+        }
+        else
+        {
+            mMediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener()
+            {
+                @Override
+                public void onSeekComplete(MediaPlayer mp)
+                {
+                    mMediaPlayer.setOnSeekCompleteListener(null);
+                    initDone();
+                }
+            });
+
+            mMediaPlayer.seekTo(0);
+        }
+    }
+
+    private void initDone()
+    {
+        setVisibility(View.VISIBLE);
+        if (startCalled)
+        {
+            mMediaPlayer.start();
+            startCalled = false;
         }
     }
 

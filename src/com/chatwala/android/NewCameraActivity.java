@@ -60,7 +60,7 @@ public class NewCameraActivity extends Activity
     private View bottomFrameMessage;
     private TextView bottomFrameMessageText;
     private DynamicTextureVideoView messageVideoView;
-    private DynamicVideoThumbImageView messageVideoThumbnailView;
+//    private DynamicVideoThumbImageView messageVideoThumbnailView;
     private DynamicTextureVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
@@ -71,7 +71,7 @@ public class NewCameraActivity extends Activity
     private CameraPreviewView cameraPreviewView;
     private ChatMessage chatMessage;
     private VideoUtils.VideoMetadata chatMessageVideoMetadata;
-    private Bitmap chatMessageVideoBitmap;
+//    private Bitmap chatMessageVideoBitmap;
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
@@ -505,8 +505,8 @@ public class NewCameraActivity extends Activity
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
         if (messageVideoView != null)
         {
-            messageVideoThumbnailView.setVisibility(View.GONE);
-            messageVideoView.setVisibility(View.VISIBLE);
+//            messageVideoThumbnailView.setVisibility(View.GONE);
+//            messageVideoView.setVisibility(View.VISIBLE);
             setAppState(AppState.PlaybackOnly);
             messageVideoView.seekTo(0);
             messageVideoView.start();
@@ -579,11 +579,11 @@ public class NewCameraActivity extends Activity
                 }
             });
             showMessage(topFrameMessage, topFrameMessageText, R.color.message_background_alpha, R.string.play_message_record_reaction);
-            messageVideoThumbnailView = new DynamicVideoThumbImageView(NewCameraActivity.this, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
-            videoViewContainer.addView(messageVideoThumbnailView);
-            messageVideoView.setVisibility(View.GONE);
-            messageVideoThumbnailView.setVisibility(View.VISIBLE);
-            messageVideoThumbnailView.setImageBitmap(chatMessageVideoBitmap);
+//            messageVideoThumbnailView = new DynamicVideoThumbImageView(NewCameraActivity.this, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
+//            videoViewContainer.addView(messageVideoThumbnailView);
+//            messageVideoView.setVisibility(View.GONE);
+//            messageVideoThumbnailView.setVisibility(View.VISIBLE);
+//            messageVideoThumbnailView.setImageBitmap(chatMessageVideoBitmap);
         }
         else
         {
@@ -673,11 +673,6 @@ public class NewCameraActivity extends Activity
             public void recordingStarted()
             {
                 setAppState(AppState.Recording);
-                if (messageVideoThumbnailView != null && messageVideoThumbnailView.getVisibility() == View.VISIBLE)
-                {
-                    messageVideoThumbnailView.setVisibility(View.GONE);
-                    messageVideoView.setVisibility(View.VISIBLE);
-                }
                 if (messageVideoView != null)
                     messageVideoView.start();
 
@@ -736,8 +731,8 @@ public class NewCameraActivity extends Activity
         }
         videoViewContainer.removeAllViews();
         messageVideoView = null;
-        messageVideoThumbnailView = null;
-        chatMessageVideoBitmap = null;
+//        messageVideoThumbnailView = null;
+//        chatMessageVideoBitmap = null;
         findViewById(R.id.recordPreviewClick).setOnClickListener(null);
         CWLog.b(NewCameraActivity.class, "tearDownSurface: end");
     }
@@ -753,7 +748,7 @@ public class NewCameraActivity extends Activity
                 try
                 {
                     chatMessageVideoMetadata = VideoUtils.findMetadata(cm.messageVideo);
-                    chatMessageVideoBitmap = VideoUtils.createVideoFrame(cm.messageVideo.getPath(), 0l);
+//                    chatMessageVideoBitmap = VideoUtils.createVideoFrame(cm.messageVideo.getPath(), 0l);
                 }
                 catch (IOException e)
                 {

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.media.MediaMetadataRetriever;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,12 +31,14 @@ public class VideoUtils
             retriever.setDataSource(filePath);
             int sourceRotation = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
 
-            CWLog.i(VideoUtils.class, "sourceRotation: "+ sourceRotation);
+            CWLog.b(VideoUtils.class, "sourceRotation: "+ sourceRotation);
+
             bitmap = retriever.getFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
 
             int rotation = sourceRotation - 270;
             if(rotation < 0)
                 rotation += 360;
+
 
             /*if(rotation != 0)
             {
