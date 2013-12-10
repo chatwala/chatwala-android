@@ -33,6 +33,7 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
     public MediaPlayer mMediaPlayer;
     private boolean initComplete;
     private boolean startCalled;
+    private boolean surfaceAvailable = false;
 
     private final int VIDEO_DISPLAY_DELAY = 100;
 
@@ -114,56 +115,61 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        Surface s = new Surface(surface);
-
-        try
+        if(!surfaceAvailable)
         {
-            if (rotation == 180)
-            {
-                Matrix matrix = new Matrix();
-                matrix.setRotate(90f, width / 2, height / 2);
-                setTransform(matrix);
-            }
+            Surface s = new Surface(surface);
 
-            mMediaPlayer.setDataSource(video.getPath());
-            mMediaPlayer.setSurface(s);
-            mMediaPlayer.prepare();
-
-            mMediaPlayer.start();
-            mMediaPlayer.setVolume(0f, 0f);
-            setVisibility(View.INVISIBLE);
-            handler.post(new Runnable()
+            try
             {
-                @Override
-                public void run()
+                if (rotation == 180)
                 {
-                    long start = System.currentTimeMillis();
-                    while (System.currentTimeMillis() - start < GIVE_UP_THUMB)
-                    {
-                        try
-                        {
-                            Thread.sleep(250);
-                        }
-                        catch (InterruptedException e)
-                        {
-                        }
-
-                        if (mMediaPlayer.getCurrentPosition() > 0)
-                        {
-                            mMediaPlayer.pause();
-                            break;
-                        }
-                    }
-                    mMediaPlayer.setVolume(1f, 1f);
-                    initReset();
+                    Matrix matrix = new Matrix();
+                    matrix.setRotate(90f, width / 2, height / 2);
+                    setTransform(matrix);
                 }
-            });
 
-            mMediaPlayer.setOnBufferingUpdateListener(this);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
+                mMediaPlayer.setDataSource(video.getPath());
+                mMediaPlayer.setSurface(s);
+                mMediaPlayer.prepare();
+
+                mMediaPlayer.start();
+                mMediaPlayer.setVolume(0f, 0f);
+                setVisibility(View.INVISIBLE);
+                handler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        long start = System.currentTimeMillis();
+                        while (System.currentTimeMillis() - start < GIVE_UP_THUMB)
+                        {
+                            try
+                            {
+                                Thread.sleep(250);
+                            }
+                            catch (InterruptedException e)
+                            {
+                            }
+
+                            if (mMediaPlayer.getCurrentPosition() > 0)
+                            {
+                                mMediaPlayer.pause();
+                                break;
+                            }
+                        }
+                        mMediaPlayer.setVolume(1f, 1f);
+                        initReset();
+                    }
+                });
+
+                mMediaPlayer.setOnBufferingUpdateListener(this);
+
+                surfaceAvailable = true;
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 
