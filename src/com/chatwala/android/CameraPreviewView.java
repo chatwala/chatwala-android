@@ -162,6 +162,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         mediaRecorder = new MediaRecorder();
 
+        CWLog.mediaRecorder(CameraPreviewView.class, "Before set params");
+
         // Step 1: Attach camera to media recorder
         mediaRecorder.setCamera(camera);
 
@@ -204,9 +206,12 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 //            mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
 //        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
 
+        CWLog.mediaRecorder(CameraPreviewView.class, "After set params");
+
         try
         {
             mediaRecorder.prepare();
+            CWLog.mediaRecorder(CameraPreviewView.class, "Prepared");
         }
         catch (IllegalStateException e)
         {
@@ -229,18 +234,21 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         camera.unlock();
         Log.i(CameraPreviewCallback.class.getSimpleName(), "startRecording: " + System.currentTimeMillis());
         mediaRecorder.start();
+        CWLog.mediaRecorder(CameraPreviewView.class, "Started");
         recordStarting.set(true);
     }
 
     public void stopRecording()
     {
         mediaRecorder.stop();
+        CWLog.mediaRecorder(CameraPreviewView.class, "Stopped");
         callback.recordingDone(recordingFile);
     }
 
     public void abortRecording()
     {
         mediaRecorder.stop();
+        CWLog.mediaRecorder(CameraPreviewView.class, "Stopped");
     }
 
     @Override
@@ -316,7 +324,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             }
 
             mediaRecorder.reset();
+            CWLog.mediaRecorder(CameraPreviewView.class, "Reset");
             mediaRecorder.release();
+            CWLog.mediaRecorder(CameraPreviewView.class, "Released");
             mediaRecorder = null;
         }
     }

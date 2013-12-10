@@ -15,6 +15,7 @@ public class CWLog
     public static final String CHAT_WALA = "ChatWala";
 
     public static final String USER_ACTION = "USER_ACTION";
+    public static final String MEDIA_RECORDER_STATE = "MEDIA_RECORDER_STATE";
 
     private static final String PREVIEW_WIDTH = "PREVIEW_WIDTH";
     private static final String PREVIEW_HEIGHT = "PREVIEW_HEIGHT";
@@ -36,6 +37,12 @@ public class CWLog
     {
         Log.d(cl.getSimpleName(), s);
         Crashlytics.log(Log.DEBUG, USER_ACTION, s);
+    }
+
+    public static void mediaRecorder(Class cl, String s)
+    {
+        Log.d(cl.getSimpleName(), s);
+        Crashlytics.log(Log.DEBUG, MEDIA_RECORDER_STATE, s);
     }
 
     public static void b(Class cl, String s)
