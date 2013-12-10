@@ -12,8 +12,13 @@ import com.crashlytics.android.Crashlytics;
  */
 public class CWLog
 {
-
     public static final String CHAT_WALA = "ChatWala";
+
+    private static final String PREVIEW_WIDTH = "PREVIEW_WIDTH";
+    private static final String PREVIEW_HEIGHT = "PREVIEW_HEIGHT";
+    private static final String VIDEO_WIDTH = "VIDEO_WIDTH";
+    private static final String VIDEO_HEIGHT = "VIDEO_HEIGHT";
+    private static final String FRAMERATE = "FRAMERATE";
 
     public static void i(Class cl, String s)
     {
@@ -37,5 +42,29 @@ public class CWLog
         b(cl, s);
         Log.w(cl.getSimpleName(), s, t);
         Crashlytics.logException(t);
+    }
+
+    public static void setUserInfo(String userIdentifier, String userName, String userEmail)
+    {
+        Crashlytics.setUserIdentifier(userIdentifier);
+        Crashlytics.setUserName(userName);
+        Crashlytics.setUserEmail(userEmail);
+    }
+
+    public static void logPreviewDimensions(int width, int height)
+    {
+        Crashlytics.setInt(PREVIEW_WIDTH, width);
+        Crashlytics.setInt(PREVIEW_HEIGHT, height);
+    }
+
+    public static void logVideoDimensions(int width, int height)
+    {
+        Crashlytics.setInt(VIDEO_WIDTH, width);
+        Crashlytics.setInt(VIDEO_HEIGHT, height);
+    }
+
+    public static void logFramerate(int framerate)
+    {
+        Crashlytics.setInt(FRAMERATE, framerate);
     }
 }

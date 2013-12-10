@@ -23,14 +23,16 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
-import com.chatwala.android.R;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
+import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -183,6 +185,7 @@ public class NewCameraActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         CWLog.b(NewCameraActivity.class, "onCreate start");
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
