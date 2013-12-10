@@ -50,7 +50,7 @@ public class NewCameraActivity extends Activity
 
     public enum AppState
     {
-        Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, /*PlaybackRecording,*/ RecordingLimbo, Recording, PreviewLoading, PreviewReady
+        Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, PlaybackRecording, RecordingLimbo, Recording, PreviewLoading, PreviewReady
     }
 
     // ************* onCreate only *************
@@ -96,6 +96,7 @@ public class NewCameraActivity extends Activity
                     timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
+            case PlaybackRecording:
             case Recording:
                 timerKnob.setVisibility(View.VISIBLE);
                 timerKnob.setImageResource(R.drawable.record_stop);
@@ -339,6 +340,12 @@ public class NewCameraActivity extends Activity
             return;
         }
 
+        if (state == AppState.PlaybackRecording)
+        {
+            abortRecording();
+            return;
+        }
+
         if (state == AppState.Recording)
         {
             stopRecording();
@@ -350,6 +357,12 @@ public class NewCameraActivity extends Activity
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
             closeResultPreview();
         }
+    }
+
+    private void abortRecording()
+    {
+        cameraPreviewView.abortRecording();
+        abortBeforeRecording();
     }
 
     @Override
@@ -571,6 +584,7 @@ public class NewCameraActivity extends Activity
                 @Override
                 public void onCompletion(MediaPlayer mp)
                 {
+                    setAppState(AppState.Recording);
                     showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.now_record_reply);
                 }
             });
@@ -663,7 +677,10 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingStarted()
             {
-                setAppState(AppState.Recording);
+                if(chatMessage == null)
+                    setAppState(AppState.Recording);
+                else
+                    setAppState(AppState.PlaybackRecording);
                 if (messageVideoView != null)
                     messageVideoView.start();
 
