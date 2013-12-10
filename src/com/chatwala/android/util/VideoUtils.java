@@ -30,13 +30,14 @@ public class VideoUtils
             retriever.setDataSource(filePath);
             int sourceRotation = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
 
+            CWLog.i(VideoUtils.class, "sourceRotation: "+ sourceRotation);
             bitmap = retriever.getFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
 
             int rotation = sourceRotation - 270;
             if(rotation < 0)
                 rotation += 360;
 
-            if(rotation != 0)
+            /*if(rotation != 0)
             {
                 int targetWidth = rotation == 180 ? bitmap.getWidth() : bitmap.getHeight();
                 int targetHeight = rotation == 180 ? bitmap.getHeight() : bitmap.getWidth();
@@ -46,7 +47,7 @@ public class VideoUtils
                 matrix.setRotate((float)rotation, bitmap.getWidth()/2,bitmap.getHeight()/2);
                 canvas.drawBitmap(bitmap, matrix, new Paint());
                 bitmap = targetBitmap;
-            }
+            }*/
         }
         catch (IllegalArgumentException ex)
         {
