@@ -49,6 +49,7 @@ public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
     private ViewGroup blueMessageDialag;
+    private View splash;
 
     public enum AppState
     {
@@ -266,20 +267,19 @@ public class NewCameraActivity extends Activity
         CWLog.b(NewCameraActivity.class, "onCreate end");
     }
 
-    private void runWaterSplash(ChatwalaApplication application)
+    private void runWaterSplash()
     {
-        application.setSplashRan(true);
-        final View splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
+        splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
         final ViewGroup root = findViewRoot();
         root.addView(splash);
-        new Handler().postDelayed(new Runnable()
+        /*new Handler().postDelayed(new Runnable()
         {
             @Override
             public void run()
             {
                 splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
                 root.removeView(splash);
-                /*showDialag(R.string.play_message_record_reaction, new DialagButton(new View.OnClickListener()
+                *//*showDialag(R.string.play_message_record_reaction, new DialagButton(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
@@ -293,10 +293,21 @@ public class NewCameraActivity extends Activity
                                     {
                                         Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
                                     }
-                                }, R.string.sure));*/
+                                }, R.string.sure));*//*
             }
-        }, 3000);
+        }, 3000);*/
         CWLog.b(NewCameraActivity.class, "runWaterSplash end");
+    }
+
+    private void removeWaterSplash()
+    {
+        if(splash != null)
+        {
+            final ViewGroup root = findViewRoot();
+            splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
+            root.removeView(splash);
+            splash = null;
+        }
     }
 
     private ViewGroup findViewRoot()
@@ -311,6 +322,12 @@ public class NewCameraActivity extends Activity
         CWLog.b(NewCameraActivity.class, "onResume");
 
         setAppState(AppState.Transition);
+
+        Uri uri = getIntent().getData();
+        if(uri != null)
+        {
+            runWaterSplash();
+        }
 
         //Kick off attachment load
         createSurface();
@@ -594,7 +611,14 @@ public class NewCameraActivity extends Activity
 
         if (chatMessage != null)
         {
-            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
+            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, new DynamicVideoView.VideoReadyCallback()
+            {
+                @Override
+                public void ready()
+                {
+                    removeWaterSplash();
+                }
+            });
             videoViewContainer.addView(messageVideoView);
             messageVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
             {
@@ -656,7 +680,7 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
-            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height);
+            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);
