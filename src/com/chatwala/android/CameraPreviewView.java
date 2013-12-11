@@ -298,8 +298,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 
     public void releaseResources()
     {
-        releaseMediaRecorder();
         releaseCamera();
+        releaseMediaRecorder();
     }
 
     private void releaseCamera()
@@ -314,15 +314,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         if (mediaRecorder != null)
         {
-            try
-            {
-                abortRecording();
-            }
-            catch (IllegalStateException exception)
-            {
-                //The mediarecorder wasn't started.  We're about to release the recorder, so an invalid state doesn't matter, just eat this.
-            }
-
             mediaRecorder.reset();
             CWLog.mediaRecorder(CameraPreviewView.class, "Reset");
             mediaRecorder.release();

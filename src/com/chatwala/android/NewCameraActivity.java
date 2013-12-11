@@ -61,8 +61,8 @@ public class NewCameraActivity extends Activity
     private TextView topFrameMessageText;
     private View bottomFrameMessage;
     private TextView bottomFrameMessageText;
-    private DynamicTextureVideoView messageVideoView;
-    private DynamicTextureVideoView recordPreviewVideoView;
+    private DynamicVideoView messageVideoView;
+    private DynamicVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
     private TimerDial timerDial;
@@ -367,6 +367,7 @@ public class NewCameraActivity extends Activity
 
     private void abortRecording()
     {
+        CWLog.b(NewCameraActivity.class, "abortRecording");
         cameraPreviewView.abortRecording();
         abortBeforeRecording();
     }
@@ -374,6 +375,7 @@ public class NewCameraActivity extends Activity
     @Override
     public void onBackPressed()
     {
+        CWLog.userAction(NewCameraActivity.class, "onBackPressed");
         AppState state = getAppState();
         if (state == AppState.PreviewReady)
             closeResultPreview();
@@ -383,6 +385,7 @@ public class NewCameraActivity extends Activity
 
     private void abortBeforeRecording()
     {
+        CWLog.b(NewCameraActivity.class, "abortBeforeRecording");
         AndroidUtils.isMainThread();
         setAppState(AppState.Transition);
         heartbeatTimer.abort();
@@ -393,7 +396,7 @@ public class NewCameraActivity extends Activity
 
     class HeartbeatTimer extends Thread
     {
-        private long startRecordingTime;
+        private final long startRecordingTime;
         private long messageVideoDuration;
         private boolean recordingStarted;
         private long endRecordingTime;
@@ -411,6 +414,7 @@ public class NewCameraActivity extends Activity
 
         public void abort()
         {
+            CWLog.b(NewCameraActivity.class, "HeartbeatTimer:abort");
             cancel.set(true);
         }
 
@@ -427,6 +431,7 @@ public class NewCameraActivity extends Activity
 
         public synchronized void endPause()
         {
+            CWLog.b(NewCameraActivity.class, "HeartbeatTimer:endPause");
             if (pauseStart != null)
             {
                 long calcStartAdjust = startTime + (System.currentTimeMillis() - pauseStart);
@@ -476,6 +481,7 @@ public class NewCameraActivity extends Activity
 
                 if (!recordingStarted && now >= startRecordingTime)
                 {
+                    CWLog.b(NewCameraActivity.class, "HeartbeatTimer: inside start recording block");
                     recordingStarted = true;
                     runOnUiThread(new Runnable()
                     {
@@ -490,6 +496,7 @@ public class NewCameraActivity extends Activity
 
                 if (now >= endRecordingTime)
                 {
+                    CWLog.b(NewCameraActivity.class, "stop HeartbeatTimer");
                     runOnUiThread(new Runnable()
                     {
                         @Override
@@ -516,6 +523,7 @@ public class NewCameraActivity extends Activity
 
     private void startPlaybackRecording()
     {
+        CWLog.b(NewCameraActivity.class, "startPlaybackRecording");
         AndroidUtils.isMainThread();
 
         hideMessage(topFrameMessage);
@@ -524,22 +532,23 @@ public class NewCameraActivity extends Activity
         {
             setAppState(AppState.PlaybackOnly);
             messageVideoView.start();
-
         }
 
-        if (recordingStartMillis == 0)
+        boolean shouldStartRecordingNow = recordingStartMillis == 0;
+        if (shouldStartRecordingNow)
         {
             startRecording();
         }
 
         int chatMessageDuration = chatMessageVideoMetadata == null ? 0 : chatMessageVideoMetadata.duration;
         assert heartbeatTimer == null; //Just checking. This would be bad.
-        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, chatMessageDuration, recordingStartMillis == 0);
+        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, chatMessageDuration, shouldStartRecordingNow);
         heartbeatTimer.start();
     }
 
     private void startRecording()
     {
+        CWLog.b(NewCameraActivity.class, "startRecording");
         AndroidUtils.isMainThread();
 
         if(chatMessage == null)
@@ -553,6 +562,7 @@ public class NewCameraActivity extends Activity
 
     private void stopRecording()
     {
+        CWLog.b(NewCameraActivity.class, "stopRecording");
         AndroidUtils.isMainThread();
         setAppState(AppState.PreviewLoading);
         hideMessage(bottomFrameMessage);
@@ -563,12 +573,13 @@ public class NewCameraActivity extends Activity
 
     private void previewSurfaceReady()
     {
-        CWLog.i(NewCameraActivity.class, "previewSurfaceReady called");
+        CWLog.b(NewCameraActivity.class, "previewSurfaceReady");
         initStartState();
     }
 
     private void initStartState()
     {
+        CWLog.b(NewCameraActivity.class, "initStartState");
         chatMessage = null;
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
@@ -578,11 +589,12 @@ public class NewCameraActivity extends Activity
 
     private void messageLoaded(ChatMessage message)
     {
+        CWLog.b(NewCameraActivity.class, "messageLoaded");
         this.chatMessage = message;
 
         if (chatMessage != null)
         {
-            messageVideoView = new DynamicTextureVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, chatMessageVideoMetadata.rotation);
+            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height);
             videoViewContainer.addView(messageVideoView);
             messageVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
             {
@@ -600,12 +612,12 @@ public class NewCameraActivity extends Activity
             showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.basic_instructions);
         }
 
-        CWLog.i(NewCameraActivity.class, "messageLoaded complete");
         liveForRecording();
     }
 
     private void liveForRecording()
     {
+        CWLog.b(NewCameraActivity.class, "liveForRecording");
         runOnUiThread(new Runnable()
         {
             @Override
@@ -644,7 +656,7 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
-            recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
+            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);
