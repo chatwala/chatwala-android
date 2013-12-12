@@ -8,11 +8,13 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,8 +47,7 @@ import java.util.regex.Pattern;
 public class NewCameraActivity extends Activity
 {
     public static final int RECORDING_TIME = 10000;
-    private ViewGroup blueMessageDialag;
-    private View splash;
+    private int openingVolume;
 
     public enum AppState
     {
@@ -64,6 +65,8 @@ public class NewCameraActivity extends Activity
     private View closeRecordPreviewView;
     private ImageView timerKnob;
     private TimerDial timerDial;
+    private ViewGroup blueMessageDialag;
+    private View splash;
     // ************* onCreate only *************
 
     // ************* DANGEROUS STATE *************
@@ -73,7 +76,10 @@ public class NewCameraActivity extends Activity
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
+    private boolean activityActive;
     // ************* DANGEROUS STATE *************
+
+    private boolean closePreviewOnReturn = false;
 
     public synchronized AppState getAppState()
     {
@@ -262,37 +268,21 @@ public class NewCameraActivity extends Activity
             }
         });
         CWLog.b(NewCameraActivity.class, "onCreate end");
+
+//        captureOpeningVolume();
     }
 
     private void runWaterSplash()
     {
+        if(splash != null)
+        {
+            final ViewGroup root = findViewRoot();
+            root.removeView(splash);
+        }
+
         splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
         final ViewGroup root = findViewRoot();
         root.addView(splash);
-        /*new Handler().postDelayed(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
-                root.removeView(splash);
-                *//*showDialag(R.string.play_message_record_reaction, new DialagButton(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
-                    }
-                }, R.string.sure), new DialagButton(new View.OnClickListener()
-                                {
-                                    @Override
-                                    public void onClick(View v)
-                                    {
-                                        Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
-                                    }
-                                }, R.string.sure));*//*
-            }
-        }, 3000);*/
         CWLog.b(NewCameraActivity.class, "runWaterSplash end");
     }
 
@@ -318,25 +308,38 @@ public class NewCameraActivity extends Activity
         super.onResume();
         CWLog.b(NewCameraActivity.class, "onResume");
 
+        activityActive = true;
         setAppState(AppState.Transition);
 
-        Uri uri = getIntent().getData();
-        if(uri != null)
+//        setReviewVolume();
+
+        if(closePreviewOnReturn)
         {
-            runWaterSplash();
+            closePreviewOnReturn = false;
+            closeResultPreview();
         }
-
-        //Kick off attachment load
-        createSurface();
-
+        else
+        {
+            //Kick off attachment load
+            createSurface();
+        }
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
+
+        activityActive = false;
         setAppState(AppState.Off);
+
+//        resetOpeningVolume();
         tearDownSurface();
+    }
+
+    public boolean isActivityActive()
+    {
+        return activityActive;
     }
 
     private void triggerButtonAction()
@@ -375,7 +378,6 @@ public class NewCameraActivity extends Activity
         if (state == AppState.PreviewReady)
         {
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
-            closeResultPreview();
         }
     }
 
@@ -699,6 +701,12 @@ public class NewCameraActivity extends Activity
     private void createSurface()
     {
         AndroidUtils.isMainThread();
+        Uri uri = getIntent().getData();
+        if(uri != null)
+        {
+            runWaterSplash();
+        }
+
         CWLog.b(NewCameraActivity.class, "createSurface");
         setAppState(AppState.LoadingFileCamera);
         hideMessage(topFrameMessage);
@@ -961,6 +969,7 @@ public class NewCameraActivity extends Activity
 
                     try
                     {
+                        closePreviewOnReturn = true;
                         startActivity(gmailIntent);
                     }
                     catch (ActivityNotFoundException ex)
@@ -1006,4 +1015,24 @@ public class NewCameraActivity extends Activity
         messageView.startAnimation(animation);
         messageView.setVisibility(View.GONE);
     }
+
+    /*private void captureOpeningVolume()
+        {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            openingVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        }
+
+        private void setReviewVolume()
+        {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            int streamMaxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            long newVolume = Math.round((float) streamMaxVolume * .5);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int)newVolume, 0);
+        }
+
+        private void resetOpeningVolume()
+        {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, openingVolume, 0);
+        }*/
 }

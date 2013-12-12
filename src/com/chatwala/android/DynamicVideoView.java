@@ -65,16 +65,20 @@ public class DynamicVideoView extends VideoView
         mediaPlayer.setVolume((float) volume / 100f, (float) volume / 100f);
     }
 
+    private boolean isActivityActive()
+    {
+        return ((NewCameraActivity)getContext()).isActivityActive();
+    }
+
     private void runningStart()
     {
         AndroidUtils.isMainThread();
-        Log.w("runningStart", "a");
+
+        if(!isActivityActive())
+            return;
+
         mediaPlayer.setVolume(0f, 0f);
-        Log.w("runningStart", "b");
-//        setVisibility(View.INVISIBLE);
-        Log.w("runningStart", "c");
         start();
-        Log.w("runningStart", "d");
         new Thread(new Runnable()
         {
             @Override
@@ -85,18 +89,19 @@ public class DynamicVideoView extends VideoView
                 {
                     try
                     {
-                        Thread.sleep(250);
+                        Thread.sleep(70);
                     }
                     catch (InterruptedException e)
                     {
                     }
 
-                    Log.w("runningStart", "e");
+                    if(!isActivityActive())
+                        return;
+
                     if (getCurrentPosition() > 0)
                     {
                         break;
                     }
-                    Log.w("runningStart", "f");
                 }
                 handler.post(new Runnable()
                 {
@@ -104,11 +109,8 @@ public class DynamicVideoView extends VideoView
                     public void run()
                     {
                         pause();
-                        Log.w("runningStart", "g");
                         resetVolume(getContext());
-                        Log.w("runningStart", "h");
                         mediaPlayer.seekTo(0);
-                        Log.w("runningStart", "i");
                         initDone();
                     }
                 });
