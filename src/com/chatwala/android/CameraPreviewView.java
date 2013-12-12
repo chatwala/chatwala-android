@@ -79,7 +79,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             @Override
             public void run()
             {
-                runSurface();
+                if(isActivityActive())
+                    runSurface();
             }
         }, 700);
     }
