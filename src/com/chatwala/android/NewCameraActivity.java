@@ -60,6 +60,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
     private TextView bottomFrameMessageText;
     private DynamicVideoView messageVideoView;
     private DynamicVideoView recordPreviewVideoView;
+    private ReplayCountingCompletionListener recordPreviewCompletionListener;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
     private TimerDial timerDial;
@@ -238,6 +239,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -314,7 +316,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
             public void onClick(View v)
             {
                 CWLog.userAction(NewCameraActivity.class, "Close record preview pressed in state: " + getAppState().name());
-                CWAnalytics.sendRedoMessageEvent(null);
+                CWAnalytics.sendRedoMessageEvent((long)recordPreviewCompletionListener.replays);
                 closeResultPreview();
             }
         });
@@ -441,7 +443,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
         if (state == AppState.PreviewReady)
         {
-            CWAnalytics.sendSendMessageEvent(null);
+            CWAnalytics.sendSendMessageEvent((long)recordPreviewCompletionListener.replays);
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
         }
     }
@@ -744,21 +746,13 @@ public class NewCameraActivity extends BaseChatWalaActivity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
-            CWAnalytics.sendRecordingEndEvent(true, (long)videoInfo.duration);
             recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null, false);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);
             recordPreviewVideoView.start();
-            recordPreviewVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-            {
-                @Override
-                public void onCompletion(MediaPlayer mp)
-                {
-                    recordPreviewVideoView.seekTo(0);
-                    recordPreviewVideoView.start();
-                }
-            });
+            recordPreviewCompletionListener = new ReplayCountingCompletionListener();
+            recordPreviewVideoView.setOnCompletionListener(recordPreviewCompletionListener);
 
             setAppState(AppState.PreviewReady);
         }
@@ -877,7 +871,6 @@ public class NewCameraActivity extends BaseChatWalaActivity
                     throw new RuntimeException(e);
                 }
             }
-            CWAnalytics.initAnalytics(NewCameraActivity.this, cm == null);
             return cm;
         }
 
@@ -1089,6 +1082,19 @@ public class NewCameraActivity extends BaseChatWalaActivity
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.message_fade_out);
         messageView.startAnimation(animation);
         messageView.setVisibility(View.GONE);
+    }
+
+    public class ReplayCountingCompletionListener implements MediaPlayer.OnCompletionListener
+    {
+        public int replays = 0;
+
+        @Override
+        public void onCompletion(MediaPlayer mp)
+        {
+            recordPreviewVideoView.seekTo(0);
+            replays++;
+            recordPreviewVideoView.start();
+        }
     }
 
     /*private void captureOpeningVolume()

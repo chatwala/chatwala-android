@@ -39,14 +39,17 @@ public class CWAnalytics
 
     private static Boolean isStarterMessage;
     private static String categoryString;
-    private static EasyTracker easyTracker;
+    private static EasyTracker easyTracker = null;
 
     public static void initAnalytics(Context context, boolean isStarter)
     {
-        easyTracker = EasyTracker.getInstance(context);
-        isStarterMessage = isStarter;
-        categoryString = (SharedPrefsUtils.isFirstOpen(context) ? CATEGORY_FIRST_OPEN : (isStarter ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
-        sendAppOpenEvent();
+        if(easyTracker == null)
+        {
+            easyTracker = EasyTracker.getInstance(context);
+            isStarterMessage = isStarter;
+            categoryString = (SharedPrefsUtils.isFirstOpen(context) ? CATEGORY_FIRST_OPEN : (isStarter ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+            sendAppOpenEvent();
+        }
     }
 
     private static void sendAppOpenEvent()
