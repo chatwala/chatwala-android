@@ -8,13 +8,11 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,6 +75,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
     private boolean activityActive;
+    private long analyticsTimerStart;
     // ************* DANGEROUS STATE *************
 
     private boolean closePreviewOnReturn = false;
@@ -88,8 +87,16 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     public synchronized void setAppState(AppState appState)
     {
+        setAppState(appState, false);
+    }
+
+    public synchronized void setAppState(AppState appState, boolean buttonPress)
+    {
         CWLog.b(NewCameraActivity.class, "setAppState: " + appState + " (" + System.currentTimeMillis() + ")");
         AndroidUtils.isMainThread();
+
+        analyticsStateEnd(this.appState, buttonPress);
+
         this.appState = appState;
 
         switch (this.appState)
@@ -102,14 +109,17 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
                     timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
+                analyticsTimerReset();
                 CWAnalytics.sendStartReviewEvent();
                 setTimerKnobForRecording();
                 break;
             case PlaybackRecording:
+                analyticsTimerReset();
                 CWAnalytics.sendStartReactionEvent();
                 setTimerKnobForRecording();
                 break;
             case Recording:
+                analyticsTimerReset();
                 CWAnalytics.sendRecordingStartEvent(true);
                 setTimerKnobForRecording();
                 break;
@@ -120,6 +130,34 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
             default:
                 timerKnob.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void analyticsTimerReset()
+    {
+        analyticsTimerStart = System.currentTimeMillis();
+    }
+
+    private void analyticsStateEnd(AppState appState, boolean buttonPress)
+    {
+        long duration = analyticsDuration();
+        switch (appState)
+        {
+            case PlaybackOnly:
+                CWAnalytics.sendReviewCompleteEvent(duration);
+                break;
+            case PlaybackRecording:
+                CWAnalytics.sendReactionCompleteEvent(duration);
+                break;
+            case Recording:
+                CWAnalytics.sendRecordingEndEvent(buttonPress, duration);
+                break;
+
+        }
+    }
+
+    private long analyticsDuration()
+    {
+        return System.currentTimeMillis() - analyticsTimerStart;
     }
 
     private void setTimerKnobForRecording()
@@ -383,21 +421,21 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
         if (state == AppState.PlaybackOnly)
         {
-            CWAnalytics.sendStopReviewEvent(null);
+            CWAnalytics.sendStopReviewEvent(analyticsDuration());
             abortBeforeRecording();
             return;
         }
 
         if (state == AppState.PlaybackRecording)
         {
-            CWAnalytics.sendStopReactionEvent(null);
+            CWAnalytics.sendStopReactionEvent(analyticsDuration());
             abortRecording();
             return;
         }
 
         if (state == AppState.Recording)
         {
-            stopRecording();
+            stopRecording(true);
             return;
         }
 
@@ -545,7 +583,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
                         @Override
                         public void run()
                         {
-                            stopRecording();
+                            stopRecording(false);
                         }
                     });
 
@@ -603,11 +641,11 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         cameraPreviewView.startRecording();
     }
 
-    private void stopRecording()
+    private void stopRecording(boolean buttonPress)
     {
         CWLog.b(NewCameraActivity.class, "stopRecording");
         AndroidUtils.isMainThread();
-        setAppState(AppState.PreviewLoading);
+        setAppState(AppState.PreviewLoading, buttonPress);
         hideMessage(bottomFrameMessage);
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
