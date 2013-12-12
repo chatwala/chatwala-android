@@ -726,11 +726,15 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         }
     }
 
+    private boolean replyMessageAvailable()
+    {
+        return getIntent().getData() != null;
+    }
+
     private void createSurface()
     {
         AndroidUtils.isMainThread();
-        Uri uri = getIntent().getData();
-        if (uri != null)
+        if (replyMessageAvailable())
         {
             runWaterSplash();
         }
