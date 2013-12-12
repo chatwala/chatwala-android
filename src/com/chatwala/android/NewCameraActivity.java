@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewCameraActivity extends Activity//BaseChatWalaActivity
+public class NewCameraActivity extends BaseChatWalaActivity
 {
     public static final int RECORDING_TIME = 10000;
     private int openingVolume;

@@ -43,7 +43,7 @@ public class CWAnalytics
 
     public static void initAnalytics(Context context, boolean isStarter)
     {
-        //easyTracker = EasyTracker.getInstance(context);
+        easyTracker = EasyTracker.getInstance(context);
         isStarterMessage = isStarter;
         categoryString = (SharedPrefsUtils.isFirstOpen(context) ? CATEGORY_FIRST_OPEN : (isStarter ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
         sendAppOpenEvent();
@@ -109,6 +109,6 @@ public class CWAnalytics
         String labelString = label != null ? label : "none";
         String valueString = value != null ? value.toString() : "none";
         Log.d("ANALYTICS #############", "CATEGORY: " + categoryString + " ACTION: " + action + " LABEL: " + labelString + " VALUE: " + valueString);
-        //easyTracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
+        easyTracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
     }
 }
