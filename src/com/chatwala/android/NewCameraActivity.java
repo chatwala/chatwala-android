@@ -7,13 +7,11 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Html;
 import android.util.Patterns;
 import android.view.View;
@@ -28,7 +26,6 @@ import com.chatwala.android.util.*;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -618,7 +615,7 @@ public class NewCameraActivity extends Activity
                 {
                     removeWaterSplash();
                 }
-            });
+            }, true);
             videoViewContainer.addView(messageVideoView);
             messageVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
             {
@@ -680,7 +677,7 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
-            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null);
+            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null, false);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);

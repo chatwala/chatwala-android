@@ -36,7 +36,7 @@ public class DynamicVideoView extends VideoView
         void ready();
     }
 
-    public DynamicVideoView(final Context context, File video, int width, int height, VideoReadyCallback callback)
+    public DynamicVideoView(final Context context, File video, int width, int height, VideoReadyCallback callback, final boolean runStart)
     {
         super(context);
         this.callback = callback;
@@ -52,7 +52,8 @@ public class DynamicVideoView extends VideoView
             {
                 DynamicVideoView.this.mediaPlayer = mp;
 //                resetVolume(context);
-                runningStart();
+                if(runStart)
+                    runningStart();
             }
         });
 //        runningStart();

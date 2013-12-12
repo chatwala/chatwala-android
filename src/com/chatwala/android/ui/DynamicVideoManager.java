@@ -25,7 +25,7 @@ public class DynamicVideoManager
     {
 
         imageView = new DynamicVideoThumbImageView(context, width, height);
-        videoView = new DynamicVideoView(context, video, width, height, null);
+        videoView = new DynamicVideoView(context, video, width, height, null, false);
         this.container = container;
     }
 
