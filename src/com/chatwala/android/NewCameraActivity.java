@@ -96,7 +96,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
         CWLog.b(NewCameraActivity.class, "setAppState: " + appState + " (" + System.currentTimeMillis() + ")");
         AndroidUtils.isMainThread();
 
-        analyticsStateEnd(this.appState, buttonPress);
+        analyticsStateEnd(appState, buttonPress);
 
         this.appState = appState;
 
@@ -140,19 +140,22 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
     private void analyticsStateEnd(AppState appState, boolean buttonPress)
     {
-        long duration = analyticsDuration();
-        switch (appState)
+        if(appState != AppState.Transition)
         {
-            case PlaybackOnly:
-                CWAnalytics.sendReviewCompleteEvent(duration);
-                break;
-            case PlaybackRecording:
-                CWAnalytics.sendReactionCompleteEvent(duration);
-                break;
-            case Recording:
-                CWAnalytics.sendRecordingEndEvent(buttonPress, duration);
-                break;
+            long duration = analyticsDuration();
+            switch (this.appState)
+            {
+                case PlaybackOnly:
+                    CWAnalytics.sendReviewCompleteEvent(duration);
+                    break;
+                case PlaybackRecording:
+                    CWAnalytics.sendReactionCompleteEvent(duration);
+                    break;
+                case Recording:
+                    CWAnalytics.sendRecordingEndEvent(buttonPress, duration);
+                    break;
 
+            }
         }
     }
 
