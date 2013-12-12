@@ -34,8 +34,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     private final CameraPreviewCallback callback;
     private AtomicBoolean recordStarting = new AtomicBoolean(false);
     private int cameraFrameRate;
-    private AtomicBoolean surfaceAvailable = new AtomicBoolean(false);
-    private AtomicBoolean measureDone = new AtomicBoolean(false);
     private SurfaceTexture surfaceTexture;
 
     public interface CameraPreviewCallback
@@ -75,48 +73,48 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureAvailable: " + surface);
         surfaceTexture = surface;
-        surfaceAvailable.set(true);
-        checkIfWeCanGo();
+
+        new Handler().postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                runSurface();
+            }
+        }, 700);
     }
 
-    private void checkIfWeCanGo()
+    private void runSurface()
     {
-        if (surfaceAvailable.get() && measureDone.get() && isActivityActive())
+        if (cameraPreviewSize != null && isActivityActive())
         {
-            new Handler().postDelayed(new Runnable()
+            setCameraParams();
+            try
             {
-                @Override
-                public void run()
-                {
-                    setCameraParams();
-                                try
-                                {
-                                    camera.setPreviewTexture(surfaceTexture);
-                                }
-                                catch (IOException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                                camera.startPreview();
+                camera.setPreviewTexture(surfaceTexture);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            camera.startPreview();
 
-                                prepareMediaRecorder();
+            prepareMediaRecorder();
 
-                                //http://stackoverflow.com/questions/3841122/android-camera-preview-is-sideways/5110406#5110406
-                                Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            //http://stackoverflow.com/questions/3841122/android-camera-preview-is-sideways/5110406#5110406
+            Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
-                                if (display.getRotation() == Surface.ROTATION_0)
-                                {
-                                    camera.setDisplayOrientation(90);
-                                }
+            if (display.getRotation() == Surface.ROTATION_0)
+            {
+                camera.setDisplayOrientation(90);
+            }
 
-                                if (display.getRotation() == Surface.ROTATION_270)
-                                {
-                                    camera.setDisplayOrientation(180);
-                                }
+            if (display.getRotation() == Surface.ROTATION_270)
+            {
+                camera.setDisplayOrientation(180);
+            }
 
-                                callback.surfaceReady();
-                }
-            }, 1000);
+            callback.surfaceReady();
         }
     }
 
@@ -136,7 +134,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureUpdated");
         if (recordStarting.getAndSet(false))
         {
             callback.recordingStarted();
@@ -280,10 +277,11 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
+        Log.w(CameraPreviewView.class.getSimpleName(), "widthMeasureSpec: " + widthMeasureSpec + "/heightMeasureSpec: " + heightMeasureSpec);
         if (((ViewGroup) getParent()).getHeight() != 0)
         {
-
-            findCameraSizes();
+            if(cameraPreviewSize == null)
+                findCameraSizes();
 
             //either scale up the height of the preview, so that is at least the size of the container
             int viewWidth = ((ViewGroup) getParent()).getWidth();
@@ -294,15 +292,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             double newPreviewHeight = (double) previewHeight * ratio;
             double newPreviewWidth = (double) previewWidth * ratio;
 
-            Log.w(CameraPreviewView.class.getSimpleName(), "newPreviewWidth: "+ newPreviewWidth +"/newPreviewHeight: "+ newPreviewHeight);
+            Log.w(CameraPreviewView.class.getSimpleName(), "newPreviewHeight: " + newPreviewHeight + "/newPreviewWidth: " + newPreviewWidth);
             //Preview is rotated 90 degrees, so swap width/height
             setMeasuredDimension((int) newPreviewWidth, (int) newPreviewHeight);
-
-            if(!measureDone.get())
-            {
-                measureDone.set(true);
-                checkIfWeCanGo();
-            }
         }
         else
         {
