@@ -37,7 +37,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     public interface CameraPreviewCallback
     {
         void surfaceReady();
+
         void recordingStarted();
+
         void recordingDone(File videoFile);
     }
 
@@ -59,11 +61,16 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         this(context, callback);
     }
 
+    private boolean isActivityActive()
+    {
+        return ((NewCameraActivity) getContext()).isActivityActive();
+    }
+
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureAvailable: "+ surface);
-        if(cameraPreviewSize != null)
+        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureAvailable: " + surface);
+        if (cameraPreviewSize != null && isActivityActive())
         {
             setCameraParams();
             try
@@ -98,7 +105,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
     {
-        
+
     }
 
     @Override
@@ -111,7 +118,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        if(recordStarting.getAndSet(false))
+        if (recordStarting.getAndSet(false))
         {
             callback.recordingStarted();
         }
@@ -135,13 +142,13 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
                 @Override
                 public void onError(int error, Camera camera)
                 {
-                    Log.w(CameraPreviewView.class.getSimpleName(), "onError: "+ error +"/Camera: "+ camera);
+                    Log.w(CameraPreviewView.class.getSimpleName(), "onError: " + error + "/Camera: " + camera);
                 }
             });
         }
         catch (Exception e)
         {
-            if(camera != null)
+            if (camera != null)
                 camera.release();
             throw new RuntimeException(e);
         }
@@ -286,7 +293,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         cameraVideoSize = CameraUtils.findCameraVideoSize(viewWidth, params);
         cameraFrameRate = CameraUtils.findCameraFrameRate(getContext(), params);
 
-        CWLog.i(CameraPreviewView.class, "Frame rate: "+ cameraFrameRate);
+        CWLog.i(CameraPreviewView.class, "Frame rate: " + cameraFrameRate);
         CWLog.logFramerate(cameraFrameRate);
         CWLog.logPreviewDimensions(cameraPreviewSize.width, cameraPreviewSize.height);
         CWLog.logVideoDimensions(cameraVideoSize.width, cameraVideoSize.height);
@@ -298,8 +305,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 
     public void releaseResources()
     {
-        releaseMediaRecorder();
         releaseCamera();
+        releaseMediaRecorder();
     }
 
     private void releaseCamera()
@@ -314,15 +321,6 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         if (mediaRecorder != null)
         {
-            try
-            {
-                abortRecording();
-            }
-            catch (IllegalStateException exception)
-            {
-                //The mediarecorder wasn't started.  We're about to release the recorder, so an invalid state doesn't matter, just eat this.
-            }
-
             mediaRecorder.reset();
             CWLog.mediaRecorder(CameraPreviewView.class, "Reset");
             mediaRecorder.release();

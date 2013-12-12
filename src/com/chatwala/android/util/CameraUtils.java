@@ -159,9 +159,12 @@ public class CameraUtils
         }
     }
 
+
+    //TODO: This needs fixing. HTC One returns nonsense. S4 can't do default. Several other Samsung phones have the same issue.
     public static int findCameraFrameRate(Context context, Camera.Parameters params)
     {
         int defaultRate = context.getResources().getInteger(R.integer.video_frame_rate);
+
         int maxReturnedRate = 0;
         int setRate = Integer.MAX_VALUE;
 
@@ -180,6 +183,9 @@ public class CameraUtils
             }
 
         }
+
+        if(setRate > 30)
+            return 30;
 
         if (setRate < Integer.MAX_VALUE)
             return setRate;

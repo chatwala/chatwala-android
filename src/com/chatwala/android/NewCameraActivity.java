@@ -8,12 +8,13 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Html;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,7 @@ import java.util.regex.Pattern;
 public class NewCameraActivity extends Activity//BaseChatWalaActivity
 {
     public static final int RECORDING_TIME = 10000;
-    private ViewGroup blueMessageDialag;
+    private int openingVolume;
 
     public enum AppState
     {
@@ -59,11 +60,13 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
     private TextView topFrameMessageText;
     private View bottomFrameMessage;
     private TextView bottomFrameMessageText;
-    private DynamicTextureVideoView messageVideoView;
-    private DynamicTextureVideoView recordPreviewVideoView;
+    private DynamicVideoView messageVideoView;
+    private DynamicVideoView recordPreviewVideoView;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
     private TimerDial timerDial;
+    private ViewGroup blueMessageDialag;
+    private View splash;
     // ************* onCreate only *************
 
     // ************* DANGEROUS STATE *************
@@ -73,7 +76,10 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
+    private boolean activityActive;
     // ************* DANGEROUS STATE *************
+
+    private boolean closePreviewOnReturn = false;
 
     public synchronized AppState getAppState()
     {
@@ -90,7 +96,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
-                if(chatMessage != null)
+                if (chatMessage != null)
                     timerKnob.setImageResource(R.drawable.ic_action_playback_play);
                 else
                     timerKnob.setImageResource(R.drawable.record_circle);
@@ -170,7 +176,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     private void hideDialag()
     {
-        if(blueMessageDialag != null)
+        if (blueMessageDialag != null)
         {
             findViewRoot().removeView(blueMessageDialag);
             blueMessageDialag = null;
@@ -275,39 +281,33 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
             }
         });
         CWLog.b(NewCameraActivity.class, "onCreate end");
+
+//        captureOpeningVolume();
     }
 
-    private void runWaterSplash(ChatwalaApplication application)
+    private void runWaterSplash()
     {
-        application.setSplashRan(true);
-        final View splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
+        if (splash != null)
+        {
+            final ViewGroup root = findViewRoot();
+            root.removeView(splash);
+        }
+
+        splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
         final ViewGroup root = findViewRoot();
         root.addView(splash);
-        new Handler().postDelayed(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
-                root.removeView(splash);
-                /*showDialag(R.string.play_message_record_reaction, new DialagButton(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
-                    }
-                }, R.string.sure), new DialagButton(new View.OnClickListener()
-                                {
-                                    @Override
-                                    public void onClick(View v)
-                                    {
-                                        Toast.makeText(NewCameraActivity.this, "Heyo", Toast.LENGTH_LONG).show();
-                                    }
-                                }, R.string.sure));*/
-            }
-        }, 3000);
         CWLog.b(NewCameraActivity.class, "runWaterSplash end");
+    }
+
+    private void removeWaterSplash()
+    {
+        if (splash != null)
+        {
+            final ViewGroup root = findViewRoot();
+            splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
+            root.removeView(splash);
+            splash = null;
+        }
     }
 
     private ViewGroup findViewRoot()
@@ -321,19 +321,49 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         super.onResume();
         CWLog.b(NewCameraActivity.class, "onResume");
 
+        activityActive = true;
         setAppState(AppState.Transition);
 
-        //Kick off attachment load
-        createSurface();
+//        setReviewVolume();
 
+        if (closePreviewOnReturn)
+        {
+            closePreviewOnReturn = false;
+            closeResultPreview();
+        }
+        else
+        {
+            //Kick off attachment load
+            createSurface();
+        }
     }
 
     @Override
     protected void onPause()
     {
+        if(heartbeatTimer != null)
+            heartbeatTimer.abort();
+
         super.onPause();
+
+        activityActive = false;
+
+        AppState state = getAppState();
+
+        if (state == AppState.PlaybackRecording || state == AppState.Recording)
+        {
+            cameraPreviewView.abortRecording();
+        }
+
         setAppState(AppState.Off);
+
+//        resetOpeningVolume();
         tearDownSurface();
+    }
+
+    public boolean isActivityActive()
+    {
+        return activityActive;
     }
 
     private void triggerButtonAction()
@@ -375,12 +405,12 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         {
             CWAnalytics.sendSendMessageEvent(null);
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
-            closeResultPreview();
         }
     }
 
     private void abortRecording()
     {
+        CWLog.b(NewCameraActivity.class, "abortRecording");
         cameraPreviewView.abortRecording();
         abortBeforeRecording();
     }
@@ -388,6 +418,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
     @Override
     public void onBackPressed()
     {
+        CWLog.userAction(NewCameraActivity.class, "onBackPressed");
         AppState state = getAppState();
         if (state == AppState.PreviewReady)
             closeResultPreview();
@@ -397,6 +428,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     private void abortBeforeRecording()
     {
+        CWLog.b(NewCameraActivity.class, "abortBeforeRecording");
         AndroidUtils.isMainThread();
         setAppState(AppState.Transition);
         heartbeatTimer.abort();
@@ -407,7 +439,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     class HeartbeatTimer extends Thread
     {
-        private long startRecordingTime;
+        private final long startRecordingTime;
         private long messageVideoDuration;
         private boolean recordingStarted;
         private long endRecordingTime;
@@ -425,6 +457,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
         public void abort()
         {
+            CWLog.b(NewCameraActivity.class, "HeartbeatTimer:abort");
             cancel.set(true);
         }
 
@@ -441,6 +474,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
         public synchronized void endPause()
         {
+            CWLog.b(NewCameraActivity.class, "HeartbeatTimer:endPause");
             if (pauseStart != null)
             {
                 long calcStartAdjust = startTime + (System.currentTimeMillis() - pauseStart);
@@ -490,6 +524,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
                 if (!recordingStarted && now >= startRecordingTime)
                 {
+                    CWLog.b(NewCameraActivity.class, "HeartbeatTimer: inside start recording block");
                     recordingStarted = true;
                     runOnUiThread(new Runnable()
                     {
@@ -504,6 +539,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
                 if (now >= endRecordingTime)
                 {
+                    CWLog.b(NewCameraActivity.class, "stop HeartbeatTimer");
                     runOnUiThread(new Runnable()
                     {
                         @Override
@@ -530,6 +566,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     private void startPlaybackRecording()
     {
+        CWLog.b(NewCameraActivity.class, "startPlaybackRecording");
         AndroidUtils.isMainThread();
 
         hideMessage(topFrameMessage);
@@ -538,25 +575,26 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         {
             setAppState(AppState.PlaybackOnly);
             messageVideoView.start();
-
         }
 
-        if (recordingStartMillis == 0)
+        boolean shouldStartRecordingNow = recordingStartMillis == 0;
+        if (shouldStartRecordingNow)
         {
             startRecording();
         }
 
         int chatMessageDuration = chatMessageVideoMetadata == null ? 0 : chatMessageVideoMetadata.duration;
         assert heartbeatTimer == null; //Just checking. This would be bad.
-        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, chatMessageDuration, recordingStartMillis == 0);
+        heartbeatTimer = new HeartbeatTimer(recordingStartMillis, chatMessageDuration, shouldStartRecordingNow);
         heartbeatTimer.start();
     }
 
     private void startRecording()
     {
+        CWLog.b(NewCameraActivity.class, "startRecording");
         AndroidUtils.isMainThread();
 
-        if(chatMessage == null)
+        if (chatMessage == null)
             hideMessage(bottomFrameMessage);
 
         setAppState(AppState.RecordingLimbo);
@@ -567,6 +605,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     private void stopRecording()
     {
+        CWLog.b(NewCameraActivity.class, "stopRecording");
         AndroidUtils.isMainThread();
         setAppState(AppState.PreviewLoading);
         hideMessage(bottomFrameMessage);
@@ -577,12 +616,13 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     private void previewSurfaceReady()
     {
-        CWLog.i(NewCameraActivity.class, "previewSurfaceReady called");
+        CWLog.b(NewCameraActivity.class, "previewSurfaceReady");
         initStartState();
     }
 
     private void initStartState()
     {
+        CWLog.b(NewCameraActivity.class, "initStartState");
         chatMessage = null;
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
@@ -592,11 +632,19 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
     private void messageLoaded(ChatMessage message)
     {
+        CWLog.b(NewCameraActivity.class, "messageLoaded");
         this.chatMessage = message;
 
         if (chatMessage != null)
         {
-            messageVideoView = new DynamicTextureVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, chatMessageVideoMetadata.rotation);
+            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, new DynamicVideoView.VideoReadyCallback()
+            {
+                @Override
+                public void ready()
+                {
+                    removeWaterSplash();
+                }
+            }, true);
             videoViewContainer.addView(messageVideoView);
             messageVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
             {
@@ -614,12 +662,12 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
             showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.basic_instructions);
         }
 
-        CWLog.i(NewCameraActivity.class, "messageLoaded complete");
         liveForRecording();
     }
 
     private void liveForRecording()
     {
+        CWLog.b(NewCameraActivity.class, "liveForRecording");
         runOnUiThread(new Runnable()
         {
             @Override
@@ -659,7 +707,7 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
             CWAnalytics.sendRecordingEndEvent(true, (long)videoInfo.duration);
-            recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
+            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null, false);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);
@@ -681,6 +729,12 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
     private void createSurface()
     {
         AndroidUtils.isMainThread();
+        Uri uri = getIntent().getData();
+        if (uri != null)
+        {
+            runWaterSplash();
+        }
+
         CWLog.b(NewCameraActivity.class, "createSurface");
         setAppState(AppState.LoadingFileCamera);
         hideMessage(topFrameMessage);
@@ -698,13 +752,9 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
             public void recordingStarted()
             {
                 if(chatMessage == null)
-                {
                     setAppState(AppState.Recording);
-                }
                 else
-                {
                     setAppState(AppState.PlaybackRecording);
-                }
                 if (messageVideoView != null)
                     messageVideoView.start();
 
@@ -928,13 +978,15 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
                     sendTo = originalMessage.metadata.senderId.trim();
 
                 //Not sure how this would creep in there, but deal with it.
-                if(sendTo.equalsIgnoreCase("null"))
+                if (sendTo.equalsIgnoreCase("null"))
                     sendTo = "";
 
                 String uriText = "mailto:" + sendTo;
 
                 Uri mailtoUri = Uri.parse(uriText);
                 Uri dataUri = Uri.fromFile(outZip);
+
+                boolean gmailOk = false;
 
                 if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
                 {
@@ -948,14 +1000,17 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
 
                     try
                     {
+                        closePreviewOnReturn = true;
                         startActivity(gmailIntent);
+                        gmailOk = true;
                     }
                     catch (ActivityNotFoundException ex)
                     {
-                        // handle error
+                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
                     }
                 }
-                else
+
+                if (!gmailOk)
                 {
                     Intent intent = new Intent(Intent.ACTION_SENDTO);
 
@@ -993,4 +1048,24 @@ public class NewCameraActivity extends Activity//BaseChatWalaActivity
         messageView.startAnimation(animation);
         messageView.setVisibility(View.GONE);
     }
+
+    /*private void captureOpeningVolume()
+        {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            openingVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        }
+
+        private void setReviewVolume()
+        {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            int streamMaxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            long newVolume = Math.round((float) streamMaxVolume * .5);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int)newVolume, 0);
+        }
+
+        private void resetOpeningVolume()
+        {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, openingVolume, 0);
+        }*/
 }
