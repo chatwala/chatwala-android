@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewCameraActivity extends Activity
+public class NewCameraActivity extends Activity//BaseChatWalaActivity
 {
     public static final int RECORDING_TIME = 10000;
     private int openingVolume;
@@ -102,10 +102,16 @@ public class NewCameraActivity extends Activity
                     timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
+                CWAnalytics.sendStartReviewEvent();
+                setTimerKnobForRecording();
+                break;
             case PlaybackRecording:
+                CWAnalytics.sendStartReactionEvent();
+                setTimerKnobForRecording();
+                break;
             case Recording:
-                timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.setImageResource(R.drawable.record_stop);
+                CWAnalytics.sendRecordingStartEvent(true);
+                setTimerKnobForRecording();
                 break;
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
@@ -114,6 +120,12 @@ public class NewCameraActivity extends Activity
             default:
                 timerKnob.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void setTimerKnobForRecording()
+    {
+        timerKnob.setVisibility(View.VISIBLE);
+        timerKnob.setImageResource(R.drawable.record_stop);
     }
 
     class DialagButton
@@ -264,6 +276,7 @@ public class NewCameraActivity extends Activity
             public void onClick(View v)
             {
                 CWLog.userAction(NewCameraActivity.class, "Close record preview pressed in state: " + getAppState().name());
+                CWAnalytics.sendRedoMessageEvent(null);
                 closeResultPreview();
             }
         });
@@ -370,12 +383,14 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PlaybackOnly)
         {
+            CWAnalytics.sendStopReviewEvent(null);
             abortBeforeRecording();
             return;
         }
 
         if (state == AppState.PlaybackRecording)
         {
+            CWAnalytics.sendStopReactionEvent(null);
             abortRecording();
             return;
         }
@@ -388,6 +403,7 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PreviewReady)
         {
+            CWAnalytics.sendSendMessageEvent(null);
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
         }
     }
@@ -690,6 +706,7 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
+            CWAnalytics.sendRecordingEndEvent(true, (long)videoInfo.duration);
             recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null, false);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
@@ -734,7 +751,7 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingStarted()
             {
-                if (chatMessage == null)
+                if(chatMessage == null)
                     setAppState(AppState.Recording);
                 else
                     setAppState(AppState.PlaybackRecording);
@@ -818,6 +835,7 @@ public class NewCameraActivity extends Activity
                     throw new RuntimeException(e);
                 }
             }
+            CWAnalytics.initAnalytics(NewCameraActivity.this, cm == null);
             return cm;
         }
 
