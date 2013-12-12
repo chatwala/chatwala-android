@@ -7,7 +7,6 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -28,7 +27,6 @@ import com.chatwala.android.util.*;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -45,7 +43,7 @@ import java.util.regex.Pattern;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewCameraActivity extends Activity
+public class NewCameraActivity extends Activity//BaseChatWalaActivity
 {
     public static final int RECORDING_TIME = 10000;
     private ViewGroup blueMessageDialag;
@@ -98,10 +96,16 @@ public class NewCameraActivity extends Activity
                     timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
+                CWAnalytics.sendStartReviewEvent();
+                setTimerKnobForRecording();
+                break;
             case PlaybackRecording:
+                CWAnalytics.sendStartReactionEvent();
+                setTimerKnobForRecording();
+                break;
             case Recording:
-                timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.setImageResource(R.drawable.record_stop);
+                CWAnalytics.sendRecordingStartEvent(true);
+                setTimerKnobForRecording();
                 break;
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
@@ -110,6 +114,12 @@ public class NewCameraActivity extends Activity
             default:
                 timerKnob.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void setTimerKnobForRecording()
+    {
+        timerKnob.setVisibility(View.VISIBLE);
+        timerKnob.setImageResource(R.drawable.record_stop);
     }
 
     class DialagButton
@@ -260,6 +270,7 @@ public class NewCameraActivity extends Activity
             public void onClick(View v)
             {
                 CWLog.userAction(NewCameraActivity.class, "Close record preview pressed in state: " + getAppState().name());
+                CWAnalytics.sendRedoMessageEvent(null);
                 closeResultPreview();
             }
         });
@@ -342,12 +353,14 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PlaybackOnly)
         {
+            CWAnalytics.sendStopReviewEvent(null);
             abortBeforeRecording();
             return;
         }
 
         if (state == AppState.PlaybackRecording)
         {
+            CWAnalytics.sendStopReactionEvent(null);
             abortRecording();
             return;
         }
@@ -360,6 +373,7 @@ public class NewCameraActivity extends Activity
 
         if (state == AppState.PreviewReady)
         {
+            CWAnalytics.sendSendMessageEvent(null);
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
             closeResultPreview();
         }
@@ -644,6 +658,7 @@ public class NewCameraActivity extends Activity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
+            CWAnalytics.sendRecordingEndEvent(true, (long)videoInfo.duration);
             recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
@@ -683,9 +698,13 @@ public class NewCameraActivity extends Activity
             public void recordingStarted()
             {
                 if(chatMessage == null)
+                {
                     setAppState(AppState.Recording);
+                }
                 else
+                {
                     setAppState(AppState.PlaybackRecording);
+                }
                 if (messageVideoView != null)
                     messageVideoView.start();
 
@@ -766,6 +785,7 @@ public class NewCameraActivity extends Activity
                     throw new RuntimeException(e);
                 }
             }
+            CWAnalytics.initAnalytics(NewCameraActivity.this, cm == null);
             return cm;
         }
 
