@@ -96,7 +96,7 @@ public class NewCameraActivity extends Activity
         {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
-                if(chatMessage != null)
+                if (chatMessage != null)
                     timerKnob.setImageResource(R.drawable.ic_action_playback_play);
                 else
                     timerKnob.setImageResource(R.drawable.record_circle);
@@ -164,7 +164,7 @@ public class NewCameraActivity extends Activity
 
     private void hideDialag()
     {
-        if(blueMessageDialag != null)
+        if (blueMessageDialag != null)
         {
             findViewRoot().removeView(blueMessageDialag);
             blueMessageDialag = null;
@@ -274,7 +274,7 @@ public class NewCameraActivity extends Activity
 
     private void runWaterSplash()
     {
-        if(splash != null)
+        if (splash != null)
         {
             final ViewGroup root = findViewRoot();
             root.removeView(splash);
@@ -288,7 +288,7 @@ public class NewCameraActivity extends Activity
 
     private void removeWaterSplash()
     {
-        if(splash != null)
+        if (splash != null)
         {
             final ViewGroup root = findViewRoot();
             splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
@@ -313,7 +313,7 @@ public class NewCameraActivity extends Activity
 
 //        setReviewVolume();
 
-        if(closePreviewOnReturn)
+        if (closePreviewOnReturn)
         {
             closePreviewOnReturn = false;
             closeResultPreview();
@@ -328,9 +328,20 @@ public class NewCameraActivity extends Activity
     @Override
     protected void onPause()
     {
+        if(heartbeatTimer != null)
+            heartbeatTimer.abort();
+
         super.onPause();
 
         activityActive = false;
+
+        AppState state = getAppState();
+
+        if (state == AppState.PlaybackRecording || state == AppState.Recording)
+        {
+            cameraPreviewView.abortRecording();
+        }
+
         setAppState(AppState.Off);
 
 //        resetOpeningVolume();
@@ -567,7 +578,7 @@ public class NewCameraActivity extends Activity
         CWLog.b(NewCameraActivity.class, "startRecording");
         AndroidUtils.isMainThread();
 
-        if(chatMessage == null)
+        if (chatMessage == null)
             hideMessage(bottomFrameMessage);
 
         setAppState(AppState.RecordingLimbo);
@@ -702,7 +713,7 @@ public class NewCameraActivity extends Activity
     {
         AndroidUtils.isMainThread();
         Uri uri = getIntent().getData();
-        if(uri != null)
+        if (uri != null)
         {
             runWaterSplash();
         }
@@ -723,7 +734,7 @@ public class NewCameraActivity extends Activity
             @Override
             public void recordingStarted()
             {
-                if(chatMessage == null)
+                if (chatMessage == null)
                     setAppState(AppState.Recording);
                 else
                     setAppState(AppState.PlaybackRecording);
@@ -949,13 +960,15 @@ public class NewCameraActivity extends Activity
                     sendTo = originalMessage.metadata.senderId.trim();
 
                 //Not sure how this would creep in there, but deal with it.
-                if(sendTo.equalsIgnoreCase("null"))
+                if (sendTo.equalsIgnoreCase("null"))
                     sendTo = "";
 
                 String uriText = "mailto:" + sendTo;
 
                 Uri mailtoUri = Uri.parse(uriText);
                 Uri dataUri = Uri.fromFile(outZip);
+
+                boolean gmailOk = false;
 
                 if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
                 {
@@ -971,13 +984,15 @@ public class NewCameraActivity extends Activity
                     {
                         closePreviewOnReturn = true;
                         startActivity(gmailIntent);
+                        gmailOk = true;
                     }
                     catch (ActivityNotFoundException ex)
                     {
-                        // handle error
+                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
                     }
                 }
-                else
+
+                if (!gmailOk)
                 {
                     Intent intent = new Intent(Intent.ACTION_SENDTO);
 

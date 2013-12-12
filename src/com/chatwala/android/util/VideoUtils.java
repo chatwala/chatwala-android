@@ -104,7 +104,7 @@ public class VideoUtils
         metadata.height = Integer.parseInt(height);
         metadata.width = Integer.parseInt(width);
         metadata.duration = Integer.parseInt(duration);
-        metadata.rotation = Integer.parseInt(rotation);
+        metadata.rotation = rotation == null ? 0 : Integer.parseInt(rotation);
 
         return metadata;
     }
