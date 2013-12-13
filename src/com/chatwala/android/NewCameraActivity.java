@@ -673,12 +673,16 @@ public class NewCameraActivity extends BaseChatWalaActivity
         CWLog.b(NewCameraActivity.class, "startPlaybackRecording");
         AndroidUtils.isMainThread();
 
-        hideMessage(topFrameMessage);
         int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
         if (messageVideoView != null)
         {
             setAppState(AppState.PlaybackOnly);
             messageVideoView.start();
+            topFrameMessageText.setVisibility(View.GONE);
+        }
+        else
+        {
+            hideMessage(topFrameMessage);
         }
 
         boolean shouldStartRecordingNow = recordingStartMillis == 0;
@@ -858,6 +862,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
                     setAppState(AppState.PlaybackRecording);
                 if (messageVideoView != null)
                 {
+                    hideMessage(topFrameMessage);
                     new Handler().postDelayed(new Runnable()
                     {
                         @Override
@@ -1153,6 +1158,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
         messageView.setBackgroundColor(getResources().getColor(colorRes));
         messageView.setVisibility(View.VISIBLE);
         messageViewText.setText(messageRes);
+        messageViewText.setVisibility(View.VISIBLE);
     }
 
     private void hideMessage(View messageView)
