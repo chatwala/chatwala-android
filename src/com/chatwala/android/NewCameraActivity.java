@@ -12,6 +12,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Html;
 import android.util.Patterns;
 import android.view.View;
@@ -46,6 +47,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
 {
     public static final int RECORDING_TIME = 10000;
     private int openingVolume;
+    private Handler buttonDelayHandler;
+    private View timerButtonContainer;
 
     public enum AppState
     {
@@ -99,6 +102,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
         analyticsStateEnd(appState, buttonPress);
 
         this.appState = appState;
+
+        delayButtonPress();
 
         switch (this.appState)
         {
@@ -245,6 +250,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
         CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
 
+        buttonDelayHandler = new Handler();
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -258,7 +265,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
-        View timerButtonContainer = findViewById(R.id.timerContainer);
+        timerButtonContainer = findViewById(R.id.timerContainer);
         timerDial = (TimerDial) findViewById(R.id.timerDial);
         timerKnob = (ImageView) findViewById(R.id.timerText);
         timerButtonContainer.setOnClickListener(new View.OnClickListener()
@@ -347,8 +354,32 @@ public class NewCameraActivity extends BaseChatWalaActivity
         if (splash != null)
         {
             final ViewGroup root = findViewRoot();
-            splash.startAnimation(AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out));
-            root.removeView(splash);
+            Animation animation = AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out);
+
+            final View innerSplash = splash;
+            animation.setAnimationListener(new Animation.AnimationListener()
+            {
+                @Override
+                public void onAnimationStart(Animation animation)
+                {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation)
+                {
+                    root.removeView(innerSplash);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation)
+                {
+
+                }
+            });
+
+            splash.startAnimation(animation);
+
             splash = null;
         }
     }
@@ -407,6 +438,26 @@ public class NewCameraActivity extends BaseChatWalaActivity
     public boolean isActivityActive()
     {
         return activityActive;
+    }
+
+    private void delayButtonPress()
+    {
+        switch (getAppState())
+        {
+            case PlaybackOnly:
+            case PlaybackRecording:
+            case Recording:
+//            case PreviewLoading:
+                timerButtonContainer.setEnabled(false);
+                buttonDelayHandler.postDelayed(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        timerButtonContainer.setEnabled(true);
+                    }
+                }, 1000);
+        }
     }
 
     private void triggerButtonAction()
@@ -502,6 +553,11 @@ public class NewCameraActivity extends BaseChatWalaActivity
         {
             CWLog.b(NewCameraActivity.class, "HeartbeatTimer:abort");
             cancel.set(true);
+        }
+
+        public boolean isAborted()
+        {
+            return cancel.get();
         }
 
         class UpdateTimerRunnable implements Runnable
@@ -795,7 +851,23 @@ public class NewCameraActivity extends BaseChatWalaActivity
                 else
                     setAppState(AppState.PlaybackRecording);
                 if (messageVideoView != null)
-                    messageVideoView.start();
+                {
+                    new Handler().postDelayed(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                messageVideoView.start();
+                            }
+                            catch (Exception e)
+                            {
+                                //Whoops
+                            }
+                        }
+                    }, 1200);
+                }
 
                 heartbeatTimer.endPause();
             }

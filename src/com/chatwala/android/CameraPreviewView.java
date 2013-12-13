@@ -207,6 +207,8 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         int bitDepth = AppPrefs.getInstance(getContext()).getPrefBitDepth();
         mediaRecorder.setVideoEncodingBitRate(bitDepth);
 
+
+
         Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
         int mrRotate = 0;

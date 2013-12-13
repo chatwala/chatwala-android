@@ -51,6 +51,14 @@ public class RippleTimer extends View
         display.getSize(size);
         screenWidth = size.x;
         screenHeight = size.y;
+        setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                //Nothing
+            }
+        });
     }
 
     @Override
@@ -73,4 +81,6 @@ public class RippleTimer extends View
 //        if(yDiff > ripple.getHeight())
             invalidate();
     }
+
+
 }
