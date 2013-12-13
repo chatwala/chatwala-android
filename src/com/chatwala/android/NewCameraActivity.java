@@ -2,7 +2,6 @@ package com.chatwala.android;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -866,7 +865,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
                                 //Whoops
                             }
                         }
-                    }, 1200);
+                    }, 500);
                 }
 
                 heartbeatTimer.endPause();
