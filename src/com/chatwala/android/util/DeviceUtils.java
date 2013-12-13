@@ -11,10 +11,10 @@ import android.os.Build;
  */
 public class DeviceUtils
 {
-    private static final String BUILD_DEVICE_S4 = "jflte";
+    private static String BUILD_DEVICE_S4 = "jflte";
 
-    private static final String BUILD_MODEL_HTCONE = "HTC One";
-    private static final String BUILD_DEVICE_HTCONE = "m7";
+    private static String BUILD_MODEL_HTCONE = "HTC One";
+    private static String BUILD_DEVICE_HTCONE = "m7";
 
     public static boolean isDeviceS4()
     {
