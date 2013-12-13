@@ -2,7 +2,6 @@ package com.chatwala.android;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -249,6 +248,11 @@ public class NewCameraActivity extends BaseChatWalaActivity
         super.onCreate(savedInstanceState);
         CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
+
+        if(DeviceUtils.isDeviceHTCONE())
+        {
+            CWLog.b(NewCameraActivity.class, "HTCONE");
+        }
 
         buttonDelayHandler = new Handler();
 
@@ -866,7 +870,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
                                 //Whoops
                             }
                         }
-                    }, 1200);
+                    }, 500);
                 }
 
                 heartbeatTimer.endPause();

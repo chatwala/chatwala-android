@@ -4,7 +4,6 @@ import android.content.Context;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.os.Build;
-import android.text.TextUtils;
 import com.chatwala.android.R;
 
 import java.io.File;
@@ -20,8 +19,6 @@ import java.util.List;
  */
 public class CameraUtils
 {
-    private static String BUILD_DEVICE_S4 = "jflte";
-
     public static File getRootDataFolder(Context context)
     {
         File filesDir = context.getFilesDir();
@@ -98,11 +95,6 @@ public class CameraUtils
         return best;
     }
 
-    private static boolean isDeviceS4()
-    {
-        return Build.DEVICE.startsWith(BUILD_DEVICE_S4);
-    }
-
     public static int findVideoFrameRate(Context context)
     {
         CWLog.i(CameraUtils.class, "Build.MODEL: " + Build.MODEL);
@@ -110,7 +102,7 @@ public class CameraUtils
         CWLog.i(CameraUtils.class, "Build.PRODUCT: " + Build.PRODUCT);
 
         //S4 can't handle 24 fps
-        if (isDeviceS4())
+        if (DeviceUtils.isDeviceS4())
             return context.getResources().getInteger(R.integer.video_frame_rate_s4);
         else
             return context.getResources().getInteger(R.integer.video_frame_rate);
@@ -122,7 +114,7 @@ public class CameraUtils
         float bitRateRatio = ((float)context.getResources().getInteger(R.integer.bit_rate_ratio))/1000;
         return Math.max(Math.round((float) width * (float) height * bitRateRatio), minimumBitRate);*/
         //S4 needs higher rate due to bigger resolution
-        if (isDeviceS4())
+        if (DeviceUtils.isDeviceS4())
             return context.getResources().getInteger(R.integer.video_bid_depth_s4);
         else
             return context.getResources().getInteger(R.integer.video_bid_depth);
@@ -131,7 +123,7 @@ public class CameraUtils
     public static int findVideoMinWidth(Context context)
     {
         //S4 needs higher rate due to bigger resolution
-        if (isDeviceS4())
+        if (DeviceUtils.isDeviceS4())
             return context.getResources().getInteger(R.integer.video_min_width_s4);
         else
             return context.getResources().getInteger(R.integer.video_min_width);
@@ -151,7 +143,7 @@ public class CameraUtils
 
     public static void setRecordingHintIfNecessary(Camera.Parameters params)
     {
-        if (isDeviceS4())
+        if (DeviceUtils.isDeviceS4())
         {
 //            params.setRecordingHint(true);
 //            params.get
