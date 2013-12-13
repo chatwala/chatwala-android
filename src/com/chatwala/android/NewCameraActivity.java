@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 public class NewCameraActivity extends BaseChatWalaActivity
 {
     public static final int RECORDING_TIME = 10000;
+    public static final int VIDEO_PLAYBACK_START_DELAY = 500;
     private int openingVolume;
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
@@ -547,7 +548,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
         HeartbeatTimer(long startRecordingTime, long messageVideoDuration, boolean recordingStarted)
         {
-            this.startRecordingTime = startRecordingTime;
+            this.startRecordingTime = startRecordingTime > 0 ? startRecordingTime + VIDEO_PLAYBACK_START_DELAY : startRecordingTime;
             this.recordingStarted = recordingStarted;
             this.messageVideoDuration = messageVideoDuration;
             endRecordingTime = messageVideoDuration + RECORDING_TIME;
@@ -688,6 +689,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
         int chatMessageDuration = chatMessageVideoMetadata == null ? 0 : chatMessageVideoMetadata.duration;
         assert heartbeatTimer == null; //Just checking. This would be bad.
+
         heartbeatTimer = new HeartbeatTimer(recordingStartMillis, chatMessageDuration, shouldStartRecordingNow);
         heartbeatTimer.start();
     }
@@ -870,7 +872,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
                                 //Whoops
                             }
                         }
-                    }, 500);
+                    }, VIDEO_PLAYBACK_START_DELAY);
                 }
 
                 heartbeatTimer.endPause();
@@ -1048,7 +1050,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
                     sendMessageMetadata.incrementForNewMessage();
 
                     long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
-                    long chatMessageDuration = originalVideoMetadata == null ? 0 : originalVideoMetadata.duration;
+                    long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + VIDEO_PLAYBACK_START_DELAY);
                     sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
 
                     String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
