@@ -61,8 +61,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
     private TextView topFrameMessageText;
     private View bottomFrameMessage;
     private TextView bottomFrameMessageText;
-    private DynamicVideoView messageVideoView;
-    private DynamicVideoView recordPreviewVideoView;
+    private DynamicTextureVideoView messageVideoView;
+    private DynamicTextureVideoView recordPreviewVideoView;
     private ReplayCountingCompletionListener recordPreviewCompletionListener;
     private View closeRecordPreviewView;
     private ImageView timerKnob;
@@ -746,7 +746,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
         if (chatMessage != null)
         {
-            messageVideoView = new DynamicVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, new DynamicVideoView.VideoReadyCallback()
+            messageVideoView = new DynamicTextureVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, chatMessageVideoMetadata.rotation, new DynamicTextureVideoView.VideoReadyCallback()
             {
                 @Override
                 public void ready()
@@ -815,7 +815,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
         @Override
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
-            recordPreviewVideoView = new DynamicVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, null, false);
+            recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation, null, false);
 
             cameraPreviewContainer.addView(recordPreviewVideoView);
             closeRecordPreviewView.setVisibility(View.VISIBLE);
@@ -956,6 +956,10 @@ public class NewCameraActivity extends BaseChatWalaActivity
                 {
                     throw new RuntimeException(e);
                 }
+            }
+            else if(replyMessageAvailable())
+            {
+                Toast.makeText(NewCameraActivity.this, R.string.couldnt_find_message, Toast.LENGTH_LONG).show();
             }
             return cm;
         }

@@ -68,6 +68,12 @@ public class ShareUtils
                             }
                         }, 2000);*/
             }
+            catch (FileNotFoundException e)
+            {
+                CWLog.b(ShareUtils.class, uri.toString());
+                CWLog.softExceptionLog(ShareUtils.class, "Couldn't read file", e);
+                return null;
+            }
             catch (IOException e)
             {
                 throw new RuntimeException(e);

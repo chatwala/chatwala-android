@@ -7,6 +7,6 @@
     <string name="feedback">FEEDBACK</string>
     <string name="sure">Sure!</string>
     <string name="message_subject">Chatwala Message</string>
-
+    <string name="couldnt_find_message">Couldn\'t load message. Please try again.</string>
 
 </resources>
