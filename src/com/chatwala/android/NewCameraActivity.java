@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,9 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
+import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
 import android.widget.EditText;
@@ -1029,10 +1033,10 @@ public class NewCameraActivity extends BaseChatWalaActivity
     @SuppressWarnings("unchecked")
     private void sendEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        new AsyncTask()
+        new AsyncTask<Void, Void, String>()
         {
             @Override
-            protected Object doInBackground(Object... params)
+            protected String doInBackground(Void... params)
             {
                 File rootDataFolder = CameraUtils.getRootDataFolder(NewCameraActivity.this);
                 File buildDir = new File(rootDataFolder, "chat_" + System.currentTimeMillis());
@@ -1090,14 +1094,27 @@ public class NewCameraActivity extends BaseChatWalaActivity
                     throw new RuntimeException(e);
                 }
 
-                return outZip;
+                Log.d("##############", outZip.getAbsolutePath());
+                try
+                {
+                    return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outZip.getAbsolutePath()).execute();
+                }
+                catch (TransientException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    return null;
+                }
+                catch (PermanentException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    return null;
+                }
             }
 
             @Override
-            protected void onPostExecute(Object o)
+            protected void onPostExecute(String messageUrl)
             {
-                File outZip = (File) o;
-
+                Log.d("##########", messageUrl);
                 String sendTo = "";
                 if (originalMessage != null && originalMessage.metadata.senderId != null)
                     sendTo = originalMessage.metadata.senderId.trim();
@@ -1109,7 +1126,6 @@ public class NewCameraActivity extends BaseChatWalaActivity
                 String uriText = "mailto:" + sendTo;
 
                 Uri mailtoUri = Uri.parse(uriText);
-                Uri dataUri = Uri.fromFile(outZip);
 
                 boolean gmailOk = false;
 
@@ -1119,9 +1135,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
                     gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
                     gmailIntent.setData(mailtoUri);
                     gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>."));
-
-                    gmailIntent.putExtra(Intent.EXTRA_STREAM, dataUri);
+                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>.\n\n" + messageUrl));
 
                     try
                     {
@@ -1141,9 +1155,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
                     intent.setData(mailtoUri);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>."));
+                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>.\n\n" + messageUrl));
 
-                    intent.putExtra(Intent.EXTRA_STREAM, dataUri);
                     startActivity(Intent.createChooser(intent, "Send email..."));
                 }
 
