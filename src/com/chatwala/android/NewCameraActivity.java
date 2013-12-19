@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewCameraActivity extends BaseChatWalaActivity
+public class NewCameraActivity extends BaseNavigationDrawerActivity
 {
     public static final int RECORDING_TIME = 10000;
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
@@ -57,7 +57,19 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
     public enum AppState
     {
-        Off, Transition, LoadingFileCamera, ReadyStopped, PlaybackOnly, PlaybackRecording, RecordingLimbo, Recording, PreviewLoading, PreviewReady
+        Off(true), Transition(true), LoadingFileCamera(true), ReadyStopped(true), PlaybackOnly(false), PlaybackRecording(false), RecordingLimbo(false), Recording(false), PreviewLoading(false), PreviewReady(false);
+
+        boolean doesStateEnableNavigationDrawer;
+
+        private AppState(boolean drawerEnabled)
+        {
+            doesStateEnableNavigationDrawer = drawerEnabled;
+        }
+
+        public boolean shouldEnableDrawer()
+        {
+            return doesStateEnableNavigationDrawer;
+        }
     }
 
     // ************* onCreate only *************
@@ -107,6 +119,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
         analyticsStateEnd(appState, buttonPress);
 
         this.appState = appState;
+        toggleDrawerEnabled(this.appState.shouldEnableDrawer());
 
         delayButtonPress();
 
@@ -257,10 +270,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
         buttonDelayHandler = new Handler();
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.crop_test);
+        setMainContent(getLayoutInflater().inflate(R.layout.crop_test, (ViewGroup)getWindow().getDecorView(), false));
+        //setContentView(R.layout.crop_test);
 
         ChatwalaApplication application = (ChatwalaApplication) getApplication();
         if (!application.isSplashRan())
