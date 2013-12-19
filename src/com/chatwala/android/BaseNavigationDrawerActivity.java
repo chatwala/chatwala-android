@@ -186,9 +186,19 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             if(convertView == null)
             {
                 convertView = new TextView(BaseNavigationDrawerActivity.this);
+                convertView.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        NewCameraActivity.startMeWithId(BaseNavigationDrawerActivity.this, (String)v.getTag());
+                    }
+                });
             }
 
-            ((TextView)convertView).setText(((ChatwalaMessage)getItem(position)).getMessageId());
+            ChatwalaMessage message = (ChatwalaMessage)getItem(position);
+            ((TextView)convertView).setText(message.getMessageId());
+            convertView.setTag(message.getMessageId());
 
             return convertView;
         }

@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -54,6 +55,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private int openingVolume;
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
+
+    private static final String MESSAGE_ID = "MESSAGE_ID";
 
     public enum AppState
     {
@@ -270,7 +273,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         buttonDelayHandler = new Handler();
 
-        setMainContent(getLayoutInflater().inflate(R.layout.crop_test, (ViewGroup)getWindow().getDecorView(), false));
+        setMainContent(getLayoutInflater().inflate(R.layout.crop_test, (ViewGroup) getWindow().getDecorView(), false));
         //setContentView(R.layout.crop_test);
 
         ChatwalaApplication application = (ChatwalaApplication) getApplication();
@@ -747,7 +750,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
 
-        new MessageLoaderTask().execute();
+        if(replyMessageAvailable())
+        {
+            new MessageLoaderTask().execute();
+        }
     }
 
     private void messageLoaded(ChatMessage message)
@@ -840,8 +846,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private boolean replyMessageAvailable()
     {
-        //return true;
-        return getIntent().getData() != null;
+        return getIntent().hasExtra(MESSAGE_ID);
     }
 
     private void createSurface()
@@ -956,39 +961,39 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         @Override
         protected ChatMessage doInBackground(Void... params)
         {
-//            try
+            try
+            {
+                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, getIntent().getStringExtra(MESSAGE_ID)).execute();
+                chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
+                return toReturn;
+            } catch (TransientException e)
+            {
+                throw new RuntimeException(e);
+            } catch (PermanentException e)
+            {
+                throw new RuntimeException(e);
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+//            ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
+//            if (cm != null)
 //            {
-//                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, null).execute();
-//                chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
-//                return toReturn;
-//            } catch (TransientException e)
-//            {
-//                throw new RuntimeException(e);
-//            } catch (PermanentException e)
-//            {
-//                throw new RuntimeException(e);
-//            } catch (IOException e)
-//            {
-//                throw new RuntimeException(e);
+//                try
+//                {
+//                    chatMessageVideoMetadata = VideoUtils.findMetadata(cm.messageVideo);
+////                    chatMessageVideoBitmap = VideoUtils.createVideoFrame(cm.messageVideo.getPath(), 0l);
+//                }
+//                catch (IOException e)
+//                {
+//                    throw new RuntimeException(e);
+//                }
 //            }
-            ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
-            if (cm != null)
-            {
-                try
-                {
-                    chatMessageVideoMetadata = VideoUtils.findMetadata(cm.messageVideo);
-//                    chatMessageVideoBitmap = VideoUtils.createVideoFrame(cm.messageVideo.getPath(), 0l);
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-            else if(replyMessageAvailable())
-            {
-                Toast.makeText(NewCameraActivity.this, R.string.couldnt_find_message, Toast.LENGTH_LONG).show();
-            }
-            return cm;
+//            else if(replyMessageAvailable())
+//            {
+//                Toast.makeText(NewCameraActivity.this, R.string.couldnt_find_message, Toast.LENGTH_LONG).show();
+//            }
+//            return cm;
         }
 
         @Override
@@ -1244,4 +1249,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, openingVolume, 0);
         }*/
+
+    public static void startMeWithId(Context context, String messageId)
+    {
+        Intent intent = new Intent(context, NewCameraActivity.class);
+        intent.putExtra(MESSAGE_ID, messageId);
+        context.startActivity(intent);
+    }
 }
