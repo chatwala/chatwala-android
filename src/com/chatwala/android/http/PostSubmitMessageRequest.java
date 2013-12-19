@@ -1,12 +1,14 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.superbus.PutMessageFileCommand;
+import com.chatwala.android.util.SharedPrefsUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +38,7 @@ public class PostSubmitMessageRequest extends BasePostRequest
     {
         JSONObject bodyJson = new JSONObject();
         bodyJson.put("recipient_id", "unknown_recipient");
-        bodyJson.put("sender_id", "unknown_recipient");
+        bodyJson.put("sender_id", SharedPrefsUtils.getUserId(context));
         return bodyJson;
     }
 
@@ -54,6 +56,9 @@ public class PostSubmitMessageRequest extends BasePostRequest
         messageMetadata = new ChatwalaMessage();
         messageMetadata.setMessageId(bodyAsJson.getString("message_id"));
         messageMetadata.setUrl(bodyAsJson.getString("url"));
+
+        Log.d("###########", messageMetadata.getMessageId());
+        Log.d("###########", messageMetadata.getUrl());
     }
 
     @Override

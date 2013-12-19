@@ -754,6 +754,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             new MessageLoaderTask().execute();
         }
+        else
+        {
+            messageLoaded(null);
+        }
     }
 
     private void messageLoaded(ChatMessage message)

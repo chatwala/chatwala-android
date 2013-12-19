@@ -34,7 +34,7 @@ public abstract class BaseHttpRequest
     private static final int    STATUS_SERVER_ERROR        = 500;
     private static final int    STATUS_SERVICE_UNAVAILABLE = 503;
 
-    private static final String API_PATH     = "http://chatwala.azurewebsites.net/";
+    private static final String API_PATH     = "http://chatwala-prod.azurewebsites.net/";
     private static final String API_PATH_DEV = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 
     protected Context context;
@@ -46,7 +46,7 @@ public abstract class BaseHttpRequest
 
     public Object execute() throws TransientException, PermanentException
     {
-        BusHttpClient client = new BusHttpClient(API_PATH_DEV);
+        BusHttpClient client = new BusHttpClient(API_PATH);
         AbstractRequestLogger logger = new AbstractRequestLogger()
         {
             @Override
