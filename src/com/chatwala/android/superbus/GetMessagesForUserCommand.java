@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.http.GetMessagesForUserRequest;
+import com.chatwala.android.loaders.BroadcastSender;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,5 +33,11 @@ public class GetMessagesForUserCommand extends SqliteCommand
     public void callCommand(Context context) throws TransientException, PermanentException
     {
         new GetMessagesForUserRequest(context).execute();
+    }
+
+    @Override
+    public void onSuccess(Context context)
+    {
+        BroadcastSender.makeNewMessagesBroadcast(context);
     }
 }

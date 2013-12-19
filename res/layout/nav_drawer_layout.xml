@@ -19,32 +19,28 @@
             android:id="@+id/drawer_toggle_button"/>
     </FrameLayout>
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/navigation_drawer"
         android:layout_gravity="start"
         android:layout_width="240dip"
-        android:layout_height="match_parent">
-        <LinearLayout
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#000">
+        <Button
+            android:id="@+id/add_button"
             android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical"
-            android:background="#000">
-            <Button
-                android:id="@+id/add_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Add"/>
-            <ListView
-                android:id="@+id/conversation_list"
-                android:layout_width="match_parent"
-                android:layout_height="0dip"
-                android:layout_weight="1"/>
-            <Button
-                android:id="@+id/settings_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Settings"/>
-        </LinearLayout>
-    </FrameLayout>
+            android:layout_height="wrap_content"
+            android:text="Add"/>
+        <ListView
+            android:id="@+id/conversation_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/settings_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Settings"/>
+    </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

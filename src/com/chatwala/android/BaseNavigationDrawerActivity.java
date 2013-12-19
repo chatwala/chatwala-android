@@ -1,18 +1,21 @@
 package com.chatwala.android;
 
+import android.app.LoaderManager;
+import android.content.Loader;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.*;
+import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.loaders.MessagesLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,12 +24,15 @@ import android.widget.RelativeLayout;
  * Time: 5:48 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BaseNavigationDrawerActivity extends BaseChatWalaActivity
+public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 {
     private DrawerLayout drawerLayout;
-    private FrameLayout navigationDrawer;
+    private LinearLayout navigationDrawer;
     private FrameLayout mainContentFrame;
     private ImageView drawerToggleButton;
+    private ListView messagesListView;
+
+    private final int messagesLoaderId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -70,7 +76,7 @@ public class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
         });
 
-        navigationDrawer = (FrameLayout)findViewById(R.id.navigation_drawer);
+        navigationDrawer = (LinearLayout)findViewById(R.id.navigation_drawer);
         mainContentFrame = (FrameLayout)findViewById(R.id.main_container);
         drawerToggleButton = (ImageView)findViewById(R.id.drawer_toggle_button);
         drawerToggleButton.setOnClickListener(new View.OnClickListener()
@@ -86,6 +92,27 @@ public class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 {
                     openDrawer();
                 }
+            }
+        });
+
+        messagesListView = (ListView)findViewById(R.id.conversation_list);
+        getLoaderManager().initLoader(messagesLoaderId, null, new LoaderManager.LoaderCallbacks<List<ChatwalaMessage>>() {
+            @Override
+            public Loader<List<ChatwalaMessage>> onCreateLoader(int id, Bundle args)
+            {
+                return new MessagesLoader(BaseNavigationDrawerActivity.this);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<List<ChatwalaMessage>> loader, List<ChatwalaMessage> data)
+            {
+                messagesListView.setAdapter(new DrawerMessagesAdapter(data));
+            }
+
+            @Override
+            public void onLoaderReset(Loader<List<ChatwalaMessage>> loader)
+            {
+                //Nothing for now.
             }
         });
     }
@@ -123,6 +150,47 @@ public class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         {
             drawerToggleButton.setVisibility(View.GONE);
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, navigationDrawer);
+        }
+    }
+
+    class DrawerMessagesAdapter extends BaseAdapter
+    {
+        ArrayList<ChatwalaMessage> messageList;
+
+        DrawerMessagesAdapter(List<ChatwalaMessage> messageList)
+        {
+            this.messageList = new ArrayList<ChatwalaMessage>(messageList);
+        }
+
+        @Override
+        public int getCount()
+        {
+            return messageList.size();
+        }
+
+        @Override
+        public Object getItem(int position)
+        {
+            return messageList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position)
+        {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if(convertView == null)
+            {
+                convertView = new TextView(BaseNavigationDrawerActivity.this);
+            }
+
+            ((TextView)convertView).setText(((ChatwalaMessage)getItem(position)).getMessageId());
+
+            return convertView;
         }
     }
 }
