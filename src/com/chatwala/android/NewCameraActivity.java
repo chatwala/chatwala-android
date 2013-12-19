@@ -1144,9 +1144,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             }
 
             @Override
-            protected void onPostExecute(String messageUrl)
+            protected void onPostExecute(String messageId)
             {
-                Log.d("##########", messageUrl);
+                Log.d("##########", messageId);
                 String sendTo = "";
                 if (originalMessage != null && originalMessage.metadata.senderId != null)
                     sendTo = originalMessage.metadata.senderId.trim();
@@ -1167,8 +1167,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
                     gmailIntent.setData(mailtoUri);
                     gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    String messageLink = "<a href=\"" + messageUrl + "\">View the message</a>.";
-                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>."));
+                    String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
+                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>. " + messageLink));
 
                     try
                     {
@@ -1188,7 +1188,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                     intent.setData(mailtoUri);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>.\n\n" + messageUrl));
+                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>.\n\n"));
 
                     startActivity(Intent.createChooser(intent, "Send email..."));
                 }

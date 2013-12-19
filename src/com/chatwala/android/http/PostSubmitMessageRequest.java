@@ -83,6 +83,6 @@ public class PostSubmitMessageRequest extends BasePostRequest
     @Override
     protected Object getReturnValue()
     {
-        return messageMetadata.getUrl();
+        return messageMetadata.getMessageId();
     }
 }
