@@ -8,6 +8,8 @@ import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.database.DatabaseHelper;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
+import com.turbomanage.httpclient.AbstractRequestLogger;
+import com.turbomanage.httpclient.ConsoleRequestLogger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,6 +47,15 @@ public abstract class BaseHttpRequest
     public Object execute() throws TransientException, PermanentException
     {
         BusHttpClient client = new BusHttpClient(API_PATH_DEV);
+        AbstractRequestLogger logger = new AbstractRequestLogger()
+        {
+            @Override
+            public void log(String msg)
+            {
+
+            }
+        };
+        client.setRequestLogger(logger);
 
         final HttpResponse httpResponse = makeRequest(client);
 

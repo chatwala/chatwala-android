@@ -29,8 +29,8 @@ public abstract class BasePutRequest extends BaseHttpRequest
     protected HttpResponse makeRequest(BusHttpClient client)
     {
         Crashlytics.log("makeRequest " + this.getClass().getName());
-        return client.post(getResourceURL(), getContentType(), getPutData());
-        //return client.put(getResourceURL(), getContentType(), getPutData());
+        //return client.post(getResourceURL(), getContentType(), getPutData());
+        return client.put(getResourceURL(), getContentType(), getPutData());
     }
 
     protected String getContentType()
@@ -43,6 +43,13 @@ public abstract class BasePutRequest extends BaseHttpRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
+        Log.d("##########", response.getBodyAsString());
         // No response
+    }
+
+    @Override
+    protected boolean hasDbOperation()
+    {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

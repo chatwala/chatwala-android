@@ -3,10 +3,7 @@ package com.chatwala.android;
 import android.app.Application;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
-import co.touchlab.android.superbus.CommandPurgePolicy;
-import co.touchlab.android.superbus.ForegroundNotificationManager;
-import co.touchlab.android.superbus.StorageException;
-import co.touchlab.android.superbus.SuperbusEventListener;
+import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
 import co.touchlab.android.superbus.provider.PersistedApplication;
@@ -14,6 +11,9 @@ import co.touchlab.android.superbus.provider.PersistenceProvider;
 import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.GetRegisterUserCommand;
+import com.chatwala.android.util.SharedPrefsUtils;
 import com.crashlytics.android.Crashlytics;
 
 /**
@@ -55,6 +55,18 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
+
+        if(SharedPrefsUtils.getUserId(ChatwalaApplication.this) == null)
+        {
+            DataProcessor.runProcess(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    BusHelper.submitCommandSync(ChatwalaApplication.this, new GetRegisterUserCommand());
+                }
+            });
+        }
     }
 
     public boolean isSplashRan()

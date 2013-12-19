@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 public class SharedPrefsUtils
 {
     private static final String FIRST_OPEN = "FIRST_OPEN";
+    private static final String USER_ID = "USER_ID";
 
     private static final String PREFERENCES_KEY = "CHATWALA_PREFERENCES";
     private static SharedPreferences sharedPreferences = null;
@@ -22,6 +23,16 @@ public class SharedPrefsUtils
         Boolean firstOpen = getBooleanValue(context, FIRST_OPEN, true);
         setBooleanValue(context, FIRST_OPEN, false);
         return firstOpen;
+    }
+
+    public static void setUserId(Context context, String userId)
+    {
+        setStringValue(context, USER_ID, userId);
+    }
+
+    public static String getUserId(Context context)
+    {
+        return getStringValue(context, USER_ID, null);
     }
 
     private static SharedPreferences getPrefs(Context context)
@@ -42,6 +53,18 @@ public class SharedPrefsUtils
     {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(key, value);
+        return editor.commit();
+    }
+
+    private static String getStringValue(Context context, String key, String defaultVal)
+    {
+        return getPrefs(context).getString(key, defaultVal);
+    }
+
+    private static boolean setStringValue(Context context, String key, String value)
+    {
+        SharedPreferences.Editor editor = getPrefs(context).edit();
+        editor.putString(key, value);
         return editor.commit();
     }
 }

@@ -44,7 +44,24 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="content" android:pathPattern="chat.wala" android:mimeType="text/plain"/>
             </intent-filter>
+            <intent-filter>
+                <data android:scheme="chatwala"/>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
         </activity>
+
+        <service android:name="co.touchlab.android.superbus.SuperbusService"
+                 android:exported="false"/>
+
+        <receiver android:name="co.touchlab.android.superbus.network.ConnectionChangeReceiver"
+                  android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
+
         <meta-data android:name="com.crashlytics.ApiKey" android:value="b0462fa18b0b7748606c6c8cc641889ad1ee6eb1"/>
     </application>
 

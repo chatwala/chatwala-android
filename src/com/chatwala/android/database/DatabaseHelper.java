@@ -28,7 +28,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 
     public static final Class[] allTables = new Class[]
             {
-                    Message.class
+                    ChatwalaMessage.class
             };
 
     private DatabaseHelper(Context context)
@@ -98,9 +98,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         }
     }
 
-    public Dao<Message, String> getMessageDao() throws SQLException
+    public Dao<ChatwalaMessage, String> getChatwalaMessageDao() throws SQLException
     {
-        return getDao(Message.class);
+        return getDao(ChatwalaMessage.class);
     }
 
     @Override

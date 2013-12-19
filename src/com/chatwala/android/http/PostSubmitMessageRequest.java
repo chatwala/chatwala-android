@@ -1,13 +1,10 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.database.Message;
-import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +20,7 @@ import java.sql.SQLException;
  */
 public class PostSubmitMessageRequest extends BasePostRequest
 {
-    Message messageMetadata;
+    ChatwalaMessage messageMetadata;
     String localMessagePath;
 
     public PostSubmitMessageRequest(Context context, String localMessagePath)
@@ -52,7 +49,7 @@ public class PostSubmitMessageRequest extends BasePostRequest
     {
         JSONObject bodyAsJson = new JSONObject(response.getBodyAsString());
 
-        messageMetadata = new Message();
+        messageMetadata = new ChatwalaMessage();
         messageMetadata.setMessageId(bodyAsJson.getString("message_id"));
         messageMetadata.setUrl(bodyAsJson.getString("url"));
     }
@@ -66,7 +63,7 @@ public class PostSubmitMessageRequest extends BasePostRequest
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
-        databaseHelper.getMessageDao().create(messageMetadata);
+        databaseHelper.getChatwalaMessageDao().create(messageMetadata);
         return messageMetadata;
     }
 

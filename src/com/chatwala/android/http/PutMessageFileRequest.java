@@ -31,8 +31,6 @@ public class PutMessageFileRequest extends BasePutRequest
         this.messageId = messageId;
     }
 
-
-
     @Override
     protected String getResourceURL()
     {
@@ -71,18 +69,5 @@ public class PutMessageFileRequest extends BasePutRequest
         {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    protected void parseResponse(HttpResponse response) throws JSONException, SQLException
-    {
-        response.getBodyAsString();
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    protected boolean hasDbOperation()
-    {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

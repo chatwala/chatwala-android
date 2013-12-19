@@ -24,6 +24,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.*;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
@@ -253,11 +254,6 @@ public class NewCameraActivity extends BaseChatWalaActivity
         super.onCreate(savedInstanceState);
         CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
-
-        if(DeviceUtils.isDeviceHTCONE())
-        {
-            CWLog.b(NewCameraActivity.class, "HTCONE");
-        }
 
         buttonDelayHandler = new Handler();
 
@@ -833,6 +829,7 @@ public class NewCameraActivity extends BaseChatWalaActivity
 
     private boolean replyMessageAvailable()
     {
+        //return true;
         return getIntent().getData() != null;
     }
 
@@ -948,6 +945,21 @@ public class NewCameraActivity extends BaseChatWalaActivity
         @Override
         protected ChatMessage doInBackground(Void... params)
         {
+//            try
+//            {
+//                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, null).execute();
+//                chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
+//                return toReturn;
+//            } catch (TransientException e)
+//            {
+//                throw new RuntimeException(e);
+//            } catch (PermanentException e)
+//            {
+//                throw new RuntimeException(e);
+//            } catch (IOException e)
+//            {
+//                throw new RuntimeException(e);
+//            }
             ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
             if (cm != null)
             {
@@ -1135,7 +1147,8 @@ public class NewCameraActivity extends BaseChatWalaActivity
                     gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
                     gmailIntent.setData(mailtoUri);
                     gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>.\n\n" + messageUrl));
+                    String messageLink = "<a href=\"" + messageUrl + "\">View the message</a>.";
+                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>."));
 
                     try
                     {
