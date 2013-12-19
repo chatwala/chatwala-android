@@ -19,6 +19,12 @@ public class ChatwalaMessage
     @DatabaseField
     private String url;
 
+    @DatabaseField
+    private String senderId;
+
+    @DatabaseField
+    private String recipientId;
+
     public String getMessageId()
     {
         return messageId;
@@ -37,5 +43,25 @@ public class ChatwalaMessage
     public void setUrl(String url)
     {
         this.url = url;
+    }
+
+    public String getSenderId()
+    {
+        return senderId;
+    }
+
+    public void setSenderId(String senderId)
+    {
+        this.senderId = senderId;
+    }
+
+    public String getRecipientId()
+    {
+        return recipientId;
+    }
+
+    public void setRecipientId(String recipientId)
+    {
+        this.recipientId = recipientId;
     }
 }

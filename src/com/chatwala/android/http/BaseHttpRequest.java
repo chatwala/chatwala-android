@@ -35,7 +35,7 @@ public abstract class BaseHttpRequest
     private static final int    STATUS_SERVICE_UNAVAILABLE = 503;
 
     private static final String API_PATH     = "http://chatwala.azurewebsites.net/";
-    private static final String API_PATH_DEV = "http://chatwala.azurewebsites.net/";
+    private static final String API_PATH_DEV = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 
     protected Context context;
 

@@ -33,9 +33,12 @@ public class GetRegisterUserRequest extends BaseGetRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        JSONArray bodyAsJson = new JSONArray(response.getBodyAsString());
+//        JSONArray bodyAsJson = new JSONArray(response.getBodyAsString());
+//        String userId = bodyAsJson.getJSONObject(0).getString("user_id");
 
-        String userId = bodyAsJson.getJSONObject(0).getString("user_id");
+        JSONObject bodyAsJson = new JSONObject(response.getBodyAsString());
+        String userId = bodyAsJson.getString("user_id");
+
         Log.d("########## USERID", userId);
         SharedPrefsUtils.setUserId(context, userId);
     }

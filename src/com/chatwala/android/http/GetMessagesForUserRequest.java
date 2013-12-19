@@ -1,8 +1,14 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.util.Log;
+import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.chatwala.android.util.SharedPrefsUtils;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
@@ -43,13 +49,16 @@ public class GetMessagesForUserRequest extends BaseGetRequest
 
         messageArray = new ArrayList<ChatwalaMessage>();
 
+        Log.d("#######", "Parsing messages, total: " + messagesJsonArray.length());
         for(int i=0; i < messagesJsonArray.length(); i++)
         {
             JSONObject messageJson = messagesJsonArray.getJSONObject(i);
             ChatwalaMessage currentMessage = new ChatwalaMessage();
             currentMessage.setMessageId(messageJson.getString("message_id"));
-            currentMessage.setUrl(messageJson.getString("url"));
+            currentMessage.setRecipientId(messageJson.getString("recipient_id"));
+            currentMessage.setSenderId(messageJson.getString("sender_id"));
             messageArray.add(currentMessage);
+            Log.d("#######", currentMessage.getMessageId());
         }
     }
 
@@ -70,5 +79,14 @@ public class GetMessagesForUserRequest extends BaseGetRequest
         }
 
         return messageArray;
+    }
+
+    @Override
+    protected void makeAssociatedRequests() throws PermanentException, TransientException
+    {
+        for(ChatwalaMessage message : messageArray)
+        {
+            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message.getMessageId()));
+        }
     }
 }

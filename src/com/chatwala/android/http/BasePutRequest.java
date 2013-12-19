@@ -33,10 +33,7 @@ public abstract class BasePutRequest extends BaseHttpRequest
         return client.put(getResourceURL(), getContentType(), getPutData());
     }
 
-    protected String getContentType()
-    {
-        return "video/mp4";
-    }
+    abstract String getContentType();
 
     protected abstract byte[] getPutData();
 

@@ -30,7 +30,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     public GetMessageFileRequest(Context context, String messageId)
     {
         super(context);
-        this.messageId = "f6d5d01b-82d5-f4ac-095e-fadbe8e86b6a";
+        this.messageId = messageId;
     }
 
     @Override

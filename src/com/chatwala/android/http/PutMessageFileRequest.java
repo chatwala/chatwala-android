@@ -38,6 +38,12 @@ public class PutMessageFileRequest extends BasePutRequest
     }
 
     @Override
+    protected String getContentType()
+    {
+        return "video/mp4";
+    }
+
+    @Override
     protected byte[] getPutData()
     {
         File walaFile = new File(localMessageUrl);
