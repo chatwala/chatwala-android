@@ -1178,7 +1178,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     gmailIntent.setData(mailtoUri);
                     gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
                     String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
-                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>. " + messageLink));
+                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
 
                     try
                     {
@@ -1199,7 +1199,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     intent.setData(mailtoUri);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
                     String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
-                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>. " + messageLink));
+                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
 
                     startActivity(Intent.createChooser(intent, "Send email..."));
                 }
