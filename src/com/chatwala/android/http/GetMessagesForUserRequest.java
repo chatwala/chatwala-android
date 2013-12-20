@@ -84,9 +84,9 @@ public class GetMessagesForUserRequest extends BaseGetRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        for(ChatwalaMessage message : messageArray)
-        {
-            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message.getMessageId()));
-        }
+//        for(ChatwalaMessage message : messageArray)
+//        {
+//            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message.getMessageId()));
+//        }
     }
 }

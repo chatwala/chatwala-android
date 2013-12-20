@@ -11,8 +11,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.*;
+import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
+import com.chatwala.android.superbus.GetMessagesForUserCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +64,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 float toppx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
                 toggleButtonParams.setMargins((int)leftpx, (int)toppx, 0, 0);
                 drawerToggleButton.setLayoutParams(toggleButtonParams);
+                DataProcessor.runProcess(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        BusHelper.submitCommandSync(BaseNavigationDrawerActivity.this, new GetMessagesForUserCommand());
+                    }
+                });
             }
 
             @Override

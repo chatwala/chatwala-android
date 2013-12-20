@@ -3,11 +3,9 @@ package com.chatwala.android.http;
 import android.content.Context;
 import com.chatwala.android.ChatMessage;
 import com.chatwala.android.MessageMetadata;
+import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.util.CWLog;
-import com.chatwala.android.util.ShareUtils;
-import com.chatwala.android.util.VideoUtils;
-import com.chatwala.android.util.ZipUtil;
+import com.chatwala.android.util.*;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -27,6 +25,7 @@ public class GetMessageFileRequest extends BaseGetRequest
 {
     private String messageId;
     private ChatMessage chatMessage;
+    private ChatwalaMessage chatwalaMessage;
 
     public GetMessageFileRequest(Context context, String messageId)
     {
@@ -86,7 +85,25 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected boolean hasDbOperation()
     {
-        return false;
+        return true;
+    }
+
+    @Override
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    {
+        chatwalaMessage = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
+
+        if(chatwalaMessage == null)
+        {
+            chatwalaMessage = new ChatwalaMessage();
+            chatwalaMessage.setMessageId(messageId);
+        }
+
+        chatwalaMessage.setSenderId(chatMessage.metadata.senderId);
+        chatwalaMessage.setRecipientId(SharedPrefsUtils.getUserId(context));
+
+        databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
+        return chatwalaMessage;
     }
 
     @Override

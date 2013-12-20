@@ -23,9 +23,12 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
+import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.ui.TimerDial;
@@ -58,7 +61,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
 
-    private String playbackMessageId = null;
+    private ChatwalaMessage playbackMessage = null;
     private static final String MESSAGE_ID = "MESSAGE_ID";
 
     public enum AppState
@@ -524,7 +527,44 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             setAppState(AppState.Sharing);
             CWAnalytics.sendSendMessageEvent((long)recordPreviewCompletionListener.replays);
-            prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+            if(playbackMessage == null)
+            {
+                prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+            }
+            else
+            {
+                new AsyncTask<Void, Void, String>()
+                {
+                    @Override
+                    protected String doInBackground(Void... params)
+                    {
+                        File outFile = buildZipToSend(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+
+                        try
+                        {
+                            return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outFile.getAbsolutePath(), playbackMessage.getSenderId()).execute();
+                        }
+                        catch (TransientException e)
+                        {
+                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            return null;
+                        }
+                        catch (PermanentException e)
+                        {
+                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(String messageId)
+                    {
+                        Toast.makeText(NewCameraActivity.this, "Message Sent", Toast.LENGTH_LONG).show();
+                        playbackMessage = null;
+                        createSurface();
+                    }
+                }.execute();
+            }
         }
     }
 
@@ -974,6 +1014,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             try
             {
+                String playbackMessageId;
                 if(getIntent().hasExtra(MESSAGE_ID))
                 {
                     playbackMessageId = getIntent().getStringExtra(MESSAGE_ID);
@@ -985,6 +1026,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                 ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
                 chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
+                playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId);
                 return toReturn;
             } catch (TransientException e)
             {
@@ -993,6 +1035,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             {
                 throw new RuntimeException(e);
             } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            catch (SQLException e)
             {
                 throw new RuntimeException(e);
             }
@@ -1086,78 +1132,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             protected String doInBackground(Void... params)
             {
-                File rootDataFolder = CameraUtils.getRootDataFolder(NewCameraActivity.this);
-                File buildDir = new File(rootDataFolder, "chat_" + System.currentTimeMillis());
-                buildDir.mkdirs();
+                File outZip = buildZipToSend(videoFile, originalMessage, originalVideoMetadata);
 
-                File walaFile = new File(buildDir, "video.mp4");
-
-                File outZip;
-                try
-                {
-                    FileOutputStream output = new FileOutputStream(walaFile);
-                    FileInputStream input = new FileInputStream(videoFile);
-                    IOUtils.copy(input, output);
-
-                    input.close();
-                    output.close();
-
-                    File metadataFile = new File(buildDir, "metadata.json");
-
-                    MessageMetadata openedMessageMetadata = originalMessage == null ? null : originalMessage.metadata;
-
-                    MessageMetadata sendMessageMetadata = openedMessageMetadata == null ? new MessageMetadata() : openedMessageMetadata.copy();
-
-                    sendMessageMetadata.incrementForNewMessage();
-
-                    long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
-                    long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + VIDEO_PLAYBACK_START_DELAY);
-                    sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
-
-                    String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
-
-                    if (myEmail == null && originalMessage != null)
-                        myEmail = originalMessage.probableEmailSource;
-
-                    sendMessageMetadata.senderId = myEmail;
-
-                    FileWriter fileWriter = new FileWriter(metadataFile);
-
-                    fileWriter.append(sendMessageMetadata.toJsonString());
-
-                    fileWriter.close();
-
-                    File shareDir = new File(NewCameraActivity.this.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
-                    shareDir.mkdirs();
-                    outZip = new File(shareDir, "chat.wala");
-
-                    ZipUtil.zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
-                }
-                catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-                catch (JSONException e)
-                {
-                    throw new RuntimeException(e);
-                }
-
-                String recipientId;
-                if(playbackMessageId != null)
-                {
-                    try
-                    {
-                        recipientId = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId).getRecipientId();
-                    }
-                    catch (SQLException e)
-                    {
-                        throw new RuntimeException("No recipient Id");
-                    }
-                }
-                else
-                {
-                    recipientId = null;
-                }
+                String recipientId = playbackMessage != null ? playbackMessage.getSenderId() : null;
 
                 try
                 {
@@ -1220,13 +1197,75 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                     intent.setData(mailtoUri);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>.\n\n"));
+                    String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
+                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. <a href=\"http://www.chatwala.com\">Get the App</a>. " + messageLink));
 
                     startActivity(Intent.createChooser(intent, "Send email..."));
                 }
 
             }
         }.execute();
+    }
+
+    private File buildZipToSend(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    {
+        File rootDataFolder = CameraUtils.getRootDataFolder(NewCameraActivity.this);
+        File buildDir = new File(rootDataFolder, "chat_" + System.currentTimeMillis());
+        buildDir.mkdirs();
+
+        File walaFile = new File(buildDir, "video.mp4");
+
+        File outZip;
+        try
+        {
+            FileOutputStream output = new FileOutputStream(walaFile);
+            FileInputStream input = new FileInputStream(videoFile);
+            IOUtils.copy(input, output);
+
+            input.close();
+            output.close();
+
+            File metadataFile = new File(buildDir, "metadata.json");
+
+            MessageMetadata openedMessageMetadata = originalMessage == null ? null : originalMessage.metadata;
+
+            MessageMetadata sendMessageMetadata = openedMessageMetadata == null ? new MessageMetadata() : openedMessageMetadata.copy();
+
+            sendMessageMetadata.incrementForNewMessage();
+
+            long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
+            long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + VIDEO_PLAYBACK_START_DELAY);
+            sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
+
+            String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
+
+            if (myEmail == null && originalMessage != null)
+                myEmail = originalMessage.probableEmailSource;
+
+            sendMessageMetadata.senderId = SharedPrefsUtils.getUserId(NewCameraActivity.this);
+
+            FileWriter fileWriter = new FileWriter(metadataFile);
+
+            fileWriter.append(sendMessageMetadata.toJsonString());
+
+            fileWriter.close();
+
+            File shareDir = new File(NewCameraActivity.this.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
+            shareDir.mkdirs();
+            outZip = new File(shareDir, "chat.wala");
+
+            ZipUtil.zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (JSONException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return outZip;
     }
 
     private void showMessage(View messageView, TextView messageViewText, int colorRes, int messageRes)
