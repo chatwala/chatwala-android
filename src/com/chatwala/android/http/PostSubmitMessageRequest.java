@@ -26,18 +26,20 @@ public class PostSubmitMessageRequest extends BasePostRequest
 {
     ChatwalaMessage messageMetadata;
     String localMessagePath;
+    String recipientId;
 
-    public PostSubmitMessageRequest(Context context, String localMessagePath)
+    public PostSubmitMessageRequest(Context context, String localMessagePath, String recipientId)
     {
         super(context);
         this.localMessagePath = localMessagePath;
+        this.recipientId = recipientId;
     }
 
     @Override
     protected JSONObject makeBodyJson() throws JSONException, SQLException
     {
         JSONObject bodyJson = new JSONObject();
-        bodyJson.put("recipient_id", "unknown_recipient");
+        bodyJson.put("recipient_id", recipientId != null ? recipientId : "unknown_recipient");
         bodyJson.put("sender_id", SharedPrefsUtils.getUserId(context));
         return bodyJson;
     }
