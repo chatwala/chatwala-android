@@ -47,7 +47,7 @@ public abstract class BaseHttpRequest
 
     public Object execute() throws TransientException, PermanentException
     {
-        BusHttpClient client = new BusHttpClient(API_PATH_DEV);
+        BusHttpClient client = new BusHttpClient(API_PATH_PROD);
         AbstractRequestLogger logger = new AbstractRequestLogger()
         {
             @Override

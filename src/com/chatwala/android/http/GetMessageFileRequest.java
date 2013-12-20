@@ -1,6 +1,7 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.util.Log;
 import com.chatwala.android.ChatMessage;
 import com.chatwala.android.MessageMetadata;
 import com.chatwala.android.database.ChatwalaMessage;
@@ -44,6 +45,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     {
         try
         {
+            //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
             InputStream is = new ByteArrayInputStream(response.getBody());
             File file = new File(context.getFilesDir(), "vid_" + messageId + ".wala");
             FileOutputStream os = new FileOutputStream(file);
@@ -52,7 +54,10 @@ public class GetMessageFileRequest extends BaseGetRequest
             int count;
 
             while ((count = is.read(buffer)) > 0)
+            {
                 os.write(buffer, 0, count);
+                //Log.d("@@@@@@@@@@@@", new String(buffer, "UTF-8"));
+            }
 
             os.close();
             is.close();
