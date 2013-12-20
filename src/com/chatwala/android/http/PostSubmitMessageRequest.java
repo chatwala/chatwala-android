@@ -58,6 +58,7 @@ public class PostSubmitMessageRequest extends BasePostRequest
         messageMetadata = new ChatwalaMessage();
         messageMetadata.setMessageId(bodyAsJson.getString("message_id"));
         messageMetadata.setUrl(bodyAsJson.getString("url"));
+        messageMetadata.setSortId(null);
 
         Log.d("###########", "POSTED MESSAGE HAS ID" + messageMetadata.getMessageId());
     }

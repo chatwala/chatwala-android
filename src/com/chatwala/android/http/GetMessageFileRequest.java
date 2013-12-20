@@ -97,6 +97,7 @@ public class GetMessageFileRequest extends BaseGetRequest
         {
             chatwalaMessage = new ChatwalaMessage();
             chatwalaMessage.setMessageId(messageId);
+            chatwalaMessage.setSortId(null);
         }
 
         chatwalaMessage.setSenderId(chatMessage.metadata.senderId);

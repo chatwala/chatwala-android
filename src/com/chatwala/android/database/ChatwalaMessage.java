@@ -25,6 +25,9 @@ public class ChatwalaMessage
     @DatabaseField
     private String recipientId;
 
+    @DatabaseField
+    private Integer sortId;
+
     public String getMessageId()
     {
         return messageId;
@@ -63,5 +66,15 @@ public class ChatwalaMessage
     public void setRecipientId(String recipientId)
     {
         this.recipientId = recipientId;
+    }
+
+    public Integer getSortId()
+    {
+        return sortId;
+    }
+
+    public void setSortId(Integer sortId)
+    {
+        this.sortId = sortId;
     }
 }

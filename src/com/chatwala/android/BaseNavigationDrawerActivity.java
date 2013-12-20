@@ -18,6 +18,8 @@ import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -171,6 +173,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         DrawerMessagesAdapter(List<ChatwalaMessage> messageList)
         {
             this.messageList = new ArrayList<ChatwalaMessage>(messageList);
+            Collections.sort(this.messageList, new Comparator<ChatwalaMessage>()
+            {
+                @Override
+                public int compare(ChatwalaMessage lhs, ChatwalaMessage rhs)
+                {
+                    return lhs.getSortId() - rhs.getSortId();
+                }
+            });
         }
 
         @Override
@@ -203,6 +213,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                     public void onClick(View v)
                     {
                         NewCameraActivity.startMeWithId(BaseNavigationDrawerActivity.this, (String)v.getTag());
+                        finish();
                     }
                 });
             }
