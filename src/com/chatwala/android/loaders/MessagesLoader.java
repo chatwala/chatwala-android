@@ -3,6 +3,8 @@ package com.chatwala.android.loaders;
 import android.content.Context;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.util.SharedPrefsUtils;
+import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -32,7 +34,8 @@ public class MessagesLoader extends BaseAsyncLoader<List<ChatwalaMessage>>
     {
         try
         {
-            return DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao().queryForAll();
+            Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
+            return messageDao.query(messageDao.queryBuilder().where().not().eq("senderId", SharedPrefsUtils.getUserId(getContext())).prepare());
         }
         catch (SQLException e)
         {

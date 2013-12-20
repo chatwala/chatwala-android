@@ -60,7 +60,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     public enum AppState
     {
-        Off(true), Transition(true), LoadingFileCamera(true), ReadyStopped(true), PlaybackOnly(false), PlaybackRecording(false), RecordingLimbo(false), Recording(false), PreviewLoading(false), PreviewReady(false);
+        Off(true), Transition(true), LoadingFileCamera(true), ReadyStopped(true), PlaybackOnly(false), PlaybackRecording(false), RecordingLimbo(false), Recording(false), PreviewLoading(false), PreviewReady(false), Sharing(false);
 
         boolean doesStateEnableNavigationDrawer;
 
@@ -153,6 +153,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
                 timerKnob.setImageResource(R.drawable.ic_action_send_ios);
+                break;
+            case Sharing:
+                //Do nothing
                 break;
             default:
                 timerKnob.setVisibility(View.INVISIBLE);
@@ -485,7 +488,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         CWLog.userAction(NewCameraActivity.class, "Timer button pressed in state: " + state.name());
 
         //Don't do anything.  These should be very short states.
-        if (state == AppState.Off || state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading)
+        if (state == AppState.Off || state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading || state == AppState.Sharing)
             return;
 
         if (state == AppState.ReadyStopped)
@@ -516,6 +519,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         if (state == AppState.PreviewReady)
         {
+            setAppState(AppState.Sharing);
             CWAnalytics.sendSendMessageEvent((long)recordPreviewCompletionListener.replays);
             prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
         }
