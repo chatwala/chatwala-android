@@ -34,8 +34,16 @@ public class MessagesLoader extends BaseAsyncLoader<List<ChatwalaMessage>>
     {
         try
         {
+            String userId = SharedPrefsUtils.getUserId(getContext());
             Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
-            return messageDao.query(messageDao.queryBuilder().where().not().eq("senderId", SharedPrefsUtils.getUserId(getContext())).prepare());
+            if(userId != null)
+            {
+                return messageDao.query(messageDao.queryBuilder().where().not().eq("senderId", userId).prepare());
+            }
+            else
+            {
+                return messageDao.queryForAll();
+            }
         }
         catch (SQLException e)
         {

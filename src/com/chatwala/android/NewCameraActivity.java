@@ -25,6 +25,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.*;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.ui.TimerDial;
@@ -36,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,6 +58,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
 
+    private String playbackMessageId = null;
     private static final String MESSAGE_ID = "MESSAGE_ID";
 
     public enum AppState
@@ -971,17 +974,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             try
             {
-                String incomingMessageId;
                 if(getIntent().hasExtra(MESSAGE_ID))
                 {
-                    incomingMessageId = getIntent().getStringExtra(MESSAGE_ID);
+                    playbackMessageId = getIntent().getStringExtra(MESSAGE_ID);
                 }
                 else
                 {
-                    incomingMessageId = ShareUtils.getIdFromIntent(getIntent());
+                    playbackMessageId = ShareUtils.getIdFromIntent(getIntent());
                 }
 
-                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, incomingMessageId).execute();
+                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
                 chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
                 return toReturn;
             } catch (TransientException e)
@@ -1140,11 +1142,26 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     throw new RuntimeException(e);
                 }
 
-                Log.d("############ Absolute", outZip.getAbsolutePath());
-                Log.d("############ Path", outZip.getPath());
+                String recipientId;
+                if(playbackMessageId != null)
+                {
+                    try
+                    {
+                        recipientId = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId).getRecipientId();
+                    }
+                    catch (SQLException e)
+                    {
+                        throw new RuntimeException("No recipient Id");
+                    }
+                }
+                else
+                {
+                    recipientId = null;
+                }
+
                 try
                 {
-                    return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outZip.getAbsolutePath()).execute();
+                    return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outZip.getAbsolutePath(), recipientId).execute();
                 }
                 catch (TransientException e)
                 {
