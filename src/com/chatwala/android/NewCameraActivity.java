@@ -161,7 +161,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 timerKnob.setImageResource(R.drawable.ic_action_send_ios);
                 break;
             case Sharing:
-                //Do nothing
+                closeRecordPreviewView.setVisibility(View.GONE);
                 break;
             default:
                 timerKnob.setVisibility(View.INVISIBLE);
