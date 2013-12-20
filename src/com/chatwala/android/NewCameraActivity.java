@@ -561,7 +561,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     {
                         Toast.makeText(NewCameraActivity.this, "Message Sent", Toast.LENGTH_LONG).show();
                         playbackMessage = null;
-                        createSurface();
+                        NewCameraActivity.startMe(NewCameraActivity.this);
+                        finish();
                     }
                 }.execute();
             }
@@ -1324,6 +1325,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, openingVolume, 0);
         }*/
+
+    public static void startMe(Context context)
+    {
+        context.startActivity(new Intent(context, NewCameraActivity.class));
+    }
 
     public static void startMeWithId(Context context, String messageId)
     {
