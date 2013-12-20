@@ -113,7 +113,12 @@ public class ShareUtils
     public static String getIdFromIntent(Intent callingIntent)
     {
         String uri = callingIntent.getDataString();
-        return uri.replace("http://www.chatwala.com/?", "");
+        if(uri.startsWith("http://www.chatwala.com/?"))
+            return uri.replace("http://www.chatwala.com/?", "");
+        else if(uri.startsWith("market://details?id=co.touchlab.android.onesecondeveryday&message="))
+            return uri.replace("market://details?id=co.touchlab.android.onesecondeveryday&message=", "");
+        else
+            throw new RuntimeException("Invalid message id from intent");
     }
 
     /*public static Wala extractAttachment(Intent intent, Context context)
