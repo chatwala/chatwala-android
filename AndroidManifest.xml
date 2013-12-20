@@ -45,7 +45,7 @@
                 <!--<data android:scheme="content" android:pathPattern="chat.wala" android:mimeType="text/plain"/>-->
             <!--</intent-filter>-->
             <intent-filter>
-                <data android:scheme="market" android:pathPattern="details?id=com.chatwala.chatwala*"/>
+                <data android:scheme="market" android:pathPattern="details?id=com.chatwala*"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
