@@ -178,7 +178,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 @Override
                 public int compare(ChatwalaMessage lhs, ChatwalaMessage rhs)
                 {
-                    return lhs.getSortId() - rhs.getSortId();
+                    return rhs.getSortId() - lhs.getSortId();
                 }
             });
         }
