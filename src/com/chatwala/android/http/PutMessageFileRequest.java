@@ -1,6 +1,7 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.util.Log;
 import com.chatwala.android.util.CameraUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
@@ -40,12 +41,13 @@ public class PutMessageFileRequest extends BasePutRequest
     @Override
     protected String getContentType()
     {
-        return "video/mp4";
+        return "application/zip";
     }
 
     @Override
     protected byte[] getPutData()
     {
+        Log.d("############ Local message url", localMessageUrl);
         File walaFile = new File(localMessageUrl);
 
         try

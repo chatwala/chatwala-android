@@ -20,7 +20,7 @@ public class PutMessageFileCommand extends SqliteCommand
 
     public PutMessageFileCommand(){}
 
-    public PutMessageFileCommand(String messageId, String messageLocalUrl)
+    public PutMessageFileCommand(String messageLocalUrl, String messageId)
     {
         this.messageId = messageId;
         this.messageLocalUrl = messageLocalUrl;

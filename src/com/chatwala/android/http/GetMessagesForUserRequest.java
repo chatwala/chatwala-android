@@ -58,7 +58,7 @@ public class GetMessagesForUserRequest extends BaseGetRequest
             currentMessage.setRecipientId(messageJson.getString("recipient_id"));
             currentMessage.setSenderId(messageJson.getString("sender_id"));
             messageArray.add(currentMessage);
-            Log.d("#######", currentMessage.getMessageId());
+            Log.d("######### FINISHED PARSING: ", currentMessage.getMessageId());
         }
     }
 

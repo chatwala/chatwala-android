@@ -1,6 +1,7 @@
 package com.chatwala.android.util;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 import com.chatwala.android.ChatMessage;
@@ -107,6 +108,12 @@ public class ShareUtils
         }
 
         return null;
+    }
+
+    public static String getIdFromIntent(Intent callingIntent)
+    {
+        String uri = callingIntent.getDataString();
+        return uri.replace("http://www.chatwala.com/?", "");
     }
 
     /*public static Wala extractAttachment(Intent intent, Context context)

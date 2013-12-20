@@ -6,6 +6,7 @@ import com.chatwala.android.MessageMetadata;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.ShareUtils;
+import com.chatwala.android.util.VideoUtils;
 import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;

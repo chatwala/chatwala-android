@@ -40,7 +40,6 @@ public abstract class BasePutRequest extends BaseHttpRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        Log.d("##########", response.getBodyAsString());
         // No response
     }
 

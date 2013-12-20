@@ -850,7 +850,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private boolean replyMessageAvailable()
     {
-        return getIntent().hasExtra(MESSAGE_ID);
+        return getIntent().hasExtra(MESSAGE_ID) || getIntent().getData() != null;
     }
 
     private void createSurface()
@@ -967,7 +967,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             try
             {
-                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, getIntent().getStringExtra(MESSAGE_ID)).execute();
+                String incomingMessageId;
+                if(getIntent().hasExtra(MESSAGE_ID))
+                {
+                    incomingMessageId = getIntent().getStringExtra(MESSAGE_ID);
+                }
+                else
+                {
+                    incomingMessageId = ShareUtils.getIdFromIntent(getIntent());
+                }
+
+                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, incomingMessageId).execute();
                 chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
                 return toReturn;
             } catch (TransientException e)
@@ -1126,7 +1136,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     throw new RuntimeException(e);
                 }
 
-                Log.d("##############", outZip.getAbsolutePath());
+                Log.d("############ Absolute", outZip.getAbsolutePath());
+                Log.d("############ Path", outZip.getPath());
                 try
                 {
                     return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outZip.getAbsolutePath()).execute();
@@ -1146,7 +1157,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             protected void onPostExecute(String messageId)
             {
-                Log.d("##########", messageId);
+                Log.d("######### SENDING MESSAGE ID: ", messageId);
                 String sendTo = "";
                 if (originalMessage != null && originalMessage.metadata.senderId != null)
                     sendTo = originalMessage.metadata.senderId.trim();

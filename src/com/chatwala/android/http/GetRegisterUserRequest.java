@@ -39,7 +39,7 @@ public class GetRegisterUserRequest extends BaseGetRequest
 //        JSONObject bodyAsJson = new JSONObject(response.getBodyAsString());
 //        String userId = bodyAsJson.getString("user_id");
 
-        Log.d("########## USERID", userId);
+        Log.d("##### USERID", userId);
         SharedPrefsUtils.setUserId(context, userId);
     }
 

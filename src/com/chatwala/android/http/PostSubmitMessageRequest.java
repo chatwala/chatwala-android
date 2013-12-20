@@ -57,8 +57,7 @@ public class PostSubmitMessageRequest extends BasePostRequest
         messageMetadata.setMessageId(bodyAsJson.getString("message_id"));
         messageMetadata.setUrl(bodyAsJson.getString("url"));
 
-        Log.d("###########", messageMetadata.getMessageId());
-        Log.d("###########", messageMetadata.getUrl());
+        Log.d("###########", "POSTED MESSAGE HAS ID" + messageMetadata.getMessageId());
     }
 
     @Override
