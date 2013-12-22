@@ -22,7 +22,7 @@ import java.sql.SQLException;
  * Time: 3:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PostSubmitMessageRequest extends BasePostRequest
+public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
 {
     ChatwalaMessage messageMetadata;
     String localMessagePath;
@@ -50,15 +50,24 @@ public class PostSubmitMessageRequest extends BasePostRequest
         return "messages";
     }
 
+    public ChatwalaMessage getMessageMetadata()
+    {
+        return messageMetadata;
+    }
+
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
         JSONObject bodyAsJson = new JSONObject(response.getBodyAsString());
 
-        messageMetadata = new ChatwalaMessage();
-        messageMetadata.setMessageId(bodyAsJson.getString("message_id"));
-        messageMetadata.setUrl(bodyAsJson.getString("url"));
-        messageMetadata.setSortId(null);
+        ChatwalaMessage chatwalaMessage = new ChatwalaMessage();
+
+        chatwalaMessage.setMessageId(bodyAsJson.getString("message_id"));
+        chatwalaMessage.setUrl(bodyAsJson.getString("url"));
+        chatwalaMessage.setSortId(null);
+
+        //Set at end, in case things got weird parsing
+        messageMetadata = chatwalaMessage;
 
         Log.d("###########", "POSTED MESSAGE HAS ID" + messageMetadata.getMessageId());
     }
@@ -70,7 +79,7 @@ public class PostSubmitMessageRequest extends BasePostRequest
     }
 
     @Override
-    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    protected ChatwalaMessage commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
         databaseHelper.getChatwalaMessageDao().create(messageMetadata);
         return messageMetadata;
@@ -79,12 +88,13 @@ public class PostSubmitMessageRequest extends BasePostRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        BusHelper.submitCommandSync(context, new PutMessageFileCommand(localMessagePath, messageMetadata.getMessageId()));
+        if(localMessagePath != null)
+            BusHelper.submitCommandSync(context, new PutMessageFileCommand(localMessagePath, messageMetadata.getMessageId()));
     }
 
     @Override
-    protected Object getReturnValue()
+    protected ChatwalaMessage getReturnValue()
     {
-        return messageMetadata.getMessageId();
+        return messageMetadata;
     }
 }

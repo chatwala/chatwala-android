@@ -18,7 +18,7 @@ import java.sql.SQLException;
  * Time: 3:36 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BasePutRequest extends BaseHttpRequest
+public abstract class BasePutRequest<T> extends BaseHttpRequest<T>
 {
     public BasePutRequest(Context context)
     {

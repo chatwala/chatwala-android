@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
  * Time: 12:32 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BaseHttpRequest
+public abstract class BaseHttpRequest<T>
 {
     private static final int    STATUS_OK                  = 200;
     private static final int    STATUS_NO_CONTENT          = 204;
@@ -45,7 +45,7 @@ public abstract class BaseHttpRequest
         this.context = context;
     }
 
-    public Object execute() throws TransientException, PermanentException
+    public T execute() throws TransientException, PermanentException
     {
         BusHttpClient client = new BusHttpClient(API_PATH_PROD);
         AbstractRequestLogger logger = new AbstractRequestLogger()
@@ -141,13 +141,13 @@ public abstract class BaseHttpRequest
 
     protected abstract boolean hasDbOperation();
 
-    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    protected T commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
         //Implement when hasDbOperation() returns true
         return null;
     }
 
-    protected Object getReturnValue()
+    protected T getReturnValue()
     {
         return null;
     }

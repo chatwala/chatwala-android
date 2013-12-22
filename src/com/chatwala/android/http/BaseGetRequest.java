@@ -12,7 +12,7 @@ import com.turbomanage.httpclient.HttpResponse;
  * Time: 11:39 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BaseGetRequest extends BaseHttpRequest
+public abstract class BaseGetRequest<T> extends BaseHttpRequest<T>
 {
     public BaseGetRequest(Context context)
     {

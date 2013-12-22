@@ -31,6 +31,8 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
+import com.chatwala.android.superbus.PostSubmitMessageCommand;
+import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
 import android.widget.EditText;
@@ -62,6 +64,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private View timerButtonContainer;
 
     private ChatwalaMessage playbackMessage = null;
+    private ChatwalaMessage messageToSendDirectly = null;
     private static final String MESSAGE_ID = "MESSAGE_ID";
 
     public enum AppState
@@ -175,7 +178,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void analyticsStateEnd(AppState appState, boolean buttonPress)
     {
-        if(appState != AppState.Transition)
+        if (appState != AppState.Transition)
         {
             long duration = analyticsDuration();
             switch (this.appState)
@@ -354,7 +357,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             public void onClick(View v)
             {
                 CWLog.userAction(NewCameraActivity.class, "Close record preview pressed in state: " + getAppState().name());
-                CWAnalytics.sendRedoMessageEvent((long)recordPreviewCompletionListener.replays);
+                CWAnalytics.sendRedoMessageEvent((long) recordPreviewCompletionListener.replays);
                 closeResultPreview();
             }
         });
@@ -443,7 +446,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     @Override
     protected void onPause()
     {
-        if(heartbeatTimer != null)
+        if (heartbeatTimer != null)
             heartbeatTimer.abort();
 
         super.onPause();
@@ -526,45 +529,26 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         if (state == AppState.PreviewReady)
         {
             setAppState(AppState.Sharing);
-            CWAnalytics.sendSendMessageEvent((long)recordPreviewCompletionListener.replays);
-            if(playbackMessage == null)
+            CWAnalytics.sendSendMessageEvent((long) recordPreviewCompletionListener.replays);
+            if (playbackMessage == null)
             {
                 prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
             }
             else
             {
-                new AsyncTask<Void, Void, String>()
+                //TODO: move all this to an outside class
+                DataProcessor.runProcess(new Runnable()
                 {
                     @Override
-                    protected String doInBackground(Void... params)
+                    public void run()
                     {
-                        File outFile = buildZipToSend(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
-
-                        try
-                        {
-                            return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outFile.getAbsolutePath(), playbackMessage.getSenderId()).execute();
-                        }
-                        catch (TransientException e)
-                        {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            return null;
-                        }
-                        catch (PermanentException e)
-                        {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            return null;
-                        }
+                        File outFile = buildZipToSend(NewCameraActivity.this, recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                        BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), playbackMessage.getSenderId()));
                     }
+                });
 
-                    @Override
-                    protected void onPostExecute(String messageId)
-                    {
-                        Toast.makeText(NewCameraActivity.this, "Message Sent", Toast.LENGTH_LONG).show();
-                        playbackMessage = null;
-                        NewCameraActivity.startMe(NewCameraActivity.this);
-                        finish();
-                    }
-                }.execute();
+                NewCameraActivity.startMe(NewCameraActivity.this);
+                finish();
             }
         }
     }
@@ -798,7 +782,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
 
-        if(replyMessageAvailable())
+        if (replyMessageAvailable())
         {
             new MessageLoaderTask().execute();
         }
@@ -908,6 +892,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             runWaterSplash();
         }
+        else
+        {
+            prepManualSend();
+        }
 
         CWLog.b(NewCameraActivity.class, "createSurface");
         setAppState(AppState.LoadingFileCamera);
@@ -925,7 +913,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void recordingStarted()
             {
-                if(chatMessage == null)
+                if (chatMessage == null)
                     setAppState(AppState.Recording);
                 else
                     setAppState(AppState.PlaybackRecording);
@@ -1016,7 +1004,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             try
             {
                 String playbackMessageId;
-                if(getIntent().hasExtra(MESSAGE_ID))
+                if (getIntent().hasExtra(MESSAGE_ID))
                 {
                     playbackMessageId = getIntent().getStringExtra(MESSAGE_ID);
                 }
@@ -1025,17 +1013,20 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     playbackMessageId = ShareUtils.getIdFromIntent(getIntent());
                 }
 
-                ChatMessage toReturn = (ChatMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
+                ChatMessage toReturn = (ChatMessage) new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
                 chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
                 playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId);
                 return toReturn;
-            } catch (TransientException e)
+            }
+            catch (TransientException e)
             {
                 throw new RuntimeException(e);
-            } catch (PermanentException e)
+            }
+            catch (PermanentException e)
             {
                 throw new RuntimeException(e);
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
@@ -1125,92 +1116,124 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
+    private void prepManualSend()
+    {
+        DataProcessor.runProcess(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                int attempts = 0;
+                while (attempts < 3)
+                {
+                    try
+                    {
+                        ChatwalaMessage messageInfo = new PostSubmitMessageRequest(NewCameraActivity.this, null, null).execute();
+                        if (messageInfo != null)
+                        {
+                            messageToSendDirectly = messageInfo;
+                            break;
+                        }
+                    }
+                    catch (TransientException e)
+                    {
+                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't get message id", e);
+                    }
+                    catch (PermanentException e)
+                    {
+                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't get message id", e);
+                    }
+                    attempts++;
+                }
+            }
+        });
+    }
+
     @SuppressWarnings("unchecked")
     private void sendEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        new AsyncTask<Void, Void, String>()
+        if (messageToSendDirectly == null)
         {
-            @Override
-            protected String doInBackground(Void... params)
+            Toast.makeText(this, "Couldn't contact server.  Please try again later.", Toast.LENGTH_LONG).show();
+            NewCameraActivity.startMe(this);
+            finish();
+        }
+        else
+        {
+            final String messageId = messageToSendDirectly.getMessageId();
+            messageToSendDirectly = null;
+
+            new AsyncTask<Void, Void, String>()
             {
-                File outZip = buildZipToSend(videoFile, originalMessage, originalVideoMetadata);
-
-                String recipientId = playbackMessage != null ? playbackMessage.getSenderId() : null;
-
-                try
+                @Override
+                protected String doInBackground(Void... params)
                 {
-                    return (String) new PostSubmitMessageRequest(NewCameraActivity.this, outZip.getAbsolutePath(), recipientId).execute();
+                    File outZip = buildZipToSend(NewCameraActivity.this, videoFile, originalMessage, originalVideoMetadata);
+
+                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outZip.getPath(), messageId));
+
+                    return messageId;
                 }
-                catch (TransientException e)
+
+                @Override
+                protected void onPostExecute(String messageId)
                 {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    return null;
-                }
-                catch (PermanentException e)
-                {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    return null;
-                }
-            }
+                    Log.d("######### SENDING MESSAGE ID: ", messageId);
+                    String sendTo = "";
+                    if (originalMessage != null && originalMessage.metadata.senderId != null)
+                        sendTo = originalMessage.metadata.senderId.trim();
 
-            @Override
-            protected void onPostExecute(String messageId)
-            {
-                Log.d("######### SENDING MESSAGE ID: ", messageId);
-                String sendTo = "";
-                if (originalMessage != null && originalMessage.metadata.senderId != null)
-                    sendTo = originalMessage.metadata.senderId.trim();
+                    //Not sure how this would creep in there, but deal with it.
+                    if (sendTo.equalsIgnoreCase("null"))
+                        sendTo = "";
 
-                //Not sure how this would creep in there, but deal with it.
-                if (sendTo.equalsIgnoreCase("null"))
-                    sendTo = "";
+                    String uriText = "mailto:" + sendTo;
 
-                String uriText = "mailto:" + sendTo;
+                    Uri mailtoUri = Uri.parse(uriText);
 
-                Uri mailtoUri = Uri.parse(uriText);
+                    boolean gmailOk = false;
 
-                boolean gmailOk = false;
-
-                if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
-                {
-                    Intent gmailIntent = new Intent();
-                    gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
-                    gmailIntent.setData(mailtoUri);
-                    gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
-                    gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
-
-                    try
+                    if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
                     {
-                        closePreviewOnReturn = true;
-                        startActivity(gmailIntent);
-                        gmailOk = true;
+                        Intent gmailIntent = new Intent();
+                        gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
+                        gmailIntent.setData(mailtoUri);
+                        gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
+                        String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
+                        gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+
+                        try
+                        {
+                            closePreviewOnReturn = true;
+                            startActivity(gmailIntent);
+                            gmailOk = true;
+                        }
+                        catch (ActivityNotFoundException ex)
+                        {
+                            CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
+                        }
                     }
-                    catch (ActivityNotFoundException ex)
+
+                    if (!gmailOk)
                     {
-                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
+                        Intent intent = new Intent(Intent.ACTION_SENDTO);
+
+                        intent.setData(mailtoUri);
+                        intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
+                        String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
+                        intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+
+                        startActivity(Intent.createChooser(intent, "Send email..."));
                     }
+
                 }
-
-                if (!gmailOk)
-                {
-                    Intent intent = new Intent(Intent.ACTION_SENDTO);
-
-                    intent.setData(mailtoUri);
-                    intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-                    String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
-                    intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
-
-                    startActivity(Intent.createChooser(intent, "Send email..."));
-                }
-
-            }
-        }.execute();
+            }.execute();
+        }
     }
 
-    private File buildZipToSend(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    private static File buildZipToSend(NewCameraActivity activity, final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        File rootDataFolder = CameraUtils.getRootDataFolder(NewCameraActivity.this);
+        File rootDataFolder = CameraUtils.getRootDataFolder(activity);
         File buildDir = new File(rootDataFolder, "chat_" + System.currentTimeMillis());
         buildDir.mkdirs();
 
@@ -1238,12 +1261,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + VIDEO_PLAYBACK_START_DELAY);
             sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
 
-            String myEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
+            String myEmail = AppPrefs.getInstance(activity).getPrefSelectedEmail();
 
             if (myEmail == null && originalMessage != null)
                 myEmail = originalMessage.probableEmailSource;
 
-            sendMessageMetadata.senderId = SharedPrefsUtils.getUserId(NewCameraActivity.this);
+            sendMessageMetadata.senderId = SharedPrefsUtils.getUserId(activity);
 
             FileWriter fileWriter = new FileWriter(metadataFile);
 
@@ -1251,7 +1274,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
             fileWriter.close();
 
-            File shareDir = new File(NewCameraActivity.this.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
+            File shareDir = new File(activity.getExternalFilesDir(null), "sharefile_" + System.currentTimeMillis());
             shareDir.mkdirs();
             outZip = new File(shareDir, "chat.wala");
 
