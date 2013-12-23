@@ -207,7 +207,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         {
             if(convertView == null)
             {
-                convertView = new ImageView(BaseNavigationDrawerActivity.this);
+                convertView = getLayoutInflater().inflate(R.layout.row_drawer_thumb, parent, false);
                 convertView.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -220,7 +220,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
 
             ChatwalaMessage message = (ChatwalaMessage)getItem(position);
-            Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).into((ImageView)convertView);
+            Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView)convertView.findViewById(R.id.thumb_view));
             convertView.setTag(message.getMessageId());
 
             return convertView;
