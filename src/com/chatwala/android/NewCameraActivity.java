@@ -532,8 +532,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             CWAnalytics.sendSendMessageEvent((long) recordPreviewCompletionListener.replays);
             if (playbackMessage == null)
             {
-                //prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
-                sendSms(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                if(AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
+                {
+                    sendSms(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                }
+                else
+                {
+                    prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                }
             }
             else
             {

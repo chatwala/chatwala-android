@@ -22,6 +22,7 @@ public class AppPrefs
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
     public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
     public static final String PREF_SHARE_COUNT = "PREF_SHARE_COUNT";
+    public static final String PREF_USE_SMS = "PREF_USE_SMS";
 
 
     public static synchronized AppPrefs getInstance(Context context)
@@ -84,5 +85,15 @@ public class AppPrefs
     public void setPrefShareCount(int bitDepth)
     {
         mSp.edit().putInt(PREF_SHARE_COUNT, bitDepth).apply();
+    }
+
+    public void setPrefUseSms(boolean useSms)
+    {
+        mSp.edit().putBoolean(PREF_USE_SMS, useSms).apply();
+    }
+
+    public boolean getPrefUseSms()
+    {
+        return mSp.getBoolean(PREF_USE_SMS, true);
     }
 }
