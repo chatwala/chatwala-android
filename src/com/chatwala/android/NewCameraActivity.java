@@ -1063,24 +1063,25 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void prepareEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
+        Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
+        String googleAccountTypeString = "com.google";
+        Account[] accounts = AccountManager.get(NewCameraActivity.this).getAccounts();
+        final ArrayList<String> emailList = new ArrayList<String>();
+        for (Account account : accounts)
+        {
+            if (emailPattern.matcher(account.name).matches() && account.type.startsWith(googleAccountTypeString))
+            {
+                emailList.add(account.name);
+            }
+        }
+
+        String savedEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
+        if (savedEmail != null && emailList.contains(savedEmail))
         {
             sendEmail(videoFile, originalMessage, originalVideoMetadata);
         }
         else
         {
-            Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
-            String googleAccountTypeString = "com.google";
-            Account[] accounts = AccountManager.get(NewCameraActivity.this).getAccounts();
-            final ArrayList<String> emailList = new ArrayList<String>();
-            for (Account account : accounts)
-            {
-                if (emailPattern.matcher(account.name).matches() && account.type.startsWith(googleAccountTypeString))
-                {
-                    emailList.add(account.name);
-                }
-            }
-
             if (emailList.size() > 1)
             {
                 AlertDialog.Builder builder = new AlertDialog.Builder(NewCameraActivity.this);
