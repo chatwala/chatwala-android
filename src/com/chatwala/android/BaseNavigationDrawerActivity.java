@@ -16,6 +16,7 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -206,7 +207,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         {
             if(convertView == null)
             {
-                convertView = new TextView(BaseNavigationDrawerActivity.this);
+                convertView = new ImageView(BaseNavigationDrawerActivity.this);
                 convertView.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
@@ -219,7 +220,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
 
             ChatwalaMessage message = (ChatwalaMessage)getItem(position);
-            ((TextView)convertView).setText(message.getMessageId());
+            Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).into((ImageView)convertView);
             convertView.setTag(message.getMessageId());
 
             return convertView;

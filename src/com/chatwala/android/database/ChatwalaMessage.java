@@ -28,6 +28,9 @@ public class ChatwalaMessage
     @DatabaseField
     private Integer sortId;
 
+    @DatabaseField
+    private String thumbnailUrl;
+
     public String getMessageId()
     {
         return messageId;
@@ -76,5 +79,15 @@ public class ChatwalaMessage
     public void setSortId(Integer sortId)
     {
         this.sortId = sortId;
+    }
+
+    public String getThumbnailUrl()
+    {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl)
+    {
+        this.thumbnailUrl = thumbnailUrl;
     }
 }
