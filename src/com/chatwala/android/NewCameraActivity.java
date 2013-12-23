@@ -532,7 +532,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             CWAnalytics.sendSendMessageEvent((long) recordPreviewCompletionListener.replays);
             if (playbackMessage == null)
             {
-                prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                //prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                sendSms(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
             }
             else
             {
@@ -1227,6 +1228,46 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                         startActivity(Intent.createChooser(intent, "Send email..."));
                     }
 
+                }
+            }.execute();
+        }
+    }
+
+    private void sendSms(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    {
+        if (messageToSendDirectly == null)
+        {
+            Toast.makeText(this, "Couldn't contact server.  Please try again later.", Toast.LENGTH_LONG).show();
+            NewCameraActivity.startMe(this);
+            finish();
+        }
+        else
+        {
+            final String messageId = messageToSendDirectly.getMessageId();
+            messageToSendDirectly = null;
+
+            new AsyncTask<Void, Void, String>()
+            {
+                @Override
+                protected String doInBackground(Void... params)
+                {
+                    File outZip = buildZipToSend(NewCameraActivity.this, videoFile, originalMessage, originalVideoMetadata);
+
+                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outZip.getPath(), messageId));
+
+                    return messageId;
+                }
+
+                @Override
+                protected void onPostExecute(String messageId)
+                {
+                    String uriText = "sms:";
+
+                    Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                    smsIntent.setData(Uri.parse(uriText));
+                    String messageLink = "View the message: http://www.chatwala.com/?" + messageId;
+                    smsIntent.putExtra("sms_body", "Chatwala is a new way to have real conversations with friends. " + messageLink);
+                    startActivity(smsIntent);
                 }
             }.execute();
         }
