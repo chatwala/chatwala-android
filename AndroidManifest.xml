@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="613"
-          android:versionName="0.6.13">
+          android:versionCode="614"
+          android:versionName="0.6.14">
     <uses-sdk android:minSdkVersion="15"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -45,7 +45,7 @@
                 <!--<data android:scheme="content" android:pathPattern="chat.wala" android:mimeType="text/plain"/>-->
             <!--</intent-filter>-->
             <intent-filter>
-                <data android:scheme="market" android:pathPattern="details?id=co.touchlab.android.onesecondeveryday"/>
+                <data android:scheme="market" android:pathPattern="details?id=com.chatwala"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

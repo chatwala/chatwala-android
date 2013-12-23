@@ -23,6 +23,8 @@ public class ShareUtils
 {
 
     public static final String EMAIL_CONTENT_PREFIX = "content://gmail-ls/";
+    public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
+    public static final String WEB_STRING = "http://www.chatwala.com/?";
 
     public static ChatMessage extractFileAttachment(Activity activity)
     {
@@ -113,10 +115,10 @@ public class ShareUtils
     public static String getIdFromIntent(Intent callingIntent)
     {
         String uri = callingIntent.getDataString();
-        if(uri.startsWith("http://www.chatwala.com/?"))
-            return uri.replace("http://www.chatwala.com/?", "");
-        else if(uri.startsWith("market://details?id=co.touchlab.android.onesecondeveryday&message="))
-            return uri.replace("market://details?id=co.touchlab.android.onesecondeveryday&message=", "");
+        if(uri.startsWith(WEB_STRING))
+            return uri.replace(WEB_STRING, "");
+        else if(uri.startsWith(MARKET_STRING))
+            return uri.replace(MARKET_STRING, "");
         else
             throw new RuntimeException("Invalid message id from intent");
     }

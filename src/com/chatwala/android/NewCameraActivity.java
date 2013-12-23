@@ -308,7 +308,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             }
         });
 
-        timerButtonContainer.setOnLongClickListener(new View.OnLongClickListener()
+        /*timerButtonContainer.setOnLongClickListener(new View.OnLongClickListener()
         {
             @Override
             public boolean onLongClick(View v)
@@ -340,7 +340,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                         }).show();
                 return false;
             }
-        });
+        });*/
 
         topFrameMessage = findViewById(R.id.topFrameMessage);
         topFrameMessageText = (TextView) findViewById(R.id.topFrameMessageText);
