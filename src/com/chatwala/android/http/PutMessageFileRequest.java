@@ -2,15 +2,10 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
-import com.chatwala.android.util.CameraUtils;
-import com.turbomanage.httpclient.HttpResponse;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 
 /**
  * Created with IntelliJ IDEA.

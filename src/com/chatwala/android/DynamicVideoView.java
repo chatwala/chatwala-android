@@ -3,12 +3,8 @@ package com.chatwala.android;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Handler;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.VideoView;
-import com.chatwala.android.R;
 import com.chatwala.android.util.AndroidUtils;
 
 import java.io.File;

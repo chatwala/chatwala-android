@@ -3,16 +3,18 @@ package com.chatwala.android;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.*;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Telephony;
 import android.text.Html;
 import android.util.Log;
 import android.util.Patterns;
@@ -20,7 +22,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
@@ -33,8 +38,6 @@ import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
-import android.widget.ImageView;
-import android.widget.Toast;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -42,6 +45,7 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
@@ -56,6 +60,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 {
     public static final int RECORDING_TIME = 10000;
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
+    public static final String HANGOUTS_PACKAGE_NAME = "com.google.android.talk";
     private int openingVolume;
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
@@ -529,7 +534,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             CWAnalytics.sendSendMessageEvent((long) recordPreviewCompletionListener.replays);
             if (playbackMessage == null)
             {
-                if(AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
+                if (AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
                 {
                     sendSms(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
                 }
@@ -1264,15 +1269,78 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 @Override
                 protected void onPostExecute(String messageId)
                 {
-                    String uriText = "sms:";
-
-                    Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-                    smsIntent.setData(Uri.parse(uriText));
                     String messageLink = "View the message: http://www.chatwala.com/?" + messageId;
-                    smsIntent.putExtra("sms_body", "Chatwala is a new way to have real conversations with friends. " + messageLink);
-                    startActivity(smsIntent);
+                    String smsText = "Chatwala is a new way to have real conversations with friends. " + messageLink;
+                    openSmsShare(smsText);
                 }
             }.execute();
+        }
+    }
+
+    private void openSmsShare(String smsText)
+    {
+        if (Build.VERSION.SDK_INT > 18)
+        {
+            String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(this);
+
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType("text/plain");
+            sendIntent.putExtra(Intent.EXTRA_TEXT, smsText);
+
+            if (defaultSmsPackageName != null)//Can be null in case that there is no default, then the user would be able to choose any app that support this intent.
+            {
+                sendIntent.setPackage(defaultSmsPackageName);
+            }
+            startActivity(sendIntent);
+        }
+        else
+        {
+            Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+            sendIntent.setData(Uri.parse("sms:"));
+            sendIntent.putExtra("sms_body", smsText);
+
+            PackageManager pm = getPackageManager();
+            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(sendIntent, 0);
+
+            ResolveInfo resolveInfo = null;
+            if(resolveInfos.size() == 1)
+            {
+                resolveInfo = resolveInfos.get(0);
+            }
+            else if(resolveInfos.size() > 1)
+            {
+                for (ResolveInfo info : resolveInfos)
+                {
+                    if(info.isDefault)
+                    {
+                        resolveInfo = info;
+                        break;
+                    }
+                }
+                if(resolveInfo == null)
+                {
+                    List<ResolveInfo> trimApps = new ArrayList<ResolveInfo>(resolveInfos.size());
+                    for (ResolveInfo info : resolveInfos)
+                    {
+                        String packageName = info.activityInfo.applicationInfo.packageName;
+                        if(!packageName.equalsIgnoreCase(HANGOUTS_PACKAGE_NAME))
+                        {
+                            trimApps.add(info);
+                        }
+                    }
+                    if(trimApps.size() == 1)
+                        resolveInfo = trimApps.get(0);
+                }
+            }
+
+            if(resolveInfo != null)
+            {
+                ActivityInfo activity = resolveInfo.activityInfo;
+                ComponentName name = new ComponentName(activity.applicationInfo.packageName, activity.name);
+                sendIntent.setComponent(name);
+            }
+
+            startActivity(sendIntent);
         }
     }
 

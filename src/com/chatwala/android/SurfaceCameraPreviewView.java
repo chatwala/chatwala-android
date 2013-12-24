@@ -6,7 +6,6 @@ import android.media.MediaRecorder;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
-import com.chatwala.android.R;
 import com.chatwala.android.util.CameraUtils;
 
 import java.io.File;

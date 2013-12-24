@@ -3,18 +3,15 @@ package com.chatwala.android;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.view.Surface;
 import android.view.TextureView;
-import android.view.View;
 import android.view.ViewGroup;
 import com.chatwala.android.util.AndroidUtils;
 import com.chatwala.android.util.CWLog;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.

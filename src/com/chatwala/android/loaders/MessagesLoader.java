@@ -3,7 +3,6 @@ package com.chatwala.android.loaders;
 import android.content.Context;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.util.SharedPrefsUtils;
 import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;

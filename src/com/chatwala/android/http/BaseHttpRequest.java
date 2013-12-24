@@ -1,7 +1,6 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import android.util.Log;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
@@ -9,11 +8,8 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
 import com.turbomanage.httpclient.AbstractRequestLogger;
-import com.turbomanage.httpclient.ConsoleRequestLogger;
 import com.turbomanage.httpclient.HttpResponse;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.concurrent.Callable;

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import com.chatwala.android.util.CameraUtils;
-import com.chatwala.android.util.SharedPrefsUtils;
 
 /**
  * Created with IntelliJ IDEA.
