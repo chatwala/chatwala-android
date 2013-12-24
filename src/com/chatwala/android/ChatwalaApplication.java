@@ -14,7 +14,6 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
-import com.chatwala.android.util.SharedPrefsUtils;
 import com.crashlytics.android.Crashlytics;
 
 /**
@@ -57,7 +56,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
 
-        if(SharedPrefsUtils.getUserId(ChatwalaApplication.this) == null)
+        if(AppPrefs.getInstance(ChatwalaApplication.this).getUserId() == null)
         {
             DataProcessor.runProcess(new Runnable()
             {

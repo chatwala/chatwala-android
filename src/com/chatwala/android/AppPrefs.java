@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.SharedPrefsUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,6 +19,8 @@ public class AppPrefs
     private static AppPrefs INSTANCE;
     private Application application;
 
+    public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
+    public static final String PREF_USER_ID = "USER_ID";
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
     public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
@@ -46,6 +49,23 @@ public class AppPrefs
     {
         return mSp;
     }*/
+
+    public Boolean isFirstOpen()
+    {
+        Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
+        mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
+        return firstOpen;
+    }
+
+    public void setUserId(String userId)
+    {
+        mSp.edit().putString(PREF_USER_ID, userId).apply();
+    }
+
+    public String getUserId()
+    {
+        return mSp.getString(PREF_USER_ID, null);
+    }
 
     public String getPrefSelectedEmail()
     {

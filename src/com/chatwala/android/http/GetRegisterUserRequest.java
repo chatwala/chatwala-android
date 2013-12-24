@@ -2,11 +2,10 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
-import com.chatwala.android.util.SharedPrefsUtils;
+import com.chatwala.android.AppPrefs;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.sql.SQLException;
 
@@ -40,7 +39,7 @@ public class GetRegisterUserRequest extends BaseGetRequest
 //        String userId = bodyAsJson.getString("user_id");
 
         Log.d("##### USERID", userId);
-        SharedPrefsUtils.setUserId(context, userId);
+        AppPrefs.getInstance(context).setUserId(userId);
     }
 
     @Override

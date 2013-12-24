@@ -2,6 +2,7 @@ package com.chatwala.android.util;
 
 import android.content.Context;
 import android.util.Log;
+import com.chatwala.android.AppPrefs;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 
@@ -47,7 +48,7 @@ public class CWAnalytics
         {
             easyTracker = EasyTracker.getInstance(context);
             isStarterMessage = isStarter;
-            categoryString = (SharedPrefsUtils.isFirstOpen(context) ? CATEGORY_FIRST_OPEN : (isStarter ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+            categoryString = (AppPrefs.getInstance(context).isFirstOpen() ? CATEGORY_FIRST_OPEN : (isStarter ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
             sendAppOpenEvent();
         }
     }

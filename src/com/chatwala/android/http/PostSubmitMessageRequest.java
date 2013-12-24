@@ -5,10 +5,10 @@ import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.superbus.PutMessageFileCommand;
-import com.chatwala.android.util.SharedPrefsUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +40,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     {
         JSONObject bodyJson = new JSONObject();
         bodyJson.put("recipient_id", recipientId != null ? recipientId : "unknown_recipient");
-        bodyJson.put("sender_id", SharedPrefsUtils.getUserId(context));
+        bodyJson.put("sender_id", AppPrefs.getInstance(context).getUserId());
         return bodyJson;
     }
 

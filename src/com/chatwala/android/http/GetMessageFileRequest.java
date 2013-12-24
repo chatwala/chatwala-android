@@ -1,7 +1,7 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import android.util.Log;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatMessage;
 import com.chatwala.android.MessageMetadata;
 import com.chatwala.android.database.ChatwalaMessage;
@@ -106,7 +106,7 @@ public class GetMessageFileRequest extends BaseGetRequest
         }
 
         chatwalaMessage.setSenderId(chatMessage.metadata.senderId);
-        chatwalaMessage.setRecipientId(SharedPrefsUtils.getUserId(context));
+        chatwalaMessage.setRecipientId(AppPrefs.getInstance(context).getUserId());
 
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
         return chatwalaMessage;

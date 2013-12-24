@@ -18,8 +18,6 @@ import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
@@ -35,7 +33,6 @@ import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import org.apache.commons.io.IOUtils;
@@ -1314,7 +1311,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             if (myEmail == null && originalMessage != null)
                 myEmail = originalMessage.probableEmailSource;
 
-            sendMessageMetadata.senderId = SharedPrefsUtils.getUserId(activity);
+            sendMessageMetadata.senderId = AppPrefs.getInstance(activity).getUserId();
 
             FileWriter fileWriter = new FileWriter(metadataFile);
 
