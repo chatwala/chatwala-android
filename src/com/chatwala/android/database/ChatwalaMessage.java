@@ -36,7 +36,7 @@ public class ChatwalaMessage
     @DatabaseField
     private String thumbnailUrl;
 
-    @DatabaseField(foreign = true)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
     private MessageMetadata messageMetadata;
 
     @DatabaseField
@@ -66,7 +66,7 @@ public class ChatwalaMessage
 
     public String getSenderId()
     {
-        return senderId;
+        return senderId != null ? senderId : messageMetadata.senderId;
     }
 
     public void setSenderId(String senderId)
@@ -76,7 +76,7 @@ public class ChatwalaMessage
 
     public String getRecipientId()
     {
-        return recipientId;
+        return recipientId != null ? recipientId : messageMetadata.recipientId;
     }
 
     public void setRecipientId(String recipientId)

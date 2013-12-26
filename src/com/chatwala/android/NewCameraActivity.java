@@ -40,6 +40,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
+import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
 import org.apache.commons.io.IOUtils;
@@ -111,7 +112,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private CameraPreviewView cameraPreviewView;
     private ChatwalaMessage incomingMessage;
     private VideoUtils.VideoMetadata chatMessageVideoMetadata;
-    private File recordPreviewFile;
+    private File recordPreviewFile = null;
     private AppState appState = AppState.Off;
     private HeartbeatTimer heartbeatTimer;
     private boolean activityActive;
@@ -370,6 +371,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         });
         CWLog.b(NewCameraActivity.class, "onCreate end");
 
+        if(savedInstanceState != null && savedInstanceState.containsKey(PENDING_SEND_URL))
+        {
+            recordPreviewFile = new File(savedInstanceState.getString(PENDING_SEND_URL));
+        }
 //        captureOpeningVolume();
     }
 
@@ -445,11 +450,18 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
         else if (hasPendingSendMessage())
         {
-            prepManualSend();
+            if(!replyMessageAvailable())
+            {
+                prepManualSend();
+            }
             setAppState(AppState.PreviewLoading);
-            ChatwalaMessage savedMessage = ShareUtils.extractFileAttachmentFromUrl(NewCameraActivity.this, getIntent().getStringExtra(PENDING_SEND_URL));
-            getIntent().removeExtra(PENDING_SEND_URL);
-            showResultPreview(savedMessage.getMessageFile());
+            if(recordPreviewFile == null)
+            {
+                ChatwalaMessage savedMessage = ShareUtils.extractFileAttachmentFromUrl(NewCameraActivity.this, getIntent().getStringExtra(PENDING_SEND_URL));
+                getIntent().removeExtra(PENDING_SEND_URL);
+                recordPreviewFile = savedMessage.getMessageFile();
+            }
+            showResultPreview(recordPreviewFile);
         }
         else
         {
@@ -479,6 +491,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
 //        resetOpeningVolume();
         tearDownSurface();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        if(getAppState() == AppState.PreviewReady)
+        {
+            outState.putString(PENDING_SEND_URL, recordPreviewFile.getAbsolutePath());
+        }
     }
 
     public boolean isActivityActive()
@@ -551,6 +573,18 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 @Override
                 protected File doInBackground(Void... params)
                 {
+                    if(replyMessageAvailable() && playbackMessage == null)
+                    {
+                        try
+                        {
+                            playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(getIntent().getStringExtra(MESSAGE_ID));
+                        }
+                        catch (SQLException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
                     return buildZipToSend(NewCameraActivity.this, recordPreviewFile, incomingMessage, chatMessageVideoMetadata);
                 }
 
@@ -566,20 +600,20 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     }
                     else
                     {
-                        final String messageId = playbackMessage != null ? playbackMessage.getMessageId() : messageToSendDirectly.getMessageId();
-                        messageToSendDirectly = null;
-
-                        DataProcessor.runProcess(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), messageId));
-                            }
-                        });
-
                         if (playbackMessage == null)
                         {
+                            final String messageId = messageToSendDirectly.getMessageId();
+                            messageToSendDirectly = null;
+
+                            DataProcessor.runProcess(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outFile.getAbsolutePath(), messageId));
+                                }
+                            });
+
                             if (AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
                             {
                                 sendSms(messageId);
@@ -588,6 +622,20 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                             {
                                 prepareEmail(messageId);
                             }
+                        }
+                        else
+                        {
+                            DataProcessor.runProcess(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), playbackMessage.getSenderId()));
+                                }
+                            });
+                            Toast.makeText(NewCameraActivity.this, "Message sent.", Toast.LENGTH_LONG).show();
+                            NewCameraActivity.startMe(NewCameraActivity.this);
+                            finish();
                         }
                     }
                 }
@@ -929,7 +977,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private boolean hasPendingSendMessage()
     {
-        return getIntent().hasExtra(PENDING_SEND_URL);
+        return getIntent().hasExtra(PENDING_SEND_URL) || recordPreviewFile != null;
     }
 
     private void createSurface()
@@ -1246,6 +1294,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     {
         String messageLink = "View the message: http://www.chatwala.com/?" + messageId;
         String smsText = "Chatwala is a new way to have real conversations with friends. " + messageLink;
+        closePreviewOnReturn = true;
         openSmsShare(smsText);
     }
 
