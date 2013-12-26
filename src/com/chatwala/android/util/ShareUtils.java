@@ -1,6 +1,7 @@
 package com.chatwala.android.util;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -25,9 +26,18 @@ public class ShareUtils
     public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
     public static final String WEB_STRING = "http://www.chatwala.com/?";
 
-    public static ChatwalaMessage extractFileAttachment(Activity activity)
+    public static ChatwalaMessage extractFileAttachmentFromUrl(Context context, String walaFileUrl)
     {
-        Uri uri = activity.getIntent().getData();
+        return extractFileAttachment(context, Uri.fromFile(new File(walaFileUrl)));
+    }
+
+    public static ChatwalaMessage extractFileAttachmentFromIntent(Context context, Intent intent)
+    {
+        return extractFileAttachment(context, intent.getData());
+    }
+
+    private static ChatwalaMessage extractFileAttachment(Context activity, Uri uri)
+    {
         if (uri != null)
         {
             try

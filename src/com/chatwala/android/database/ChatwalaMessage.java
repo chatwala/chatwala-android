@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.sql.SQLException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,7 +39,10 @@ public class ChatwalaMessage
     @DatabaseField(foreign = true)
     private MessageMetadata messageMetadata;
 
-    private File messageFile;
+    @DatabaseField
+    private String fileUrl = null;
+
+    private File messageFile = null;
 
     public String getMessageId()
     {
@@ -106,6 +110,11 @@ public class ChatwalaMessage
         messageMetadata.init(metadataJson);
     }
 
+    public void saveMetadata(DatabaseHelper helper) throws SQLException
+    {
+        helper.getMessageMetadataDao().createOrUpdate(messageMetadata);
+    }
+
     public double getStartRecording()
     {
         return messageMetadata != null ? messageMetadata.startRecording : 0;
@@ -118,11 +127,17 @@ public class ChatwalaMessage
 
     public File getMessageFile()
     {
+        if(messageFile == null && fileUrl != null)
+        {
+            messageFile = new File(fileUrl);
+        }
+
         return messageFile;
     }
 
     public void setMessageFile(File messageFile)
     {
         this.messageFile = messageFile;
+        this.fileUrl = messageFile.getAbsolutePath();
     }
 }

@@ -26,6 +26,9 @@ public class GetMessageFileRequest extends BaseGetRequest
     private String messageId;
     private ChatwalaMessage chatwalaMessage;
 
+    private File messageFile;
+    private JSONObject metadataJson;
+
     public GetMessageFileRequest(Context context, String messageId)
     {
         super(context);
@@ -65,13 +68,9 @@ public class GetMessageFileRequest extends BaseGetRequest
 
             ZipUtil.unzipFiles(file, outFolder);
 
-            chatwalaMessage = new ChatwalaMessage();
-            chatwalaMessage.setMessageId(messageId);
-            chatwalaMessage.setSortId(null);
-
-            chatwalaMessage.setMessageFile(new File(outFolder, "video.mp4"));
+            messageFile = new File(outFolder, "video.mp4");
             FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
-            chatwalaMessage.initMetadata(new JSONObject(IOUtils.toString(input)));
+            metadataJson = new JSONObject(IOUtils.toString(input));
 
             input.close();
         }
@@ -95,6 +94,19 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
+        chatwalaMessage = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
+        chatwalaMessage.setMessageFile(messageFile);
+
+        try
+        {
+            chatwalaMessage.initMetadata(metadataJson);
+        }
+        catch (JSONException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        chatwalaMessage.saveMetadata(databaseHelper);
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
         return chatwalaMessage;
     }
