@@ -2,6 +2,10 @@ package com.chatwala.android.database;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,6 +34,11 @@ public class ChatwalaMessage
 
     @DatabaseField
     private String thumbnailUrl;
+
+    @DatabaseField(foreign = true)
+    private MessageMetadata messageMetadata;
+
+    private File messageFile;
 
     public String getMessageId()
     {
@@ -89,5 +98,31 @@ public class ChatwalaMessage
     public void setThumbnailUrl(String thumbnailUrl)
     {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public void initMetadata(JSONObject metadataJson) throws JSONException
+    {
+        messageMetadata = new MessageMetadata();
+        messageMetadata.init(metadataJson);
+    }
+
+    public double getStartRecording()
+    {
+        return messageMetadata != null ? messageMetadata.startRecording : 0;
+    }
+
+    public MessageMetadata copyOrMakeNewMetadata()
+    {
+        return messageMetadata != null ? messageMetadata.copy() : new MessageMetadata();
+    }
+
+    public File getMessageFile()
+    {
+        return messageFile;
+    }
+
+    public void setMessageFile(File messageFile)
+    {
+        this.messageFile = messageFile;
     }
 }

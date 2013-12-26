@@ -21,14 +21,15 @@ import java.sql.SQLException;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 {
     private static final String DATABASE_NAME = "chatwala.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 6;
 
     private static DatabaseHelper instance;
     private final ChatwalaApplication app;
 
     public static final Class[] allTables = new Class[]
             {
-                    ChatwalaMessage.class
+                    ChatwalaMessage.class,
+                    MessageMetadata.class
             };
 
     private DatabaseHelper(Context context)
@@ -101,6 +102,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
     public Dao<ChatwalaMessage, String> getChatwalaMessageDao() throws SQLException
     {
         return getDao(ChatwalaMessage.class);
+    }
+
+    public Dao<MessageMetadata, Integer> getMessageMetadataDao() throws SQLException
+    {
+        return getDao(MessageMetadata.class);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.ChatMessage;
-import com.chatwala.android.MessageMetadata;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.CWLog;
@@ -27,7 +24,6 @@ import java.sql.SQLException;
 public class GetMessageFileRequest extends BaseGetRequest
 {
     private String messageId;
-    private ChatMessage chatMessage;
     private ChatwalaMessage chatwalaMessage;
 
     public GetMessageFileRequest(Context context, String messageId)
@@ -69,12 +65,13 @@ public class GetMessageFileRequest extends BaseGetRequest
 
             ZipUtil.unzipFiles(file, outFolder);
 
-            chatMessage = new ChatMessage();
+            chatwalaMessage = new ChatwalaMessage();
+            chatwalaMessage.setMessageId(messageId);
+            chatwalaMessage.setSortId(null);
 
-            chatMessage.messageVideo = new File(outFolder, "video.mp4");
+            chatwalaMessage.setMessageFile(new File(outFolder, "video.mp4"));
             FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
-            chatMessage.metadata = new MessageMetadata();
-            chatMessage.metadata.init(new JSONObject(IOUtils.toString(input)));
+            chatwalaMessage.initMetadata(new JSONObject(IOUtils.toString(input)));
 
             input.close();
         }
@@ -98,25 +95,13 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
-        chatwalaMessage = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
-
-        if(chatwalaMessage == null)
-        {
-            chatwalaMessage = new ChatwalaMessage();
-            chatwalaMessage.setMessageId(messageId);
-            chatwalaMessage.setSortId(null);
-        }
-
-        chatwalaMessage.setSenderId(chatMessage.metadata.senderId);
-        chatwalaMessage.setRecipientId(AppPrefs.getInstance(context).getUserId());
-
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
         return chatwalaMessage;
     }
 
     @Override
-    protected Object getReturnValue()
+    protected ChatwalaMessage getReturnValue()
     {
-        return chatMessage;
+        return chatwalaMessage;
     }
 }

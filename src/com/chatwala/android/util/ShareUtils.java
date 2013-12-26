@@ -4,8 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
-import com.chatwala.android.ChatMessage;
-import com.chatwala.android.MessageMetadata;
+import com.chatwala.android.database.ChatwalaMessage;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +25,7 @@ public class ShareUtils
     public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
     public static final String WEB_STRING = "http://www.chatwala.com/?";
 
-    public static ChatMessage extractFileAttachment(Activity activity)
+    public static ChatwalaMessage extractFileAttachment(Activity activity)
     {
         Uri uri = activity.getIntent().getData();
         if (uri != null)
@@ -50,18 +49,15 @@ public class ShareUtils
                 outFolder.mkdirs();
 
                 ZipUtil.unzipFiles(file, outFolder);
-                ChatMessage chatMessage = new ChatMessage();
 
-                chatMessage.messageVideo = new File(outFolder, "video.mp4");
+                ChatwalaMessage chatwalaMessage = new ChatwalaMessage();
+                chatwalaMessage.setMessageFile(new File(outFolder, "video.mp4"));
                 FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
-                chatMessage.metadata = new MessageMetadata();
-                chatMessage.metadata.init(new JSONObject(IOUtils.toString(input)));
-
-                chatMessage.probableEmailSource = dirtyEmailMagic(uri.toString());
+                chatwalaMessage.initMetadata(new JSONObject(IOUtils.toString(input)));
 
                 input.close();
 
-                return chatMessage;
+                return chatwalaMessage;
                         /*videoMonitorHandler.postDelayed(new Runnable()
                         {
                             @Override

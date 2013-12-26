@@ -1,5 +1,7 @@
-package com.chatwala.android;
+package com.chatwala.android.database;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,17 +14,40 @@ import java.util.UUID;
  * Time: 1:58 PM
  * To change this template use File | Settings | File Templates.
  */
+@DatabaseTable(tableName = "message_metadata")
 public class MessageMetadata
 {
+    @DatabaseField(generatedId = true)
+    private int id;
+
+    @DatabaseField
     public int threadIndex;
+
+    @DatabaseField
     public String threadId;
+
+    @DatabaseField
     public String messageId;
+
+    @DatabaseField
     public String senderId;
+
+    @DatabaseField
     public String versionId = "1.0";
+
+    @DatabaseField
     public String recipientId;
+
+    @DatabaseField
     public String timestamp = "2013-11-08T13:56:08Z";
+
+    @DatabaseField
     public double startRecording;
 
+    public MessageMetadata()
+    {
+        id = 0;
+    }
 
     public void init(JSONObject json) throws JSONException
     {
@@ -70,6 +95,7 @@ public class MessageMetadata
             sb.append(",").append('"').append(key).append("\": null");
     }
 
+    //todo:  Doesn't look like messageId here is ever used, but it should be being set properly anyway
     public void incrementForNewMessage()
     {
         if(threadId == null)

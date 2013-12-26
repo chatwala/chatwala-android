@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Created with IntelliJ IDEA.
@@ -71,7 +72,7 @@ public class VideoUtils
         return bitmap;
     }
 
-    public static class VideoMetadata
+    public static class VideoMetadata implements Serializable
     {
         public File videoFile;
         public int height;

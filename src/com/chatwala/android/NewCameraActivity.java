@@ -3,6 +3,9 @@ package com.chatwala.android;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -15,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
+import android.support.v4.app.NotificationCompat;
 import android.text.Html;
 import android.util.Log;
 import android.util.Patterns;
@@ -31,10 +35,10 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.database.MessageMetadata;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
-import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
@@ -68,6 +72,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private ChatwalaMessage playbackMessage = null;
     private ChatwalaMessage messageToSendDirectly = null;
     private static final String MESSAGE_ID = "MESSAGE_ID";
+    private static final String PENDING_SEND = "PENDING_SEND";
 
     public enum AppState
     {
@@ -104,7 +109,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     // ************* DANGEROUS STATE *************
     private CameraPreviewView cameraPreviewView;
-    private ChatMessage chatMessage;
+    private ChatwalaMessage incomingMessage;
     private VideoUtils.VideoMetadata chatMessageVideoMetadata;
     private File recordPreviewFile;
     private AppState appState = AppState.Off;
@@ -141,7 +146,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             case ReadyStopped:
                 timerKnob.setVisibility(View.VISIBLE);
-                if (chatMessage != null)
+                if (incomingMessage != null)
                     timerKnob.setImageResource(R.drawable.ic_action_playback_play);
                 else
                     timerKnob.setImageResource(R.drawable.record_circle);
@@ -536,25 +541,27 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             {
                 if (AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
                 {
-                    sendSms(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                    sendSms(recordPreviewFile, incomingMessage, chatMessageVideoMetadata);
                 }
                 else
                 {
-                    prepareEmail(recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+                    prepareEmail(recordPreviewFile, incomingMessage, chatMessageVideoMetadata);
                 }
             }
             else
             {
                 //TODO: move all this to an outside class
-                DataProcessor.runProcess(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        File outFile = buildZipToSend(NewCameraActivity.this, recordPreviewFile, chatMessage, chatMessageVideoMetadata);
-                        BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), playbackMessage.getSenderId()));
-                    }
-                });
+//                DataProcessor.runProcess(new Runnable()
+//                {
+//                    @Override
+//                    public void run()
+//                    {
+//                        File outFile = buildZipToSend(NewCameraActivity.this, recordPreviewFile, chatMessage, chatMessageVideoMetadata);
+//                        BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), playbackMessage.getSenderId()));
+//                    }
+//                });
+
+                Log.d("#########", "playbackMessage was null when starting sharing");
 
                 NewCameraActivity.startMe(NewCameraActivity.this);
                 finish();
@@ -728,7 +735,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         CWLog.b(NewCameraActivity.class, "startPlaybackRecording");
         AndroidUtils.isMainThread();
 
-        int recordingStartMillis = chatMessage == null ? 0 : (int) Math.round(chatMessage.metadata.startRecording * 1000);
+        int recordingStartMillis = incomingMessage == null ? 0 : (int) Math.round(incomingMessage.getStartRecording() * 1000);
         if (messageVideoView != null)
         {
             setAppState(AppState.PlaybackOnly);
@@ -758,7 +765,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         CWLog.b(NewCameraActivity.class, "startRecording");
         AndroidUtils.isMainThread();
 
-        if (chatMessage == null)
+        if (incomingMessage == null)
             hideMessage(bottomFrameMessage);
 
         setAppState(AppState.RecordingLimbo);
@@ -787,7 +794,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void initStartState()
     {
         CWLog.b(NewCameraActivity.class, "initStartState");
-        chatMessage = null;
+        incomingMessage = null;
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
 
@@ -801,12 +808,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void messageLoaded(ChatMessage message)
+    private void messageLoaded(ChatwalaMessage message)
     {
         CWLog.b(NewCameraActivity.class, "messageLoaded");
-        this.chatMessage = message;
+        incomingMessage = message;
 
-        if (chatMessage != null)
+        if (incomingMessage != null)
         {
             messageVideoView = new DynamicTextureVideoView(NewCameraActivity.this, chatMessageVideoMetadata.videoFile, chatMessageVideoMetadata.width, chatMessageVideoMetadata.height, chatMessageVideoMetadata.rotation, new DynamicTextureVideoView.VideoReadyCallback()
             {
@@ -922,7 +929,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void recordingStarted()
             {
-                if (chatMessage == null)
+                if (incomingMessage == null)
                     setAppState(AppState.Recording);
                 else
                     setAppState(AppState.PlaybackRecording);
@@ -1005,10 +1012,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         CWLog.b(NewCameraActivity.class, "tearDownSurface: end");
     }
 
-    class MessageLoaderTask extends AsyncTask<Void, Void, ChatMessage>
+    class MessageLoaderTask extends AsyncTask<Void, Void, ChatwalaMessage>
     {
         @Override
-        protected ChatMessage doInBackground(Void... params)
+        protected ChatwalaMessage doInBackground(Void... params)
         {
             try
             {
@@ -1022,8 +1029,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     playbackMessageId = ShareUtils.getIdFromIntent(getIntent());
                 }
 
-                ChatMessage toReturn = (ChatMessage) new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
-                chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.messageVideo);
+                ChatwalaMessage toReturn = (ChatwalaMessage) new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
+                chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.getMessageFile());
                 playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId);
                 return toReturn;
             }
@@ -1064,13 +1071,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
 
         @Override
-        protected void onPostExecute(ChatMessage chatMessage)
+        protected void onPostExecute(ChatwalaMessage chatMessage)
         {
             messageLoaded(chatMessage);
         }
     }
 
-    private void prepareEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    private void prepareEmail(final File videoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
         Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
         String googleAccountTypeString = "com.google";
@@ -1160,7 +1167,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     }
 
     @SuppressWarnings("unchecked")
-    private void sendEmail(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    private void sendEmail(final File videoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
         if (messageToSendDirectly == null)
         {
@@ -1189,15 +1196,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 protected void onPostExecute(String messageId)
                 {
                     Log.d("######### SENDING MESSAGE ID: ", messageId);
-                    String sendTo = "";
-                    if (originalMessage != null && originalMessage.metadata.senderId != null)
-                        sendTo = originalMessage.metadata.senderId.trim();
-
-                    //Not sure how this would creep in there, but deal with it.
-                    if (sendTo.equalsIgnoreCase("null"))
-                        sendTo = "";
-
-                    String uriText = "mailto:" + sendTo;
+                    String uriText = "mailto:";
 
                     Uri mailtoUri = Uri.parse(uriText);
 
@@ -1241,7 +1240,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void sendSms(final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    private void sendSms(final File videoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
         if (messageToSendDirectly == null)
         {
@@ -1344,7 +1343,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private static File buildZipToSend(NewCameraActivity activity, final File videoFile, final ChatMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    private static File buildZipToSend(NewCameraActivity activity, final File videoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
         File rootDataFolder = CameraUtils.getRootDataFolder(activity);
         File buildDir = new File(rootDataFolder, "chat_" + System.currentTimeMillis());
@@ -1364,20 +1363,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
             File metadataFile = new File(buildDir, "metadata.json");
 
-            MessageMetadata openedMessageMetadata = originalMessage == null ? null : originalMessage.metadata;
-
-            MessageMetadata sendMessageMetadata = openedMessageMetadata == null ? new MessageMetadata() : openedMessageMetadata.copy();
-
+            MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.copyOrMakeNewMetadata() : new MessageMetadata();
             sendMessageMetadata.incrementForNewMessage();
 
-            long startRecordingMillis = openedMessageMetadata == null ? 0 : Math.round(openedMessageMetadata.startRecording * 1000d);
+            long startRecordingMillis = Math.round(originalMessage != null ? originalMessage.getStartRecording() * 1000d : 0);
             long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + VIDEO_PLAYBACK_START_DELAY);
             sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
-
-            String myEmail = AppPrefs.getInstance(activity).getPrefSelectedEmail();
-
-            if (myEmail == null && originalMessage != null)
-                myEmail = originalMessage.probableEmailSource;
 
             sendMessageMetadata.senderId = AppPrefs.getInstance(activity).getUserId();
 
@@ -1440,6 +1431,38 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             replays++;
             recordPreviewVideoView.start();
         }
+    }
+
+    private void makeNotification(final File videoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.icon)
+                        .setContentTitle("My notification")
+                        .setContentText("Hello World!");
+        // Creates an explicit intent for an Activity in your app
+                Intent resultIntent = new Intent(this, NewCameraActivity.class);
+                //resultIntent.putExtra();
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        // Adds the back stack for the Intent (but not the Intent itself)
+                //stackBuilder.addParentStack();
+        // Adds the Intent that starts the Activity to the top of the stack
+                stackBuilder.addNextIntent(resultIntent);
+                PendingIntent resultPendingIntent =
+                        stackBuilder.getPendingIntent(
+                                0,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+                mBuilder.setContentIntent(resultPendingIntent);
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(0, mBuilder.build());
     }
 
     /*private void captureOpeningVolume()
