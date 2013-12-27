@@ -43,6 +43,7 @@ import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
+import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -579,9 +580,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                         {
                             playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(getIntent().getStringExtra(MESSAGE_ID));
                         }
-                        catch (SQLException e)
+                        catch (Exception e)
                         {
-                            throw new RuntimeException(e);
+                            CWLog.softExceptionLog(NewCameraActivity.class, "Error loading playback for share", e);
+                            //On any exception, just continue on without it.  We probably had a problem with the initial video load and the user started a new conversation
+                            playbackMessage = null;
                         }
                     }
 
@@ -1116,19 +1119,27 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             }
             catch (TransientException e)
             {
-                throw new RuntimeException(e);
+                chatMessageVideoMetadata = null;
+                playbackMessage = null;
+                return null;
             }
             catch (PermanentException e)
             {
-                throw new RuntimeException(e);
+                chatMessageVideoMetadata = null;
+                playbackMessage = null;
+                return null;
             }
             catch (IOException e)
             {
-                throw new RuntimeException(e);
+                chatMessageVideoMetadata = null;
+                playbackMessage = null;
+                return null;
             }
             catch (SQLException e)
             {
-                throw new RuntimeException(e);
+                chatMessageVideoMetadata = null;
+                playbackMessage = null;
+                return null;
             }
 //            ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
 //            if (cm != null)
@@ -1153,6 +1164,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         @Override
         protected void onPostExecute(ChatwalaMessage chatMessage)
         {
+            if(chatMessage == null)
+            {
+                Toast.makeText(NewCameraActivity.this, "Unable to load message. Please try again.", Toast.LENGTH_LONG).show();
+                NewCameraActivity.startMe(NewCameraActivity.this);
+                finish();
+            }
             messageLoaded(chatMessage);
         }
     }
