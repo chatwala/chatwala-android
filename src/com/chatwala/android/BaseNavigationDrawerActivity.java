@@ -39,7 +39,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     private ImageView drawerToggleButton;
     private ListView messagesListView;
 
-    private Button settingsButton, addButton;
+    private ImageView settingsButton, addButton;
 
     private final int messagesLoaderId = 0;
 
@@ -133,7 +133,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
         });
 
-        addButton = (Button)findViewById(R.id.add_button);
+        addButton = (ImageView)findViewById(R.id.add_button);
         addButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -143,29 +143,13 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
         });
 
-        settingsButton = (Button)findViewById(R.id.settings_button);
+        settingsButton = (ImageView)findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                AlertDialog.Builder builder = new AlertDialog.Builder(BaseNavigationDrawerActivity.this);
-                builder.setTitle("Choose delivery option");
-
-                ToggleButton toggle = new ToggleButton(BaseNavigationDrawerActivity.this);
-                toggle.setTextOn("SMS");
-                toggle.setTextOff("Email");
-                toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-                {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-                    {
-                        AppPrefs.getInstance(BaseNavigationDrawerActivity.this).setPrefUseSms(isChecked);
-                    }
-                });
-                toggle.setChecked(AppPrefs.getInstance(BaseNavigationDrawerActivity.this).getPrefUseSms());
-                builder.setView(toggle);
-                builder.show();
+                SettingsActivity.startMe(BaseNavigationDrawerActivity.this);
             }
         });
     }

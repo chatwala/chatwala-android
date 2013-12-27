@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ChatwalaTheme" parent="@android:style/Theme.Holo">
+        <item name="android:actionBarStyle">@style/ChatwalaActionBar</item>
+    </style>
+
+    <style name="ChatwalaActionBar" parent="@android:style/Widget.Holo.ActionBar">
+        <item name="android:background">@color/drawer_background</item>
+    </style>
+</resources>

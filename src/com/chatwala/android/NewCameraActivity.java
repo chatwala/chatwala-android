@@ -43,7 +43,6 @@ import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
-import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -294,8 +293,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         buttonDelayHandler = new Handler();
 
-        setMainContent(getLayoutInflater().inflate(R.layout.crop_test, (ViewGroup) getWindow().getDecorView(), false));
-        //setContentView(R.layout.crop_test);
+        setMainContent(getLayoutInflater().inflate(R.layout.activity_main, (ViewGroup) getWindow().getDecorView(), false));
+        //setContentView(R.layout.activity_main);
 
         ChatwalaApplication application = (ChatwalaApplication) getApplication();
         if (!application.isSplashRan())
