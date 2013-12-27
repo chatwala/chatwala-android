@@ -472,6 +472,20 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     }
 
     @Override
+    protected void performAddButtonAction()
+    {
+        if(replyMessageAvailable())
+        {
+            NewCameraActivity.startMe(NewCameraActivity.this);
+            finish();
+        }
+        else
+        {
+            closeDrawer();
+        }
+    }
+
+    @Override
     protected void onPause()
     {
         if (heartbeatTimer != null)

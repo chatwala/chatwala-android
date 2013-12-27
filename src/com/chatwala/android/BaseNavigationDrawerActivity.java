@@ -39,7 +39,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     private ImageView drawerToggleButton;
     private ListView messagesListView;
 
-    private Button settingsButton;
+    private Button settingsButton, addButton;
 
     private final int messagesLoaderId = 0;
 
@@ -130,6 +130,16 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             public void onLoaderReset(Loader<List<ChatwalaMessage>> loader)
             {
                 //Nothing for now.
+            }
+        });
+
+        addButton = (Button)findViewById(R.id.add_button);
+        addButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                performAddButtonAction();
             }
         });
 
@@ -255,4 +265,6 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             return convertView;
         }
     }
+
+    protected abstract void performAddButtonAction();
 }
