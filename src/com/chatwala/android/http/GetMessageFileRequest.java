@@ -1,6 +1,7 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.os.Environment;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.CWLog;
@@ -51,14 +52,7 @@ public class GetMessageFileRequest extends BaseGetRequest
             File file = new File(context.getFilesDir(), "vid_" + messageId + ".wala");
             FileOutputStream os = new FileOutputStream(file);
 
-            byte[] buffer = new byte[4096];
-            int count;
-
-            while ((count = is.read(buffer)) > 0)
-            {
-                os.write(buffer, 0, count);
-                //Log.d("@@@@@@@@@@@@", new String(buffer, "UTF-8"));
-            }
+            IOUtils.copy(is, os);
 
             os.close();
             is.close();
@@ -67,6 +61,8 @@ public class GetMessageFileRequest extends BaseGetRequest
             outFolder.mkdirs();
 
             ZipUtil.unzipFiles(file, outFolder);
+
+//            copyToPublicDrive(outFolder);
 
             messageFile = new File(outFolder, "video.mp4");
             FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
@@ -85,6 +81,22 @@ public class GetMessageFileRequest extends BaseGetRequest
         }
     }
 
+    private void copyToPublicDrive(File outFolder) throws IOException
+    {
+        File[] openedFiles = outFolder.listFiles();
+        File outdir = new File(Environment.getExternalStorageDirectory(), outFolder.getName());
+        outdir.mkdirs();
+
+        for (File openedFile : openedFiles)
+        {
+            FileInputStream input = new FileInputStream(openedFile);
+            FileOutputStream output = new FileOutputStream(new File(outdir, openedFile.getName()));
+            IOUtils.copy(input, output);
+            input.close();
+            output.close();
+        }
+    }
+
     @Override
     protected boolean hasDbOperation()
     {
@@ -95,6 +107,14 @@ public class GetMessageFileRequest extends BaseGetRequest
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
         chatwalaMessage = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
+
+        if(chatwalaMessage == null)
+        {
+            chatwalaMessage = new ChatwalaMessage();
+            chatwalaMessage.setMessageId(messageId);
+            chatwalaMessage.setSortId(null);
+        }
+
         chatwalaMessage.setMessageFile(messageFile);
 
         try
