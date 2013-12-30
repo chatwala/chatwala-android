@@ -3,9 +3,6 @@ package com.chatwala.android;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -18,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
-import android.support.v4.app.NotificationCompat;
 import android.text.Html;
 import android.util.Log;
 import android.util.Patterns;
@@ -73,7 +69,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private ChatwalaMessage playbackMessage = null;
     private ChatwalaMessage messageToSendDirectly = null;
     private static final String MESSAGE_ID = "MESSAGE_ID";
-    private static final String PENDING_SEND_URL = "PENDING_SEND_URL";
+    public static final String PENDING_SEND_URL = "PENDING_SEND_URL";
+    public static final String OPEN_DRAWER = "OPEN_DRAWER";
 
     public enum AppState
     {
@@ -375,6 +372,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             recordPreviewFile = new File(savedInstanceState.getString(PENDING_SEND_URL));
         }
+
+        if(getIntent().hasExtra(OPEN_DRAWER))
+        {
+            openDrawer();
+        }
 //        captureOpeningVolume();
     }
 
@@ -609,7 +611,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 {
                     if (playbackMessage == null && messageToSendDirectly == null)
                     {
-                        makeNotification(outFile);
+                        ChatwalaNotificationManager.makeErrorInitialSendNotification(NewCameraActivity.this, outFile);
                         Toast.makeText(NewCameraActivity.this, "Couldn't contact server.  Please try again later.", Toast.LENGTH_LONG).show();
                         NewCameraActivity.startMe(NewCameraActivity.this);
                         finish();
@@ -1125,10 +1127,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     playbackMessageId = ShareUtils.getIdFromIntent(getIntent());
                 }
 
-                ChatwalaMessage toReturn = (ChatwalaMessage) new GetMessageFileRequest(NewCameraActivity.this, playbackMessageId).execute();
-                chatMessageVideoMetadata = VideoUtils.findMetadata(toReturn.getMessageFile());
                 playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId);
-                return toReturn;
+
+                if(playbackMessage == null)
+                {
+                    playbackMessage = new ChatwalaMessage();
+                    playbackMessage.setMessageId(playbackMessageId);
+                    playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
+                }
+                chatMessageVideoMetadata = VideoUtils.findMetadata(playbackMessage.getMessageFile());
+                return playbackMessage;
             }
             catch (TransientException e)
             {
@@ -1154,24 +1162,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 playbackMessage = null;
                 return null;
             }
-//            ChatMessage cm = ShareUtils.extractFileAttachment(NewCameraActivity.this);
-//            if (cm != null)
-//            {
-//                try
-//                {
-//                    chatMessageVideoMetadata = VideoUtils.findMetadata(cm.messageVideo);
-////                    chatMessageVideoBitmap = VideoUtils.createVideoFrame(cm.messageVideo.getPath(), 0l);
-//                }
-//                catch (IOException e)
-//                {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//            else if(replyMessageAvailable())
-//            {
-//                Toast.makeText(NewCameraActivity.this, R.string.couldnt_find_message, Toast.LENGTH_LONG).show();
-//            }
-//            return cm;
         }
 
         @Override
@@ -1483,30 +1473,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             replays++;
             recordPreviewVideoView.start();
         }
-    }
-
-    private void makeNotification(File pendingMessageFile)
-    {
-        NotificationCompat.Builder mBuilder =
-            new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.icon)
-                    .setContentTitle("Chatwala Error")
-                    .setContentText("There was a problem sending your message. Tap here to retry.")
-                    .setAutoCancel(true);
-        Intent resultIntent = new Intent(this, NewCameraActivity.class);
-        resultIntent.putExtra(PENDING_SEND_URL, pendingMessageFile.getAbsolutePath());
-
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        //stackBuilder.addParentStack();
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, mBuilder.build());
     }
 
     /*private void captureOpeningVolume()

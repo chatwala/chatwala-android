@@ -23,22 +23,21 @@ import java.sql.SQLException;
  */
 public class GetMessageFileRequest extends BaseGetRequest
 {
-    private String messageId;
     private ChatwalaMessage chatwalaMessage;
 
     private File messageFile;
     private JSONObject metadataJson;
 
-    public GetMessageFileRequest(Context context, String messageId)
+    public GetMessageFileRequest(Context context, ChatwalaMessage messageMetadata)
     {
         super(context);
-        this.messageId = messageId;
+        this.chatwalaMessage = messageMetadata;
     }
 
     @Override
     protected String getResourceURL()
     {
-        return "messages/" + messageId;
+        return "messages/" + chatwalaMessage.getMessageId();
     }
 
     @Override
@@ -48,7 +47,7 @@ public class GetMessageFileRequest extends BaseGetRequest
         {
             //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
             InputStream is = new ByteArrayInputStream(response.getBody());
-            File file = new File(context.getFilesDir(), "vid_" + messageId + ".wala");
+            File file = new File(context.getFilesDir(), "vid_" + chatwalaMessage.getMessageId() + ".wala");
             FileOutputStream os = new FileOutputStream(file);
 
             byte[] buffer = new byte[4096];
@@ -63,7 +62,7 @@ public class GetMessageFileRequest extends BaseGetRequest
             os.close();
             is.close();
 
-            File outFolder = new File(context.getFilesDir(), "chat_" + messageId);
+            File outFolder = new File(context.getFilesDir(), "chat_" + chatwalaMessage.getMessageId());
             outFolder.mkdirs();
 
             ZipUtil.unzipFiles(file, outFolder);
@@ -76,7 +75,7 @@ public class GetMessageFileRequest extends BaseGetRequest
         }
         catch (FileNotFoundException e)
         {
-            CWLog.b(ShareUtils.class, messageId);
+            CWLog.b(ShareUtils.class, chatwalaMessage.getMessageId());
             CWLog.softExceptionLog(ShareUtils.class, "Couldn't read file", e);
         }
         catch (IOException e)
@@ -94,7 +93,6 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
-        chatwalaMessage = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
         chatwalaMessage.setMessageFile(messageFile);
 
         try

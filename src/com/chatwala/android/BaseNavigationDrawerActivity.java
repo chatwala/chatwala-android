@@ -70,6 +70,8 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 float toppx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
                 toggleButtonParams.setMargins((int)leftpx, (int)toppx, 0, 0);
                 drawerToggleButton.setLayoutParams(toggleButtonParams);
+
+                ChatwalaNotificationManager.removeNewMessagesNotification(BaseNavigationDrawerActivity.this);
                 DataProcessor.runProcess(new Runnable()
                 {
                     @Override

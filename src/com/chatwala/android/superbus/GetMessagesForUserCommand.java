@@ -34,10 +34,4 @@ public class GetMessagesForUserCommand extends SqliteCommand
     {
         new GetMessagesForUserRequest(context).execute();
     }
-
-    @Override
-    public void onSuccess(Context context)
-    {
-        BroadcastSender.makeNewMessagesBroadcast(context);
-    }
 }

@@ -5,7 +5,10 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
+import com.chatwala.android.ChatwalaNotificationManager;
+import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.http.GetMessageFileRequest;
+import com.chatwala.android.loaders.BroadcastSender;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,13 +19,13 @@ import com.chatwala.android.http.GetMessageFileRequest;
  */
 public class GetMessageFileCommand extends SqliteCommand
 {
-    private String messageId;
+    private ChatwalaMessage messageMetadata;
 
     public GetMessageFileCommand(){}
 
-    public GetMessageFileCommand(String messageId)
+    public GetMessageFileCommand(ChatwalaMessage message)
     {
-        this.messageId = messageId;
+        this.messageMetadata = message;
     }
 
     @Override
@@ -36,7 +39,7 @@ public class GetMessageFileCommand extends SqliteCommand
     {
         if(command instanceof GetMessageFileCommand)
         {
-            return ((GetMessageFileCommand) command).getMessageId().equals(messageId);
+            return ((GetMessageFileCommand) command).getMessageId().equals(getMessageId());
         }
         else
         {
@@ -47,11 +50,18 @@ public class GetMessageFileCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new GetMessageFileRequest(context, messageId).execute();
+        new GetMessageFileRequest(context, messageMetadata).execute();
+    }
+
+    @Override
+    public void onSuccess(Context context)
+    {
+        BroadcastSender.makeNewMessagesBroadcast(context);
+        ChatwalaNotificationManager.makeNewMessagesNotification(context);
     }
 
     public String getMessageId()
     {
-        return messageId;
+        return messageMetadata.getMessageId();
     }
 }

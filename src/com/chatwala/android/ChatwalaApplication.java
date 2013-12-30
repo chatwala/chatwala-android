@@ -1,6 +1,7 @@
 package com.chatwala.android;
 
 import android.app.Application;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import co.touchlab.android.superbus.*;
@@ -12,7 +13,6 @@ import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.GetMessagesForUserCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
 import com.crashlytics.android.Crashlytics;
 
@@ -68,14 +68,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             });
         }
 
-        DataProcessor.runProcess(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                BusHelper.submitCommandSync(ChatwalaApplication.this, new GetMessagesForUserCommand());
-            }
-        });
+        startService(new Intent(ChatwalaApplication.this, FetchMessagesService.class));
     }
 
     public boolean isSplashRan()

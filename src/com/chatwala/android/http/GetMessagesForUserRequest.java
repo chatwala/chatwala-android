@@ -2,11 +2,14 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
+import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
@@ -57,7 +60,6 @@ public class GetMessagesForUserRequest extends BaseGetRequest
             currentMessage.setThumbnailUrl(messageJson.getString("thumbnail"));
             currentMessage.setSortId(i);
             messageArray.add(currentMessage);
-            Log.d("######### FINISHED PARSING: ", currentMessage.getMessageId());
         }
     }
 
@@ -74,18 +76,24 @@ public class GetMessagesForUserRequest extends BaseGetRequest
 
         for(ChatwalaMessage message : messageArray)
         {
-            messageDao.createOrUpdate(message);
+            if(messageDao.idExists(message.getMessageId()))
+            {
+                //If a message was first in the chain, not all of this may be filled out
+                ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
+                updatedMessage.setRecipientId(message.getRecipientId());
+                updatedMessage.setSenderId(message.getSenderId());
+                updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
+                updatedMessage.setSortId(message.getSortId());
+                messageDao.update(updatedMessage);
+            }
+            else
+            {
+                BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+            }
         }
 
-        return messageArray;
-    }
+        BroadcastSender.makeNewMessagesBroadcast(context);
 
-    @Override
-    protected void makeAssociatedRequests() throws PermanentException, TransientException
-    {
-//        for(ChatwalaMessage message : messageArray)
-//        {
-//            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message.getMessageId()));
-//        }
+        return messageArray;
     }
 }
