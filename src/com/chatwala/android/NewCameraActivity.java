@@ -1209,8 +1209,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void sendSms(final String messageId)
     {
-        String messageLink = "View the message: http://www.chatwala.com/#" + messageId;
-        String smsText = "Chatwala is a new way to have real conversations with friends. " + messageLink;
+        String messageLink = "http://www.chatwala.com/#" + messageId;
+        String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
     }
