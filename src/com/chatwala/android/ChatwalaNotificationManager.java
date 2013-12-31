@@ -24,7 +24,7 @@ public class ChatwalaNotificationManager
     {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.icon)
+                        .setSmallIcon(R.drawable.appicon)
                         .setContentTitle("Chatwala")
                         .setContentText("You have been sent a message!")
                         .setAutoCancel(true);
@@ -54,7 +54,7 @@ public class ChatwalaNotificationManager
     {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.icon)
+                        .setSmallIcon(R.drawable.appicon)
                         .setContentTitle("Chatwala Error")
                         .setContentText("There was a problem sending your message. Tap here to retry.")
                         .setAutoCancel(true);
