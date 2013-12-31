@@ -286,13 +286,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         buttonDelayHandler = new Handler();
 
         setMainContent(getLayoutInflater().inflate(R.layout.activity_main, (ViewGroup) getWindow().getDecorView(), false));
-        //setContentView(R.layout.activity_main);
 
         ChatwalaApplication application = (ChatwalaApplication) getApplication();
-        if (!application.isSplashRan())
-        {
-//            runWaterSplash(application);
-        }
 
         cameraPreviewContainer = (CroppingLayout) findViewById(R.id.surface_view_container);
         videoViewContainer = (CroppingLayout) findViewById(R.id.video_view_container);
@@ -307,40 +302,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 triggerButtonAction();
             }
         });
-
-        /*timerButtonContainer.setOnLongClickListener(new View.OnLongClickListener()
-        {
-            @Override
-            public boolean onLongClick(View v)
-            {
-                final View bitDepthView = getLayoutInflater().inflate(R.layout.bit_depth_dialog, null);
-                int prefBitDepth = AppPrefs.getInstance(NewCameraActivity.this).getPrefBitDepth();
-                ((EditText) bitDepthView.findViewById(R.id.bitDepth)).setText(Integer.toString(prefBitDepth));
-                new AlertDialog.Builder(NewCameraActivity.this)
-                        .setView(bitDepthView)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which)
-                            {
-                                String bitDepth = ((EditText) bitDepthView.findViewById(R.id.bitDepth)).getText().toString();
-                                int bd = Integer.parseInt(bitDepth);
-                                if (bd > 10000)
-                                {
-                                    AppPrefs.getInstance(NewCameraActivity.this).setPrefBitDepth(bd);
-                                    dialog.dismiss();
-                                    tearDownSurface();
-                                    createSurface();
-                                }
-                                else
-                                {
-                                    Toast.makeText(NewCameraActivity.this, "Bit depth must be greater than 10000", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        }).show();
-                return false;
-            }
-        });*/
 
         topFrameMessage = findViewById(R.id.topFrameMessage);
         topFrameMessageText = (TextView) findViewById(R.id.topFrameMessageText);
@@ -454,7 +415,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             setAppState(AppState.PreviewLoading);
             if(recordPreviewFile == null)
             {
-                ChatwalaMessage savedMessage = ShareUtils.extractFileAttachmentFromUrl(NewCameraActivity.this, getIntent().getStringExtra(PENDING_SEND_URL));
+                ChatwalaMessage savedMessage = ShareUtils.extractFileAttachment(NewCameraActivity.this, getIntent().getStringExtra(PENDING_SEND_URL));
                 getIntent().removeExtra(PENDING_SEND_URL);
                 recordPreviewFile = savedMessage.getMessageFile();
             }
@@ -986,7 +947,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private boolean replyMessageAvailable()
     {
-        return getIntent().hasExtra(MESSAGE_ID) || getIntent().getData() != null;
+        return getIntent().hasExtra(MESSAGE_ID);
     }
 
     private boolean hasPendingSendMessage()

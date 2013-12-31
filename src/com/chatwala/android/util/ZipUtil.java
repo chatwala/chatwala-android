@@ -42,7 +42,6 @@ public class ZipUtil
     {
         final ZipFile zipFile = new ZipFile(inZip);
         final Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        ZipInputStream zipInput = null;
 
         while (entries.hasMoreElements())
         {

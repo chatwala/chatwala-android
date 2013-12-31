@@ -27,18 +27,10 @@ public class ShareUtils
     public static final String WEB_STRING = "http://www.chatwala.com/?";
     public static final String ALT_WEB_STRING = "http://www.chatwala.com/#";
 
-    public static ChatwalaMessage extractFileAttachmentFromUrl(Context context, String walaFileUrl)
+    public static ChatwalaMessage extractFileAttachment(Context activity, String walaFileUrl)
     {
-        return extractFileAttachment(context, Uri.fromFile(new File(walaFileUrl)));
-    }
+        Uri uri = Uri.fromFile(new File(walaFileUrl));
 
-    public static ChatwalaMessage extractFileAttachmentFromIntent(Context context, Intent intent)
-    {
-        return extractFileAttachment(context, intent.getData());
-    }
-
-    private static ChatwalaMessage extractFileAttachment(Context activity, Uri uri)
-    {
         if (uri != null)
         {
             try
@@ -69,14 +61,6 @@ public class ShareUtils
                 input.close();
 
                 return chatwalaMessage;
-                        /*videoMonitorHandler.postDelayed(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                triggerButtonAction();
-                            }
-                        }, 2000);*/
             }
             catch (FileNotFoundException e)
             {
@@ -131,51 +115,4 @@ public class ShareUtils
         else
             throw new RuntimeException("Invalid message id from intent");
     }
-
-    /*public static Wala extractAttachment(Intent intent, Context context)
-    {
-        Uri uri = intent.getData();
-        if (uri != null)
-        {
-            try
-            {
-                InputStream is = context.getContentResolver().openInputStream(uri);
-                File file = new File(context.getFilesDir(), "vid_" + System.currentTimeMillis() + ".wala");
-                FileOutputStream os = new FileOutputStream(file);
-
-                byte[] buffer = new byte[4096];
-                int count;
-
-                while ((count = is.read(buffer)) > 0)
-                    os.write(buffer, 0, count);
-
-                os.close();
-                is.close();
-
-                File outFolder = new File(context.getFilesDir(), "chat_" + System.currentTimeMillis());
-                outFolder.mkdirs();
-
-                ZipUtil.unzipFiles(file, outFolder);
-
-                Wala wala = new Wala();
-                wala.video = new File(outFolder, "video.mp4");
-                FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
-                JSONObject jsonObject = new JSONObject(IOUtils.toString(input));
-                input.close();
-                wala.startRecording = Math.round(jsonObject.getDouble("start_recording") * 1000d);
-
-                return wala;
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-            catch (JSONException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return null;
-    }*/
 }
