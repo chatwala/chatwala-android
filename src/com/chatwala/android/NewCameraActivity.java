@@ -1,8 +1,5 @@
 package com.chatwala.android;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -17,7 +14,6 @@ import android.os.Handler;
 import android.provider.Telephony;
 import android.text.Html;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -48,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -638,7 +633,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                             }
                             else
                             {
-                                prepareEmail(messageId);
+                                sendEmail(messageId);
                             }
                         }
                         else
@@ -1177,62 +1172,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void prepareEmail(final String messageId)
-    {
-        Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
-        String googleAccountTypeString = "com.google";
-        Account[] accounts = AccountManager.get(NewCameraActivity.this).getAccounts();
-        final ArrayList<String> emailList = new ArrayList<String>();
-        for (Account account : accounts)
-        {
-            if (emailPattern.matcher(account.name).matches() && account.type.startsWith(googleAccountTypeString))
-            {
-                emailList.add(account.name);
-            }
-        }
-
-        String savedEmail = AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail();
-        if (savedEmail != null && emailList.contains(savedEmail))
-        {
-            sendEmail(messageId);
-        }
-        else
-        {
-            if (emailList.size() > 1)
-            {
-                AlertDialog.Builder builder = new AlertDialog.Builder(NewCameraActivity.this);
-                builder.setTitle("Select your account");
-                builder.setSingleChoiceItems(emailList.toArray(new String[emailList.size()]), 0, null);
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(((AlertDialog) dialog).getListView().getCheckedItemPosition()));
-                        sendEmail(messageId);
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                        dialog.dismiss();
-                    }
-                });
-                builder.show();
-            }
-            else
-            {
-                if (emailList.size() == 1)
-                {
-                    AppPrefs.getInstance(NewCameraActivity.this).setPrefSelectedEmail(emailList.get(0));
-                }
-                sendEmail(messageId);
-            }
-        }
-    }
-
     private void prepManualSend()
     {
         DataProcessor.runProcess(new Runnable()
@@ -1273,28 +1212,25 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         String uriText = "mailto:";
 
         Uri mailtoUri = Uri.parse(uriText);
+        String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
 
         boolean gmailOk = false;
 
-        if (AppPrefs.getInstance(NewCameraActivity.this).getPrefSelectedEmail() != null)
-        {
-            Intent gmailIntent = new Intent();
-            gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
-            gmailIntent.setData(mailtoUri);
-            gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-            String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
-            gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+        Intent gmailIntent = new Intent();
+        gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
+        gmailIntent.setData(mailtoUri);
+        gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
+        gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
 
-            try
-            {
-                closePreviewOnReturn = true;
-                startActivity(gmailIntent);
-                gmailOk = true;
-            }
-            catch (ActivityNotFoundException ex)
-            {
-                CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
-            }
+        try
+        {
+            closePreviewOnReturn = true;
+            startActivity(gmailIntent);
+            gmailOk = true;
+        }
+        catch (ActivityNotFoundException ex)
+        {
+            CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
         }
 
         if (!gmailOk)
@@ -1303,7 +1239,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
             intent.setData(mailtoUri);
             intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-            String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
             intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
 
             startActivity(Intent.createChooser(intent, "Send email..."));
