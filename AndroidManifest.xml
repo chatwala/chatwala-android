@@ -36,19 +36,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <intent-filter>
-                <data android:scheme="http" android:host="www.chatwala.com" android:pathPrefix="/?"/>
+                <data android:scheme="http" android:pathPattern="www.chatwala.com/?"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <intent-filter>
-                <data android:scheme="http" android:host="www.chatwala.com" android:pathPrefix="/#"/>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-            <intent-filter>
-                <data android:scheme="chatwala"/>
+                <data android:scheme="http" android:pathPattern="www.chatwala.com/#"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
