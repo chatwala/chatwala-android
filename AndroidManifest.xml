@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="625"
-          android:versionName="0.6.25">
+          android:versionCode="626"
+          android:versionName="0.6.26">
     <uses-sdk android:minSdkVersion="15"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -36,7 +36,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <intent-filter>
-                <data android:scheme="http" android:pathPattern="www.chatwala.com/?"/>
+                <data android:scheme="http" android:pathPattern="chatwala.com/#"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

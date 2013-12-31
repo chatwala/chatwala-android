@@ -24,8 +24,8 @@ public class ShareUtils
 
     public static final String EMAIL_CONTENT_PREFIX = "content://gmail-ls/";
     public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
-    public static final String WEB_STRING = "http://www.chatwala.com/?";
-    public static final String ALT_WEB_STRING = "http://www.chatwala.com/#";
+    public static final String WEB_STRING = "http://www.chatwala.com/#";
+    public static final String ALT_WEB_STRING = "http://chatwala.com/#";
 
     public static ChatwalaMessage extractFileAttachment(Context activity, String walaFileUrl)
     {
