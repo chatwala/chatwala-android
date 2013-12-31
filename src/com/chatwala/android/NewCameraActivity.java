@@ -924,6 +924,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
         else
         {
+            removeWaterSplash();
             showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.basic_instructions);
         }
 
@@ -1247,7 +1248,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void sendSms(final String messageId)
     {
-        String messageLink = "View the message: http://www.chatwala.com/?" + messageId;
+        String messageLink = "View the message: http://www.chatwala.com/#" + messageId;
         String smsText = "Chatwala is a new way to have real conversations with friends. " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
