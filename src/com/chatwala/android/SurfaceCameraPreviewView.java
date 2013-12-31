@@ -1,5 +1,6 @@
 package com.chatwala.android;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
@@ -7,6 +8,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.MessageDataStore;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,7 +164,7 @@ public class SurfaceCameraPreviewView extends SurfaceView implements SurfaceHold
             mediaRecorder.setOrientationHint(mrRotate);
 
         // Step 4: Set output file
-        recordingFile = new File(CameraUtils.getRootDataFolder(getContext()), "vid_" + System.currentTimeMillis() + ".mp4");
+        recordingFile = new File(MessageDataStore.getTempDirectory(((Activity)getContext()).getApplication()), "vid_" + System.currentTimeMillis() + ".mp4");
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output

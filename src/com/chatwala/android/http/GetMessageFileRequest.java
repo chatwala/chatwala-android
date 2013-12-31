@@ -1,10 +1,13 @@
 package com.chatwala.android.http;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Environment;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ShareUtils;
 import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
@@ -48,7 +51,7 @@ public class GetMessageFileRequest extends BaseGetRequest
         {
             //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
             InputStream is = new ByteArrayInputStream(response.getBody());
-            File file = new File(context.getFilesDir(), "vid_" + chatwalaMessage.getMessageId() + ".wala");
+            File file = new File(MessageDataStore.getMessageStorageDirectory(((Activity)context).getApplication()), "vid_" + chatwalaMessage.getMessageId() + ".wala");
             FileOutputStream os = new FileOutputStream(file);
 
             IOUtils.copy(is, os);
@@ -56,7 +59,7 @@ public class GetMessageFileRequest extends BaseGetRequest
             os.close();
             is.close();
 
-            File outFolder = new File(context.getFilesDir(), "chat_" + chatwalaMessage.getMessageId());
+            File outFolder = new File(MessageDataStore.getMessageStorageDirectory(((Activity)context).getApplication()), "chat_" + chatwalaMessage.getMessageId());
             outFolder.mkdirs();
 
             ZipUtil.unzipFiles(file, outFolder);

@@ -27,7 +27,7 @@ public class MessageDataStore
     public static boolean isEnoughSpace(Application application)
     {
 //        File file = messageStorageDirectory(application);
-        long megAvailable = megsAvailable();
+        long megAvailable = megsAvailable(application);
 
         return megAvailable > MIN_SPACE_MEGS;
     }
@@ -40,7 +40,7 @@ public class MessageDataStore
      */
     public static boolean checkClearStore(Application application) throws IOException
     {
-        long spaceLeft = megsAvailable();
+        long spaceLeft = megsAvailable(application);
         long spaceUsed = megsUsed(application);
 
         if(spaceLeft < MAX_SPACE_MEGS)
@@ -54,13 +54,13 @@ public class MessageDataStore
 
     public static File findMessageInLocalStore(Application application, String id)
     {
-        File dir = messageStorageDirectory(application);
+        File dir = getMessageStorageDirectory(application);
         return new File(dir, "vid_"+ id +".wala");
     }
 
     private static long megsUsed(Application application)
     {
-        File videosDir = messageStorageDirectory(application);
+        File videosDir = getMessageStorageDirectory(application);
 
         long total = 0;
         File[] files = videosDir.listFiles();
@@ -75,7 +75,7 @@ public class MessageDataStore
 
     private static void trimOld(Application application) throws IOException
     {
-        File videoDir = messageStorageDirectory(application);
+        File videoDir = getMessageStorageDirectory(application);
         File[] files = videoDir.listFiles();
         Arrays.sort(files, new Comparator<File>()
         {
@@ -96,9 +96,9 @@ public class MessageDataStore
         }
     }
 
-    private static long megsAvailable()
+    private static long megsAvailable(Application application)
     {
-        StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+        StatFs stat = new StatFs(getMessageStorageDirectory(application).getPath());
         long megAvailable;
         if (Build.VERSION.SDK_INT > 18)
         {
@@ -113,8 +113,24 @@ public class MessageDataStore
         return megAvailable;
     }
 
-    public static File messageStorageDirectory(Application application)
+    public static File getTempDirectory(Application application)
     {
-        return new File(application.getFilesDir(), "messages");
+        File dir = new File(application.getFilesDir(), "temp");
+        dir.mkdir();
+        return dir;
+    }
+
+    public static File getMessageStorageDirectory(Application application)
+    {
+        File dir = new File(application.getFilesDir(), "messages");
+        dir.mkdir();
+        return dir;
+    }
+
+    public static File getOutboxDirectory(Application application)
+    {
+        File dir = new File(application.getFilesDir(), "outbox");
+        dir.mkdir();
+        return dir;
     }
 }

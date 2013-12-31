@@ -27,7 +27,7 @@ public class ShareUtils
     public static final String WEB_STRING = "http://www.chatwala.com/#";
     public static final String ALT_WEB_STRING = "http://chatwala.com/#";
 
-    public static ChatwalaMessage extractFileAttachment(Context activity, String walaFileUrl)
+    public static ChatwalaMessage extractFileAttachment(Activity activity, String walaFileUrl)
     {
         Uri uri = Uri.fromFile(new File(walaFileUrl));
 
@@ -36,7 +36,7 @@ public class ShareUtils
             try
             {
                 InputStream is = activity.getContentResolver().openInputStream(uri);
-                File file = new File(activity.getFilesDir(), "vid_" + System.currentTimeMillis() + ".wala");
+                File file = new File(MessageDataStore.getTempDirectory(activity.getApplication()), "vid_" + System.currentTimeMillis() + ".wala");
                 FileOutputStream os = new FileOutputStream(file);
 
                 byte[] buffer = new byte[4096];
@@ -48,7 +48,7 @@ public class ShareUtils
                 os.close();
                 is.close();
 
-                File outFolder = new File(activity.getFilesDir(), "chat_" + System.currentTimeMillis());
+                File outFolder = new File(MessageDataStore.getTempDirectory(activity.getApplication()), "chat_" + System.currentTimeMillis());
                 outFolder.mkdirs();
 
                 ZipUtil.unzipFiles(file, outFolder);

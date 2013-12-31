@@ -19,14 +19,6 @@ import java.util.List;
  */
 public class CameraUtils
 {
-    public static File getRootDataFolder(Context context)
-    {
-        File filesDir = context.getFilesDir();
-        File video_data = new File(filesDir, "video_data");
-        video_data.mkdirs();
-        return video_data;
-    }
-
     public static int getFrontCameraId() throws Exception
     {
         int numberOfCameras = Camera.getNumberOfCameras();
