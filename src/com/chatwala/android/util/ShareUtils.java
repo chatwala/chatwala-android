@@ -106,6 +106,7 @@ public class ShareUtils
     public static String getIdFromIntent(Intent callingIntent)
     {
         String uri = callingIntent.getDataString();
+        CWLog.logShareLink(uri);
         if(uri.startsWith(WEB_STRING))
             return uri.replace(WEB_STRING, "");
         else if(uri.startsWith(ALT_WEB_STRING))

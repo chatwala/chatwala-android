@@ -22,6 +22,7 @@ public class CWLog
     private static final String VIDEO_WIDTH = "VIDEO_WIDTH";
     private static final String VIDEO_HEIGHT = "VIDEO_HEIGHT";
     private static final String FRAMERATE = "FRAMERATE";
+    private static final String SHARE_LINK = "SHARE_LINK";
 
     public static void i(Class cl, String s)
     {
@@ -81,5 +82,10 @@ public class CWLog
     public static void logFramerate(int framerate)
     {
         Crashlytics.setInt(FRAMERATE, framerate);
+    }
+
+    public static void logShareLink(String link)
+    {
+        Crashlytics.setString(SHARE_LINK, link);
     }
 }
