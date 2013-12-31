@@ -22,7 +22,7 @@ public class FetchMessagesService extends Service
 {
     private Timer timer;
     private final long delay = 1000;
-    private final long period = 1000 * 60;//1000 * 60 * 60 * 2;
+    private final long period = 1000 * 60 * 60 * 2;
 
     @Override
     public IBinder onBind(Intent intent)
