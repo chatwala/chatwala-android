@@ -1212,7 +1212,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         String uriText = "mailto:";
 
         Uri mailtoUri = Uri.parse(uriText);
-        String messageLink = "<a href=\"http://www.chatwala.com/?" + messageId + "\">View the message</a>.";
+        String messageLink = "<a href=\"http://www.chatwala.com/#" + messageId + "\">View the message</a>.";
 
         boolean gmailOk = false;
 

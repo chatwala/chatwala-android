@@ -25,6 +25,7 @@ public class ShareUtils
     public static final String EMAIL_CONTENT_PREFIX = "content://gmail-ls/";
     public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
     public static final String WEB_STRING = "http://www.chatwala.com/?";
+    public static final String ALT_WEB_STRING = "http://www.chatwala.com/#";
 
     public static ChatwalaMessage extractFileAttachmentFromUrl(Context context, String walaFileUrl)
     {
@@ -123,6 +124,8 @@ public class ShareUtils
         String uri = callingIntent.getDataString();
         if(uri.startsWith(WEB_STRING))
             return uri.replace(WEB_STRING, "");
+        else if(uri.startsWith(ALT_WEB_STRING))
+            return uri.replace(ALT_WEB_STRING, "");
         else if(uri.startsWith(MARKET_STRING))
             return uri.replace(MARKET_STRING, "");
         else
