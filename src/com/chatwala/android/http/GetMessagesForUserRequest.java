@@ -53,6 +53,7 @@ public class GetMessagesForUserRequest extends BaseGetRequest
         for(int i=0; i < messagesJsonArray.length(); i++)
         {
             JSONObject messageJson = messagesJsonArray.getJSONObject(i);
+            Log.d("#######", "Message:" + messageJson.toString());
             ChatwalaMessage currentMessage = new ChatwalaMessage();
             currentMessage.setMessageId(messageJson.getString("message_id"));
             currentMessage.setRecipientId(messageJson.getString("recipient_id"));

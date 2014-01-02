@@ -145,9 +145,8 @@ public class MessageDataStore
         }
         else
         {
-            CWLog.i(MessageDataStore.class, "Deleting the two oldest messages");
+            CWLog.i(MessageDataStore.class, "Deleting the oldest message");
             files[0].delete();
-            files[1].delete();
         }
     }
 
