@@ -140,4 +140,10 @@ public class ChatwalaMessage
         this.messageFile = messageFile;
         this.fileUrl = messageFile.getAbsolutePath();
     }
+
+    public void clearMessageFile()
+    {
+        this.messageFile = null;
+        this.fileUrl = null;
+    }
 }

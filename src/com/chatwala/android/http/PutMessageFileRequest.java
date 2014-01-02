@@ -2,10 +2,13 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
+import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.database.DatabaseHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -72,5 +75,23 @@ public class PutMessageFileRequest extends BasePutRequest
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected boolean hasDbOperation()
+    {
+        return true;
+    }
+
+    @Override
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    {
+        ChatwalaMessage message = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
+        message.clearMessageFile();
+        databaseHelper.getChatwalaMessageDao().update(message);
+
+        new File(localMessageUrl).delete();
+
+        return null;
     }
 }

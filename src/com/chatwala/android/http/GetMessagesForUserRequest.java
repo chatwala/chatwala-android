@@ -77,7 +77,8 @@ public class GetMessagesForUserRequest extends BaseGetRequest
 
         for(ChatwalaMessage message : messageArray)
         {
-            if(messageDao.idExists(message.getMessageId()))
+            ChatwalaMessage check = messageDao.queryForId(message.getMessageId());
+            if(check != null && check.getMessageFile() != null)
             {
                 //If a message was first in the chain, not all of this may be filled out
                 ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
