@@ -1082,7 +1082,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                 playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId);
 
-                if(playbackMessage == null)
+                if(playbackMessage == null || playbackMessage.getMessageFile() == null)
                 {
                     playbackMessage = new ChatwalaMessage();
                     playbackMessage.setMessageId(playbackMessageId);
