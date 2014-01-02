@@ -54,10 +54,9 @@ public class MessageDataStore
             return false;
         }
     }
-    //public static boolean isEnoughSpace(Application application)
+
     public static boolean isEnoughSpace()
     {
-//        File file = messageStorageDirectory(application);
         long megAvailable = megsAvailable();
         CWLog.i(MessageDataStore.class, "Mb Available: " + megAvailable);
         Log.d("########", "Mb Available: " + megAvailable);
@@ -69,7 +68,6 @@ public class MessageDataStore
      * @return boolean true if trimming was performed.
      * @throws IOException
      */
-    //public static boolean checkClearStore(Application application) throws IOException
     public static boolean checkClearStore() throws IOException
     {
         long spaceUsed = megsUsed();
@@ -107,18 +105,13 @@ public class MessageDataStore
         }
     }
 
-    //public static File findMessageInLocalStore(Application application, String id)
     public static File findMessageInLocalStore(String id)
     {
-        //File dir = getMessageStorageDirectory(application);
-        //return new File(dir, MessageDataStore.WALA_FILE_PREFIX+ id +MessageDataStore.WALA_FILE_EXTENSION);
         return new File(messageDir, MessageDataStore.WALA_FILE_PREFIX+ id +MessageDataStore.WALA_FILE_EXTENSION);
     }
 
-    //private static long megsUsed(Application application)
     private static long megsUsed()
     {
-        //File videosDir = getMessageStorageDirectory(application);
         File videosDir = messageDir;
 
         long total = 0;
@@ -126,16 +119,15 @@ public class MessageDataStore
 
         for (File file : files)
         {
-            total += file.getTotalSpace();
+            Log.d("#######", "File: " + file.getPath() + " Size: " + file.length());
+            total += file.length();
         }
 
         return total / BYTES_IN_MEG;
     }
 
-    //private static void trimOld(Application application) throws IOException
     private static void trimOld(long spaceLeft) throws IOException
     {
-        //File videoDir = getMessageStorageDirectory(application);
         File videoDir = messageDir;
         File[] files = videoDir.listFiles();
         Arrays.sort(files, new Comparator<File>()
@@ -159,10 +151,8 @@ public class MessageDataStore
         }
     }
 
-    //private static long megsAvailable(Application application)
     private static long megsAvailable()
     {
-        //StatFs stat = new StatFs(getMessageStorageDirectory(application).getPath());
         StatFs stat = new StatFs(messageDir.getPath());
         long megAvailable;
         if (Build.VERSION.SDK_INT > 18)
@@ -189,45 +179,33 @@ public class MessageDataStore
         outboxDir.mkdir();
     }
 
-    //public static File makeTempWalaFile(Application application)
     public static File makeTempWalaFile()
     {
-        //return makeWalaFile(MessageDataStore.getTempDirectory(application));
         return makeWalaFile(tempDir);
     }
 
-    //public static File makeMessageWalaFile(Application application)
     public static File makeMessageWalaFile()
     {
-        //return makeWalaFile(MessageDataStore.getMessageStorageDirectory(application));
         return makeWalaFile(messageDir);
     }
 
-    //public static File makeTempVideoFile(Application application)
     public static File makeTempVideoFile()
     {
-        //return new File(getTempDirectory(application), WALA_FILE_PREFIX + System.currentTimeMillis() + MP4_FILE_EXTENSION);
         return new File(tempDir, WALA_FILE_PREFIX + System.currentTimeMillis() + MP4_FILE_EXTENSION);
     }
 
-    //public static File makeTempChatDir(Application application)
     public static File makeTempChatDir()
     {
-        //return makeChatDir(getTempDirectory(application));
         return makeChatDir(tempDir);
     }
 
-    //public static File makeMessageChatDir(Application application)
     public static File makeMessageChatDir()
     {
-        //return makeChatDir(getMessageStorageDirectory(application));
         return makeChatDir(messageDir);
     }
 
-    //public static File makeOutboxWalaFile(Application application)
     public static File makeOutboxWalaFile()
     {
-        //File shareDir = new File(getOutboxDirectory(application), SHARE_DIR_PREFIX + System.currentTimeMillis());
         File shareDir = new File(outboxDir , SHARE_DIR_PREFIX + System.currentTimeMillis());
         shareDir.mkdir();
         return new File(shareDir, PREPPED_WALA_FILE);
