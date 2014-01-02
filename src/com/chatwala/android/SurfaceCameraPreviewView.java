@@ -164,7 +164,7 @@ public class SurfaceCameraPreviewView extends SurfaceView implements SurfaceHold
             mediaRecorder.setOrientationHint(mrRotate);
 
         // Step 4: Set output file
-        recordingFile = new File(MessageDataStore.getTempDirectory(((Activity)getContext()).getApplication()), "vid_" + System.currentTimeMillis() + ".mp4");
+        recordingFile = MessageDataStore.makeTempVideoFile();
         mediaRecorder.setOutputFile(recordingFile.getPath());
 
         // Step 5: Set the preview output

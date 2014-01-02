@@ -66,24 +66,24 @@ public class ZipUtil
         zipFile.close();
     }
 
-    public static File buildZipToSend(NewCameraActivity activity, final File videoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    public static File buildZipToSend(NewCameraActivity activity, final File incomingVideoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
     {
-        File buildDir = new File(MessageDataStore.getTempDirectory(activity.getApplication()), "chat_" + System.currentTimeMillis());
+        File buildDir = MessageDataStore.makeTempChatDir();
         buildDir.mkdirs();
 
-        File walaFile = new File(buildDir, "video.mp4");
+        File preppedVideoFile = MessageDataStore.makeVideoFile(buildDir);
 
         File outZip;
         try
         {
-            FileOutputStream output = new FileOutputStream(walaFile);
-            FileInputStream input = new FileInputStream(videoFile);
+            FileOutputStream output = new FileOutputStream(preppedVideoFile);
+            FileInputStream input = new FileInputStream(incomingVideoFile);
             IOUtils.copy(input, output);
 
             input.close();
             output.close();
 
-            File metadataFile = new File(buildDir, "metadata.json");
+            File metadataFile = MessageDataStore.makeMetadataFile(buildDir);
 
             MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.copyOrMakeNewMetadata() : new MessageMetadata();
             sendMessageMetadata.incrementForNewMessage();
@@ -100,13 +100,10 @@ public class ZipUtil
 
             fileWriter.close();
 
-            File shareDir = new File(MessageDataStore.getOutboxDirectory(activity.getApplication()), "sharefile_" + System.currentTimeMillis());
-            shareDir.mkdirs();
-            outZip = new File(shareDir, "chat.wala");
-
+            outZip = MessageDataStore.makeOutboxWalaFile();
             zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
 
-            videoFile.delete();
+            incomingVideoFile.delete();
             for(File file : buildDir.listFiles())
             {
                 file.delete();

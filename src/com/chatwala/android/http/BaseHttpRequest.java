@@ -44,15 +44,15 @@ public abstract class BaseHttpRequest<T>
     public T execute() throws TransientException, PermanentException
     {
         BusHttpClient client = new BusHttpClient(API_PATH_PROD);
-        AbstractRequestLogger logger = new AbstractRequestLogger()
-        {
-            @Override
-            public void log(String msg)
-            {
-
-            }
-        };
-        client.setRequestLogger(logger);
+//        AbstractRequestLogger logger = new AbstractRequestLogger()
+//        {
+//            @Override
+//            public void log(String msg)
+//            {
+//
+//            }
+//        };
+//        client.setRequestLogger(logger);
 
         final HttpResponse httpResponse = makeRequest(client);
 

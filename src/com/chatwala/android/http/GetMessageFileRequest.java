@@ -4,8 +4,13 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Environment;
+import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ShareUtils;
@@ -51,7 +56,7 @@ public class GetMessageFileRequest extends BaseGetRequest
         {
             //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
             InputStream is = new ByteArrayInputStream(response.getBody());
-            File file = new File(MessageDataStore.getMessageStorageDirectory(((Activity)context).getApplication()), "vid_" + chatwalaMessage.getMessageId() + ".wala");
+            File file = MessageDataStore.makeMessageWalaFile();
             FileOutputStream os = new FileOutputStream(file);
 
             IOUtils.copy(is, os);
@@ -59,15 +64,15 @@ public class GetMessageFileRequest extends BaseGetRequest
             os.close();
             is.close();
 
-            File outFolder = new File(MessageDataStore.getMessageStorageDirectory(((Activity)context).getApplication()), "chat_" + chatwalaMessage.getMessageId());
+            File outFolder = MessageDataStore.makeMessageChatDir();
             outFolder.mkdirs();
 
             ZipUtil.unzipFiles(file, outFolder);
 
 //            copyToPublicDrive(outFolder);
 
-            messageFile = new File(outFolder, "video.mp4");
-            FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
+            messageFile = MessageDataStore.makeVideoFile(outFolder);
+            FileInputStream input = new FileInputStream(MessageDataStore.makeMetadataFile(outFolder));
             metadataJson = new JSONObject(IOUtils.toString(input));
 
             input.close();
@@ -128,5 +133,11 @@ public class GetMessageFileRequest extends BaseGetRequest
     protected ChatwalaMessage getReturnValue()
     {
         return chatwalaMessage;
+    }
+
+    @Override
+    protected void makeAssociatedRequests() throws PermanentException, TransientException
+    {
+        BusHelper.submitCommandSync(context, new ClearStoreCommand());
     }
 }

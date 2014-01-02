@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.util.Log;
+import com.chatwala.android.ChatwalaApplication;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,47 +22,104 @@ import java.util.Comparator;
  */
 public class MessageDataStore
 {
-    public static final int MIN_SPACE_MEGS = 5;
-    public static final int MAX_SPACE_MEGS = 500;
-    public static final int BYTES_IN_MEG = 1048576;
+    private static final int MIN_SPACE_MEGS = 5;
+    private static final int MAX_SPACE_MEGS = 500;
+    private static final int BYTES_IN_MEG = 1048576;
+    private static final int MIN_INBOX_MESSAGES = 5;
 
-    public static boolean isEnoughSpace(Application application)
+    private static ChatwalaApplication chatwalaApplication = null;
+    private static File tempDir, messageDir, outboxDir;
+
+    private static final String WALA_FILE_PREFIX = "vid_";
+    private static final String CHAT_DIR_PREFIX = "chat_";
+    private static final String SHARE_DIR_PREFIX = "sharefile_";
+    private static final String WALA_FILE_EXTENSION = ".wala";
+    private static final String MP4_FILE_EXTENSION = ".mp4";
+
+    private static final String PREPPED_WALA_FILE = "chat.wala";
+    private static final String PREPPED_METADATA_FILE = "metadata.json";
+    private static final String PREPPED_VIDEO_FILE = "video.mp4";
+
+    public static boolean init(ChatwalaApplication application)
+    {
+        try
+        {
+            chatwalaApplication = application;
+            initDataStore(chatwalaApplication);
+            return isEnoughSpace();
+        }
+        catch (Exception e)
+        {
+            CWLog.softExceptionLog(MessageDataStore.class, "Problem initializing DataStore", e);
+            return false;
+        }
+    }
+    //public static boolean isEnoughSpace(Application application)
+    public static boolean isEnoughSpace()
     {
 //        File file = messageStorageDirectory(application);
-        long megAvailable = megsAvailable(application);
-
+        long megAvailable = megsAvailable();
+        CWLog.i(MessageDataStore.class, "Mb Available: " + megAvailable);
+        Log.d("########", "Mb Available: " + megAvailable);
         return megAvailable > MIN_SPACE_MEGS;
     }
 
     /**
      * Mixed messages with exceptions and boolean.  Need to pick a lane.
-     * @param application
-     * @return
+     * @return boolean true if trimming was performed.
      * @throws IOException
      */
-    public static boolean checkClearStore(Application application) throws IOException
+    //public static boolean checkClearStore(Application application) throws IOException
+    public static boolean checkClearStore() throws IOException
     {
-        long spaceLeft = megsAvailable(application);
-        long spaceUsed = megsUsed(application);
+        long spaceUsed = megsUsed();
+        long spaceLeft = MAX_SPACE_MEGS - spaceUsed;
 
-        if(spaceLeft < MAX_SPACE_MEGS)
-            throw new IOException("Not enough space");
+        CWLog.i(MessageDataStore.class, "Mb Used: " + spaceUsed);
+        Log.d("########", "Mb Used: " + spaceUsed);
+        CWLog.i(MessageDataStore.class, "Mb Left: " + spaceLeft);
+        Log.d("########", "Mb Left: " + spaceLeft);
 
-        if(spaceUsed > MAX_SPACE_MEGS)
-            trimOld(application);
-
-        return true;
+        if(spaceLeft < MIN_SPACE_MEGS)
+        {
+            trimOld(spaceLeft);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
-    public static File findMessageInLocalStore(Application application, String id)
+    public static void dumpMessageStore()
     {
-        File dir = getMessageStorageDirectory(application);
-        return new File(dir, "vid_"+ id +".wala");
+        CWLog.i(MessageDataStore.class, "Dumping message store");
+        Log.d("########", "Dumping message store");
+        dumpStore(messageDir);
     }
 
-    private static long megsUsed(Application application)
+    private static void dumpStore(File dirToDump)
     {
-        File videosDir = getMessageStorageDirectory(application);
+        File[] files = dirToDump.listFiles();
+        for(File file : files)
+        {
+            file.delete();
+        }
+    }
+
+    //public static File findMessageInLocalStore(Application application, String id)
+    public static File findMessageInLocalStore(String id)
+    {
+        //File dir = getMessageStorageDirectory(application);
+        //return new File(dir, MessageDataStore.WALA_FILE_PREFIX+ id +MessageDataStore.WALA_FILE_EXTENSION);
+        return new File(messageDir, MessageDataStore.WALA_FILE_PREFIX+ id +MessageDataStore.WALA_FILE_EXTENSION);
+    }
+
+    //private static long megsUsed(Application application)
+    private static long megsUsed()
+    {
+        //File videosDir = getMessageStorageDirectory(application);
+        File videosDir = messageDir;
 
         long total = 0;
         File[] files = videosDir.listFiles();
@@ -73,9 +132,11 @@ public class MessageDataStore
         return total / BYTES_IN_MEG;
     }
 
-    private static void trimOld(Application application) throws IOException
+    //private static void trimOld(Application application) throws IOException
+    private static void trimOld(long spaceLeft) throws IOException
     {
-        File videoDir = getMessageStorageDirectory(application);
+        //File videoDir = getMessageStorageDirectory(application);
+        File videoDir = messageDir;
         File[] files = videoDir.listFiles();
         Arrays.sort(files, new Comparator<File>()
         {
@@ -86,19 +147,23 @@ public class MessageDataStore
             }
         });
 
-        if(files.length < 5)
-            throw new IOException("Message store needs to be bigger");
+        if(files.length < MIN_INBOX_MESSAGES)
+        {
+            throw new IOException("Store limit exeeded with less than 5 files.");
+        }
         else
         {
+            CWLog.i(MessageDataStore.class, "Deleting the two oldest messages");
             files[0].delete();
             files[1].delete();
-            files[2].delete();
         }
     }
 
-    private static long megsAvailable(Application application)
+    //private static long megsAvailable(Application application)
+    private static long megsAvailable()
     {
-        StatFs stat = new StatFs(getMessageStorageDirectory(application).getPath());
+        //StatFs stat = new StatFs(getMessageStorageDirectory(application).getPath());
+        StatFs stat = new StatFs(messageDir.getPath());
         long megAvailable;
         if (Build.VERSION.SDK_INT > 18)
         {
@@ -113,24 +178,99 @@ public class MessageDataStore
         return megAvailable;
     }
 
-    public static File getTempDirectory(Application application)
+    public static void initDataStore(Application application)
     {
-        File dir = new File(application.getFilesDir(), "temp");
-        dir.mkdir();
-        return dir;
+        tempDir = new File(application.getFilesDir(), "temp");
+        messageDir = new File(application.getFilesDir(), "messages");
+        outboxDir = new File(application.getFilesDir(), "outbox");
+
+        tempDir.mkdir();
+        messageDir.mkdir();
+        outboxDir.mkdir();
     }
 
-    public static File getMessageStorageDirectory(Application application)
+    //public static File makeTempWalaFile(Application application)
+    public static File makeTempWalaFile()
     {
-        File dir = new File(application.getFilesDir(), "messages");
-        dir.mkdir();
-        return dir;
+        //return makeWalaFile(MessageDataStore.getTempDirectory(application));
+        return makeWalaFile(tempDir);
     }
 
-    public static File getOutboxDirectory(Application application)
+    //public static File makeMessageWalaFile(Application application)
+    public static File makeMessageWalaFile()
     {
-        File dir = new File(application.getFilesDir(), "outbox");
-        dir.mkdir();
-        return dir;
+        //return makeWalaFile(MessageDataStore.getMessageStorageDirectory(application));
+        return makeWalaFile(messageDir);
+    }
+
+    //public static File makeTempVideoFile(Application application)
+    public static File makeTempVideoFile()
+    {
+        //return new File(getTempDirectory(application), WALA_FILE_PREFIX + System.currentTimeMillis() + MP4_FILE_EXTENSION);
+        return new File(tempDir, WALA_FILE_PREFIX + System.currentTimeMillis() + MP4_FILE_EXTENSION);
+    }
+
+    //public static File makeTempChatDir(Application application)
+    public static File makeTempChatDir()
+    {
+        //return makeChatDir(getTempDirectory(application));
+        return makeChatDir(tempDir);
+    }
+
+    //public static File makeMessageChatDir(Application application)
+    public static File makeMessageChatDir()
+    {
+        //return makeChatDir(getMessageStorageDirectory(application));
+        return makeChatDir(messageDir);
+    }
+
+    //public static File makeOutboxWalaFile(Application application)
+    public static File makeOutboxWalaFile()
+    {
+        //File shareDir = new File(getOutboxDirectory(application), SHARE_DIR_PREFIX + System.currentTimeMillis());
+        File shareDir = new File(outboxDir , SHARE_DIR_PREFIX + System.currentTimeMillis());
+        shareDir.mkdir();
+        return new File(shareDir, PREPPED_WALA_FILE);
+    }
+
+    public static File makeMetadataFile(File targetDirectory)
+    {
+        return new File(targetDirectory, PREPPED_METADATA_FILE);
+    }
+
+    public static File makeVideoFile(File targetDirectory)
+    {
+        return new File(targetDirectory, PREPPED_VIDEO_FILE);
+    }
+
+//    private static File getTempDirectory(Application application)
+//    {
+//        File dir = new File(application.getFilesDir(), "temp");
+//        dir.mkdir();
+//        return dir;
+//    }
+//
+//    private static File getMessageStorageDirectory(Application application)
+//    {
+//        File dir = new File(application.getFilesDir(), "messages");
+//        dir.mkdir();
+//        return dir;
+//    }
+//
+//    private static File getOutboxDirectory(Application application)
+//    {
+//        File dir = new File(application.getFilesDir(), "outbox");
+//        dir.mkdir();
+//        return dir;
+//    }
+
+    private static File makeWalaFile(File targetDirectory)
+    {
+        return new File(targetDirectory, MessageDataStore.WALA_FILE_PREFIX + System.currentTimeMillis() + MessageDataStore.WALA_FILE_EXTENSION);
+    }
+
+    private static File makeChatDir(File targetDirectory)
+    {
+        return new File(targetDirectory, MessageDataStore.CHAT_DIR_PREFIX + System.currentTimeMillis());
     }
 }

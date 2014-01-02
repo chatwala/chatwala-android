@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
+import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
@@ -14,6 +15,8 @@ import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
+import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 
 /**
@@ -42,6 +45,11 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         super.onCreate();
 
         Crashlytics.start(this);
+
+        if(!MessageDataStore.init(ChatwalaApplication.this))
+        {
+            CWLog.b(ChatwalaApplication.class, "There might not be enough space");
+        }
 
         try
         {

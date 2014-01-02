@@ -36,7 +36,7 @@ public class ShareUtils
             try
             {
                 InputStream is = activity.getContentResolver().openInputStream(uri);
-                File file = new File(MessageDataStore.getTempDirectory(activity.getApplication()), "vid_" + System.currentTimeMillis() + ".wala");
+                File file = MessageDataStore.makeTempWalaFile();
                 FileOutputStream os = new FileOutputStream(file);
 
                 byte[] buffer = new byte[4096];
@@ -48,14 +48,14 @@ public class ShareUtils
                 os.close();
                 is.close();
 
-                File outFolder = new File(MessageDataStore.getTempDirectory(activity.getApplication()), "chat_" + System.currentTimeMillis());
+                File outFolder = MessageDataStore.makeTempChatDir();
                 outFolder.mkdirs();
 
                 ZipUtil.unzipFiles(file, outFolder);
 
                 ChatwalaMessage chatwalaMessage = new ChatwalaMessage();
-                chatwalaMessage.setMessageFile(new File(outFolder, "video.mp4"));
-                FileInputStream input = new FileInputStream(new File(outFolder, "metadata.json"));
+                chatwalaMessage.setMessageFile(MessageDataStore.makeVideoFile(outFolder));
+                FileInputStream input = new FileInputStream(MessageDataStore.makeMetadataFile(outFolder));
                 chatwalaMessage.initMetadata(new JSONObject(IOUtils.toString(input)));
 
                 input.close();
