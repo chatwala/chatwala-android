@@ -76,7 +76,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             });
         }
 
-        startService(new Intent(ChatwalaApplication.this, FetchMessagesService.class));
+        FetchMessagesService.init(ChatwalaApplication.this, AppPrefs.getInstance(ChatwalaApplication.this).getPrefMessageLoadInterval());
     }
 
     public boolean isSplashRan()

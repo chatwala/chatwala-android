@@ -25,7 +25,7 @@ public class AppPrefs
     public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
     public static final String PREF_SHARE_COUNT = "PREF_SHARE_COUNT";
     public static final String PREF_USE_SMS = "PREF_USE_SMS";
-
+    public static final String PREF_MESSAGE_LOAD_INTERVAL = "PREF_MESSAGE_LOAD_INTERVAL";
 
     public static synchronized AppPrefs getInstance(Context context)
     {
@@ -114,5 +114,16 @@ public class AppPrefs
     public boolean getPrefUseSms()
     {
         return mSp.getBoolean(PREF_USE_SMS, true);
+    }
+
+    public void setPrefMessageLoadInterval(int minutes)
+    {
+        mSp.edit().putInt(PREF_MESSAGE_LOAD_INTERVAL, minutes).apply();
+        FetchMessagesService.init(application, minutes);
+    }
+
+    public int getPrefMessageLoadInterval()
+    {
+        return mSp.getInt(PREF_MESSAGE_LOAD_INTERVAL, 120);
     }
 }

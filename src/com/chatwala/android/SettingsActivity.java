@@ -20,7 +20,7 @@ import android.widget.*;
  */
 public class SettingsActivity extends BaseChatWalaActivity
 {
-    Spinner deliveryMethodSpinner;
+    Spinner deliveryMethodSpinner, refreshIntervalSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -57,6 +57,25 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
         });
         deliveryMethodSpinner.setSelection(AppPrefs.getInstance(SettingsActivity.this).getPrefUseSms() ? 0 : 1);
+
+        refreshIntervalSpinner = (Spinner)findViewById(R.id.refresh_spinner);
+        refreshIntervalSpinner.setAdapter(new RefreshIntervalAdapter());
+        refreshIntervalSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                RefreshOptions selected = (RefreshOptions)view.getTag();
+                AppPrefs.getInstance(SettingsActivity.this).setPrefMessageLoadInterval(selected.getInterval());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+
+            }
+        });
+        refreshIntervalSpinner.setSelection(RefreshOptions.fromInterval(AppPrefs.getInstance(SettingsActivity.this).getPrefMessageLoadInterval()).getSortOrder());
 
         findViewById(R.id.terms_and_conditions_row).setOnClickListener(new View.OnClickListener()
         {
@@ -140,9 +159,97 @@ public class SettingsActivity extends BaseChatWalaActivity
         }
     }
 
+    class RefreshIntervalAdapter extends BaseAdapter
+    {
+        @Override
+        public int getCount()
+        {
+            return RefreshOptions.values().length;
+        }
+
+        @Override
+        public RefreshOptions getItem(int position)
+        {
+            return RefreshOptions.values()[position];
+        }
+
+        @Override
+        public long getItemId(int position)
+        {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if(convertView == null)
+            {
+                convertView = new TextView(SettingsActivity.this);
+                int viewHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics());
+                ListView.LayoutParams params = new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, viewHeight);
+                convertView.setLayoutParams(params);
+                ((TextView)convertView).setGravity(Gravity.CENTER_VERTICAL);
+                ((TextView)convertView).setTextColor(getResources().getColor(R.color.text_white));
+                convertView.setBackgroundColor(getResources().getColor(R.color.settings_button_background));
+            }
+
+            convertView.setTag(getItem(position));
+            ((TextView)convertView).setText(getItem(position).getDisplayString());
+
+            return convertView;
+        }
+    }
+
     enum DeliveryOptions
     {
         SMS,
         Email
+    }
+
+    enum RefreshOptions
+    {
+        FIVE_MINUTES(5, "Five Minutes", 0),
+        TEN_MINUTES(10, "Ten Minutes", 1),
+        THIRTY_MINUTES(30, "Thirty Minutes", 2),
+        ONE_HOUR(60, "One Hour", 3),
+        TWO_HOURS(120, "Two Hours", 4);
+
+        private int interval, sortOrder;
+        private String displayString;
+
+        private RefreshOptions(int interval, String displayString, int sortOrder)
+        {
+            this.interval = interval;
+            this.displayString = displayString;
+            this.sortOrder = sortOrder;
+        }
+
+        public int getInterval()
+        {
+            return interval;
+        }
+
+        public String getDisplayString()
+        {
+            return displayString;
+        }
+
+        public int getSortOrder()
+        {
+            return sortOrder;
+        }
+
+        public static RefreshOptions fromInterval(int interval)
+        {
+            for (RefreshOptions item : RefreshOptions.values())
+            {
+                if (item.getInterval() == interval)
+                {
+                    return item;
+                }
+            }
+            //If something goes wrong, return the default
+            return TWO_HOURS;
+        }
     }
 }
