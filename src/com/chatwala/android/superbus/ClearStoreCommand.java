@@ -29,7 +29,7 @@ public class ClearStoreCommand extends SqliteCommand
     @Override
     public boolean same(Command command)
     {
-        return command instanceof ClearStoreCommand;
+        return false;
     }
 
     @Override

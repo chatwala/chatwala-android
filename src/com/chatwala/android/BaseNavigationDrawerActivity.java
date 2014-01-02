@@ -245,7 +245,8 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
 
             ChatwalaMessage message = (ChatwalaMessage)getItem(position);
-            Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+            //Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+            ((ImageView)convertView.findViewById(R.id.thumb_view)).setImageResource(R.drawable.appicon);
             convertView.setTag(message.getMessageId());
 
             return convertView;
