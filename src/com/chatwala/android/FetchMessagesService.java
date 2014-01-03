@@ -1,15 +1,19 @@
 package com.chatwala.android;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
 
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -23,7 +27,6 @@ import java.util.TimerTask;
 public class FetchMessagesService extends IntentService
 {
     private static Timer timer;
-    private static final long ONE_SECOND = 1000;
     private static final long ONE_MINUTE = 1000 * 60;
 
     public FetchMessagesService()
@@ -47,25 +50,11 @@ public class FetchMessagesService extends IntentService
 
     public static void init(Context context, int minutes)
     {
-        Log.d("########", "Initializing FetchMessagesService");
-        timer = new Timer();
-        timer.scheduleAtFixedRate(new MessageFetchTask(context), ONE_SECOND, ONE_MINUTE * minutes);
-    }
-
-    static class MessageFetchTask extends TimerTask
-    {
-        Context context;
-
-        MessageFetchTask(Context context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        public void run()
-        {
-            Log.d("########", "Starting FetchMessagesService");
-            context.startService(new Intent(context, FetchMessagesService.class));
-        }
+        context.startService(new Intent(context, FetchMessagesService.class));
+        Log.d("########", "Initializing FetchMessagesReceiver");
+        AlarmManager manager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+        Intent i = new Intent(context, FetchMessagesService.class);
+        PendingIntent receiver = PendingIntent.getService(context, 0, i, 0);
+        manager.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + ONE_MINUTE, minutes * ONE_MINUTE, receiver);
     }
 }
