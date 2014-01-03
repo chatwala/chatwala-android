@@ -39,6 +39,10 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     private GsonSqlitePersistenceProvider persistenceProvider;
 
+    private static final String API_PATH_PROD     = "http://chatwala-prod.azurewebsites.net/";
+    private static final String API_PATH_DEV     = "http://chatwala-dev.azurewebsites.net/";
+    private static final String API_PATH_DUMMY = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
+
     @Override
     public void onCreate()
     {
@@ -77,6 +81,11 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         }
 
         FetchMessagesService.init(ChatwalaApplication.this, AppPrefs.getInstance(ChatwalaApplication.this).getPrefMessageLoadInterval());
+    }
+
+    public static String getApiPath()
+    {
+        return API_PATH_PROD;
     }
 
     public boolean isSplashRan()

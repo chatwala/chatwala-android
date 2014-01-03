@@ -4,6 +4,7 @@ import android.content.Context;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
+import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.database.DatabaseHelper;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
@@ -30,10 +31,6 @@ public abstract class BaseHttpRequest<T>
     private static final int    STATUS_SERVER_ERROR        = 500;
     private static final int    STATUS_SERVICE_UNAVAILABLE = 503;
 
-    private static final String API_PATH_PROD     = "http://chatwala-prod.azurewebsites.net/";
-    private static final String API_PATH_DEV     = "http://chatwala-dev.azurewebsites.net/";
-    private static final String API_PATH_DUMMY = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
-
     protected Context context;
 
     public BaseHttpRequest(Context context)
@@ -43,7 +40,7 @@ public abstract class BaseHttpRequest<T>
 
     public T execute() throws TransientException, PermanentException
     {
-        BusHttpClient client = new BusHttpClient(API_PATH_PROD);
+        BusHttpClient client = new BusHttpClient(ChatwalaApplication.getApiPath());
         AbstractRequestLogger logger = new AbstractRequestLogger()
         {
             @Override

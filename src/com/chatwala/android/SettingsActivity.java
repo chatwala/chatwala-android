@@ -2,6 +2,7 @@ package com.chatwala.android;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -98,6 +99,18 @@ public class SettingsActivity extends BaseChatWalaActivity
                 startActivity(intent);
             }
         });
+
+        String appVersion;
+        try
+        {
+            appVersion = getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            appVersion = "unknown";
+        }
+
+        ((TextView)findViewById(R.id.version_info_text)).setText("Version: " + appVersion + " Server: " + ChatwalaApplication.getApiPath());
     }
 
     @Override
