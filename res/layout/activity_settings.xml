@@ -126,4 +126,10 @@
         android:layout_height="wrap_content"
         android:textColor="@color/dot_red"/>
 
+    <TextView
+        android:id="@+id/api_info_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/dot_red"/>
+
 </LinearLayout>

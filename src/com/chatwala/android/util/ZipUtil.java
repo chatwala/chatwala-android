@@ -103,7 +103,6 @@ public class ZipUtil
             outZip = MessageDataStore.makeOutboxWalaFile();
             zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
 
-            incomingVideoFile.delete();
             for(File file : buildDir.listFiles())
             {
                 file.delete();

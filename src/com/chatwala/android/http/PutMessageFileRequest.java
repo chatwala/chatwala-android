@@ -2,8 +2,12 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
+import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,7 +90,8 @@ public class PutMessageFileRequest extends BasePutRequest
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
-        ChatwalaMessage message = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
+        final ChatwalaMessage message = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
+
         message.clearMessageFile();
         databaseHelper.getChatwalaMessageDao().update(message);
 

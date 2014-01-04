@@ -135,6 +135,16 @@ public class ChatwalaMessage
         return messageFile;
     }
 
+    public String getMessageFileUrl()
+    {
+        if(fileUrl == null && messageFile != null)
+        {
+            fileUrl = messageFile.getPath();
+        }
+
+        return fileUrl;
+    }
+
     public void setMessageFile(File messageFile)
     {
         this.messageFile = messageFile;

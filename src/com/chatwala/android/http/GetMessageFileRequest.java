@@ -4,17 +4,22 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
+import android.widget.ImageView;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.R;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
+import com.chatwala.android.superbus.GetUserProfilePictureCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ShareUtils;
 import com.chatwala.android.util.ZipUtil;
+import com.squareup.picasso.Picasso;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -138,6 +143,12 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
+        if(!MessageDataStore.findUserImageInLocalStore(chatwalaMessage.getSenderId()).exists())
+        {
+            Log.d("##########", "Cache Miss " + chatwalaMessage.getSenderId());
+            BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(chatwalaMessage.getSenderId()));
+        }
+
         BusHelper.submitCommandSync(context, new ClearStoreCommand());
     }
 }

@@ -26,7 +26,6 @@ import java.util.TimerTask;
  */
 public class FetchMessagesService extends IntentService
 {
-    private static Timer timer;
     private static final long ONE_MINUTE = 1000 * 60;
 
     public FetchMessagesService()
@@ -51,7 +50,7 @@ public class FetchMessagesService extends IntentService
     public static void init(Context context, int minutes)
     {
         context.startService(new Intent(context, FetchMessagesService.class));
-        Log.d("########", "Initializing FetchMessagesReceiver");
+        Log.d("########", "Initializing FetchMessagesService");
         AlarmManager manager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
         Intent i = new Intent(context, FetchMessagesService.class);
         PendingIntent receiver = PendingIntent.getService(context, 0, i, 0);

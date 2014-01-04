@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +19,11 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
+import com.chatwala.android.superbus.GetUserProfilePictureCommand;
+import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -244,9 +249,19 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 });
             }
 
-            ChatwalaMessage message = (ChatwalaMessage)getItem(position);
-            //Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
-            ((ImageView)convertView.findViewById(R.id.thumb_view)).setImageResource(R.drawable.appicon);
+            final ChatwalaMessage message = (ChatwalaMessage)getItem(position);
+
+            File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
+            if(thumbImage.exists())
+            {
+                Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+            }
+            else
+            {
+                Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+
+            }
+
             convertView.setTag(message.getMessageId());
 
             return convertView;

@@ -28,13 +28,14 @@ public class MessageDataStore
     private static final int MIN_INBOX_MESSAGES = 5;
 
     private static ChatwalaApplication chatwalaApplication = null;
-    private static File tempDir, messageDir, outboxDir;
+    private static File tempDir, messageDir, outboxDir, usersDir;
 
     private static final String WALA_FILE_PREFIX = "vid_";
     private static final String CHAT_DIR_PREFIX = "chat_";
     private static final String SHARE_DIR_PREFIX = "sharefile_";
     private static final String WALA_FILE_EXTENSION = ".wala";
     private static final String MP4_FILE_EXTENSION = ".mp4";
+    private static final String PNG_FILE_EXTENSION = ".png";
 
     private static final String PREPPED_WALA_FILE = "chat.wala";
     private static final String PREPPED_METADATA_FILE = "metadata.json";
@@ -107,7 +108,12 @@ public class MessageDataStore
 
     public static File findMessageInLocalStore(String id)
     {
-        return new File(messageDir, MessageDataStore.WALA_FILE_PREFIX+ id +MessageDataStore.WALA_FILE_EXTENSION);
+        return new File(messageDir, WALA_FILE_PREFIX + id + WALA_FILE_EXTENSION);
+    }
+
+    public static File findUserImageInLocalStore(String id)
+    {
+        return new File(usersDir, id + PNG_FILE_EXTENSION);
     }
 
     private static long megsUsed()
@@ -176,6 +182,16 @@ public class MessageDataStore
         tempDir.mkdir();
         messageDir.mkdir();
         outboxDir.mkdir();
+
+        File imagesDir = new File(application.getFilesDir(), "images");
+        imagesDir.mkdir();
+        usersDir = new File(imagesDir, "profile");
+        usersDir.mkdirs();
+    }
+
+    public static File makeUserFile(String userId)
+    {
+        return new File(usersDir, userId + PNG_FILE_EXTENSION);
     }
 
     public static File makeTempWalaFile()

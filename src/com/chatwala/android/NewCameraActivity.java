@@ -32,6 +32,7 @@ import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
+import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
 
@@ -936,6 +937,21 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             recordPreviewVideoView.start();
             recordPreviewCompletionListener = new ReplayCountingCompletionListener();
             recordPreviewVideoView.setOnCompletionListener(recordPreviewCompletionListener);
+
+            if(!AppPrefs.getInstance(NewCameraActivity.this).hasSentEmail())
+            {
+                DataProcessor.runProcess(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if(recordPreviewFile != null)
+                        {
+                            BusHelper.submitCommandSync(NewCameraActivity.this, new PutUserProfilePictureCommand(recordPreviewFile.getPath()));
+                        }
+                    }
+                });
+            }
 
             setAppState(AppState.PreviewReady);
         }
