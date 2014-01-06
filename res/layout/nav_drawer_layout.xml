@@ -29,10 +29,10 @@
         <ImageView
             android:id="@+id/add_button"
             android:layout_width="fill_parent"
-            android:layout_height="48dip"
+            android:layout_height="72dip"
             android:src="@drawable/ic_action_add"
-            android:paddingTop="10dip"
-            android:paddingBottom="10dip"
+            android:paddingTop="15dip"
+            android:paddingBottom="15dip"
             android:background="@drawable/drawer_button"/>
         <ListView
             android:id="@+id/conversation_list"
@@ -42,11 +42,11 @@
         <ImageView
             android:id="@+id/settings_button"
             android:layout_width="fill_parent"
-            android:layout_height="48dip"
+            android:layout_height="72dip"
             android:layout_gravity="center"
             android:src="@drawable/ic_action_settings"
-            android:paddingTop="10dip"
-            android:paddingBottom="10dip"
+            android:paddingTop="15dip"
+            android:paddingBottom="15dip"
             android:background="@drawable/drawer_button"/>
     </LinearLayout>
 
