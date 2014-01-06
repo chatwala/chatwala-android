@@ -80,7 +80,7 @@ public class MessageDataStore
         CWLog.i(MessageDataStore.class, "Mb Left: " + spaceLeft);
         Log.d("########", "Mb Left: " + spaceLeft);
 
-        if(spaceLeft < MIN_SPACE_MEGS)
+        if(spaceLeft < 0)
         {
             trimOld(spaceLeft);
             return true;
@@ -133,7 +133,6 @@ public class MessageDataStore
 
         for (File file : files)
         {
-            Log.d("#######", "File: " + file.getPath() + " Size: " + file.length());
             total += file.length();
         }
 
@@ -165,6 +164,7 @@ public class MessageDataStore
             else
             {
                 CWLog.i(MessageDataStore.class, "Deleting the oldest message: " + i + " Size: " + files[i].length());
+                Log.d("#########", "Deleting the oldest message: " + i + " Size: " + files[i].length());
                 bytesUnderCap += files[i].length();
                 files[i].delete();
             }

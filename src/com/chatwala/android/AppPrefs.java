@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CameraUtils;
 import com.chatwala.android.util.MessageDataStore;
 
@@ -143,7 +146,14 @@ public class AppPrefs
     public void setPrefDiskSpaceMax(int max)
     {
         mSp.edit().putInt(PREF_DISK_SPACE_MAX, max).apply();
-        MessageDataStore.checkClearStore(application);
+        DataProcessor.runProcess(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                BusHelper.submitCommandSync(application, new ClearStoreCommand());
+            }
+        });
     }
 
     public int getPrefDiskSpaceMax()
