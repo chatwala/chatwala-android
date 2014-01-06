@@ -938,21 +938,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             recordPreviewCompletionListener = new ReplayCountingCompletionListener();
             recordPreviewVideoView.setOnCompletionListener(recordPreviewCompletionListener);
 
-            if(!AppPrefs.getInstance(NewCameraActivity.this).hasSentEmail())
-            {
-                DataProcessor.runProcess(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if(recordPreviewFile != null)
-                        {
-                            BusHelper.submitCommandSync(NewCameraActivity.this, new PutUserProfilePictureCommand(recordPreviewFile.getPath()));
-                        }
-                    }
-                });
-            }
-
             setAppState(AppState.PreviewReady);
         }
     }

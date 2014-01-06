@@ -269,6 +269,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             else
             {
                 Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+                DataProcessor.runProcess(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        BusHelper.submitCommandSync(BaseNavigationDrawerActivity.this, new GetUserProfilePictureCommand(message.getSenderId()));
+                    }
+                });
 
             }
 

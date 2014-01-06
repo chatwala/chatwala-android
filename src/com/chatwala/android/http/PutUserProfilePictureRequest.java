@@ -55,5 +55,6 @@ public class PutUserProfilePictureRequest extends BasePutRequest
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
         AppPrefs.getInstance(context).setSentEmail(true);
+        new File(videoPath).delete();
     }
 }

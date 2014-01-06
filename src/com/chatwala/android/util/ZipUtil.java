@@ -1,9 +1,13 @@
 package com.chatwala.android.util;
 
+import android.content.Context;
+import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.NewCameraActivity;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.MessageMetadata;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
@@ -108,6 +112,23 @@ public class ZipUtil
                 file.delete();
             }
             buildDir.delete();
+
+            if(!AppPrefs.getInstance(activity).hasSentEmail())
+            {
+                final Context applicationContext = activity.getApplicationContext();
+                DataProcessor.runProcess(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        BusHelper.submitCommandSync(applicationContext, new PutUserProfilePictureCommand(incomingVideoFile.getPath()));
+                    }
+                });
+            }
+            else
+            {
+                incomingVideoFile.delete();
+            }
         }
         catch (IOException e)
         {

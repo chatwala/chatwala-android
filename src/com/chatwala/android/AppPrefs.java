@@ -143,7 +143,7 @@ public class AppPrefs
     public void setPrefDiskSpaceMax(int max)
     {
         mSp.edit().putInt(PREF_DISK_SPACE_MAX, max).apply();
-        MessageDataStore.checkClearStore();
+        MessageDataStore.checkClearStore(application);
     }
 
     public int getPrefDiskSpaceMax()

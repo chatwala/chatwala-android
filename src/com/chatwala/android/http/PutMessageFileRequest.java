@@ -2,12 +2,8 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
-import co.touchlab.android.superbus.BusHelper;
-import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +45,7 @@ public class PutMessageFileRequest extends BasePutRequest
     @Override
     protected byte[] getPutData()
     {
-        Log.d("############ Local message url", localMessageUrl);
+        Log.d("############ Putting local message", localMessageUrl);
         File walaFile = new File(localMessageUrl);
 
         try
@@ -95,7 +91,9 @@ public class PutMessageFileRequest extends BasePutRequest
         message.clearMessageFile();
         databaseHelper.getChatwalaMessageDao().update(message);
 
-        new File(localMessageUrl).delete();
+        File walaFile = new File(localMessageUrl);
+        walaFile.getParentFile().delete();
+        walaFile.delete();
 
         return null;
     }

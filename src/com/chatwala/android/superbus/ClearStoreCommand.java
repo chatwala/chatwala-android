@@ -35,7 +35,7 @@ public class ClearStoreCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        if(MessageDataStore.checkClearStore())
+        if(MessageDataStore.checkClearStore(context))
         {
             CWLog.i(ClearStoreCommand.class, "Messages deleted");
             Log.d("########", "Messages deleted");

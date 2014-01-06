@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
 import com.crashlytics.android.Crashlytics;
 
@@ -24,7 +25,6 @@ import java.util.Comparator;
 public class MessageDataStore
 {
     private static final int MIN_SPACE_MEGS = 5;
-    private static final int MAX_SPACE_MEGS = 500;
     private static final int BYTES_IN_MEG = 1048576;
     private static final int MIN_INBOX_MESSAGES = 5;
 
@@ -70,10 +70,10 @@ public class MessageDataStore
      * @return boolean true if trimming was performed.
      * @throws IOException
      */
-    public static boolean checkClearStore()
+    public static boolean checkClearStore(Context context)
     {
         long spaceUsed = megsUsed();
-        long spaceLeft = MAX_SPACE_MEGS - spaceUsed;
+        long spaceLeft = AppPrefs.getInstance(context).getPrefDiskSpaceMax() - spaceUsed;
 
         CWLog.i(MessageDataStore.class, "Mb Used: " + spaceUsed);
         Log.d("########", "Mb Used: " + spaceUsed);
@@ -96,6 +96,13 @@ public class MessageDataStore
         CWLog.i(MessageDataStore.class, "Dumping message store");
         Log.d("########", "Dumping message store");
         dumpStore(messageDir);
+    }
+
+    public static void dumpTempStore()
+    {
+        CWLog.i(MessageDataStore.class, "Dumping temp store");
+        Log.d("########", "Dumping temp store");
+        dumpStore(tempDir);
     }
 
     private static void dumpStore(File dirToDump)
@@ -146,14 +153,21 @@ public class MessageDataStore
             }
         });
 
-        if(files.length < MIN_INBOX_MESSAGES)
+        long bytesUnderCap = spaceLeft * BYTES_IN_MEG;
+
+        for(int i=0; bytesUnderCap < 0; i++)
         {
-            CWLog.softExceptionLog(MessageDataStore.class, "Store limit exceeded with less than 5 files.", new IOException("Store limit exceeded with less than 5 files."));
-        }
-        else
-        {
-            CWLog.i(MessageDataStore.class, "Deleting the oldest message");
-            files[0].delete();
+            if( (files.length - i) < MIN_INBOX_MESSAGES)
+            {
+                CWLog.softExceptionLog(MessageDataStore.class, "Store limit exceeded with less than 5 files.", new IOException("Store limit exceeded with less than 5 files."));
+                break;
+            }
+            else
+            {
+                CWLog.i(MessageDataStore.class, "Deleting the oldest message: " + i + " Size: " + files[i].length());
+                bytesUnderCap += files[i].length();
+                files[i].delete();
+            }
         }
     }
 
@@ -188,6 +202,8 @@ public class MessageDataStore
         imagesDir.mkdir();
         usersDir = new File(imagesDir, "profile");
         usersDir.mkdirs();
+
+        dumpTempStore();
     }
 
     public static File makeUserFile(String userId)
