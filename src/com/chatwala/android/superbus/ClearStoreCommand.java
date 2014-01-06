@@ -35,23 +35,15 @@ public class ClearStoreCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        try
+        if(MessageDataStore.checkClearStore())
         {
-            if(MessageDataStore.checkClearStore())
-            {
-                CWLog.i(ClearStoreCommand.class, "Messages deleted");
-                Log.d("########", "Messages deleted");
-            }
-            else
-            {
-                CWLog.i(ClearStoreCommand.class, "No messages deleted");
-                Log.d("########", "No messages deleted");
-            }
+            CWLog.i(ClearStoreCommand.class, "Messages deleted");
+            Log.d("########", "Messages deleted");
         }
-        catch (IOException e)
+        else
         {
-            CWLog.softExceptionLog(ClearStoreCommand.class, "ClearStoreCommand caught an IOException", e);
-            MessageDataStore.dumpMessageStore();
+            CWLog.i(ClearStoreCommand.class, "No messages deleted");
+            Log.d("########", "No messages deleted");
         }
     }
 }

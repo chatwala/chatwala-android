@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.MessageDataStore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,6 +28,7 @@ public class AppPrefs
     public static final String PREF_SHARE_COUNT = "PREF_SHARE_COUNT";
     public static final String PREF_USE_SMS = "PREF_USE_SMS";
     public static final String PREF_MESSAGE_LOAD_INTERVAL = "PREF_MESSAGE_LOAD_INTERVAL";
+    public static final String PREF_DISK_SPACE_MAX = "PREF_DISK_SPACE_MAX";
 
     public static synchronized AppPrefs getInstance(Context context)
     {
@@ -136,5 +138,16 @@ public class AppPrefs
     public int getPrefMessageLoadInterval()
     {
         return mSp.getInt(PREF_MESSAGE_LOAD_INTERVAL, 120);
+    }
+
+    public void setPrefDiskSpaceMax(int max)
+    {
+        mSp.edit().putInt(PREF_DISK_SPACE_MAX, max).apply();
+        MessageDataStore.checkClearStore();
+    }
+
+    public int getPrefDiskSpaceMax()
+    {
+        return mSp.getInt(PREF_DISK_SPACE_MAX, 500);
     }
 }

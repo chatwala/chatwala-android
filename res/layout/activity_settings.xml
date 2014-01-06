@@ -56,6 +56,30 @@
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dip"
+        android:background="@color/settings_button_accent"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="20dip"
+        android:paddingRight="20dip"
+        android:gravity="center_vertical"
+        android:background="@color/settings_button_background">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/max_disk_usage"
+            android:textColor="@color/text_white"
+            android:layout_marginRight="10dip"/>
+        <Spinner
+            android:id="@+id/disk_space_spinner"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
         android:background="@color/settings_button_accent"
         android:layout_marginBottom="20dip"/>
 

@@ -21,7 +21,7 @@ import android.widget.*;
  */
 public class SettingsActivity extends BaseChatWalaActivity
 {
-    Spinner deliveryMethodSpinner, refreshIntervalSpinner;
+    Spinner deliveryMethodSpinner, refreshIntervalSpinner, diskSpaceSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -77,6 +77,26 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
         });
         refreshIntervalSpinner.setSelection(RefreshOptions.fromInterval(AppPrefs.getInstance(SettingsActivity.this).getPrefMessageLoadInterval()).getSortOrder());
+
+        diskSpaceSpinner = (Spinner)findViewById(R.id.disk_space_spinner);
+        diskSpaceSpinner.setAdapter(new DiskSpaceAdapter());
+        diskSpaceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                DiskSpaceOptions selected = (DiskSpaceOptions)view.getTag();
+                AppPrefs.getInstance(SettingsActivity.this).setPrefDiskSpaceMax(selected.getSpace());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+
+            }
+        });
+        diskSpaceSpinner.setSelection(DiskSpaceOptions.fromSpace(AppPrefs.getInstance(SettingsActivity.this).getPrefDiskSpaceMax()).getSortOrder());
+
 
         findViewById(R.id.terms_and_conditions_row).setOnClickListener(new View.OnClickListener()
         {
@@ -214,6 +234,47 @@ public class SettingsActivity extends BaseChatWalaActivity
         }
     }
 
+    class DiskSpaceAdapter extends BaseAdapter
+    {
+        @Override
+        public int getCount()
+        {
+            return DiskSpaceOptions.values().length;
+        }
+
+        @Override
+        public DiskSpaceOptions getItem(int position)
+        {
+            return DiskSpaceOptions.values()[position];
+        }
+
+        @Override
+        public long getItemId(int position)
+        {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if(convertView == null)
+            {
+                convertView = new TextView(SettingsActivity.this);
+                int viewHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics());
+                ListView.LayoutParams params = new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, viewHeight);
+                convertView.setLayoutParams(params);
+                ((TextView)convertView).setGravity(Gravity.CENTER_VERTICAL);
+                ((TextView)convertView).setTextColor(getResources().getColor(R.color.text_white));
+                convertView.setBackgroundColor(getResources().getColor(R.color.settings_button_background));
+            }
+
+            convertView.setTag(getItem(position));
+            ((TextView)convertView).setText(getItem(position).getDisplayString());
+
+            return convertView;
+        }
+    }
+
     enum DeliveryOptions
     {
         SMS,
@@ -264,6 +325,52 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
             //If something goes wrong, return the default
             return TWO_HOURS;
+        }
+    }
+
+    enum DiskSpaceOptions
+    {
+        TEN_MEGS(10, "10 MB", 0),
+        FIFTY_MEGS(50, "50 MB", 1),
+        ONE_HUNDRED_MEGS(100, "100 MB", 2),
+        FIVE_HUNDRED_MEGS(500, "500 MB", 3);
+
+        private int space, sortOrder;
+        private String displayString;
+
+        private DiskSpaceOptions(int space, String displayString, int sortOrder)
+        {
+            this.space = space;
+            this.displayString = displayString;
+            this.sortOrder = sortOrder;
+        }
+
+        public int getSpace()
+        {
+            return space;
+        }
+
+        public String getDisplayString()
+        {
+            return displayString;
+        }
+
+        public int getSortOrder()
+        {
+            return sortOrder;
+        }
+
+        public static DiskSpaceOptions fromSpace(int space)
+        {
+            for (DiskSpaceOptions item : DiskSpaceOptions.values())
+            {
+                if (item.getSpace() == space)
+                {
+                    return item;
+                }
+            }
+            //If something goes wrong, return the default
+            return FIVE_HUNDRED_MEGS;
         }
     }
 }

@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
 import com.chatwala.android.ChatwalaApplication;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class MessageDataStore
      * @return boolean true if trimming was performed.
      * @throws IOException
      */
-    public static boolean checkClearStore() throws IOException
+    public static boolean checkClearStore()
     {
         long spaceUsed = megsUsed();
         long spaceLeft = MAX_SPACE_MEGS - spaceUsed;
@@ -132,7 +133,7 @@ public class MessageDataStore
         return total / BYTES_IN_MEG;
     }
 
-    private static void trimOld(long spaceLeft) throws IOException
+    private static void trimOld(long spaceLeft)
     {
         File videoDir = messageDir;
         File[] files = videoDir.listFiles();
@@ -147,7 +148,7 @@ public class MessageDataStore
 
         if(files.length < MIN_INBOX_MESSAGES)
         {
-            throw new IOException("Store limit exeeded with less than 5 files.");
+            CWLog.softExceptionLog(MessageDataStore.class, "Store limit exceeded with less than 5 files.", new IOException("Store limit exceeded with less than 5 files."));
         }
         else
         {
