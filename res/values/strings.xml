@@ -8,6 +8,7 @@
     <string name="sure">Sure!</string>
     <string name="message_subject">Chatwala Message</string>
     <string name="couldnt_find_message">Couldn\'t load message. Please try again.</string>
+    <string name="loading_message_text">Loading your friend\'s message!</string>
 
     <string name="settings">SETTINGS</string>
     <string name="delivery_method">Delivery method: </string>
