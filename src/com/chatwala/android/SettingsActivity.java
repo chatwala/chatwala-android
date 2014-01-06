@@ -111,7 +111,7 @@ public class SettingsActivity extends BaseChatWalaActivity
         }
 
         ((TextView)findViewById(R.id.version_info_text)).setText("Version: " + appVersion);
-        ((TextView)findViewById(R.id.api_info_text)).setText("Server: " + ChatwalaApplication.getApiPath());
+        ((TextView)findViewById(R.id.api_info_text)).setText("Server: " + ChatwalaApplication.getApiPathString());
     }
 
     @Override

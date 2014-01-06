@@ -88,6 +88,26 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         return API_PATH_PROD;
     }
 
+    public static String getApiPathString()
+    {
+        if(getApiPath().equals(API_PATH_PROD))
+        {
+            return "prod";
+        }
+        else if(getApiPath().equals(API_PATH_DEV))
+        {
+            return "dev";
+        }
+        else if(getApiPath().equals(API_PATH_DUMMY))
+        {
+            return "test";
+        }
+        else
+        {
+            return "unknown";
+        }
+    }
+
     public boolean isSplashRan()
     {
         return splashRan;
