@@ -4,15 +4,14 @@ import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import android.widget.*;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.database.ChatwalaMessage;
@@ -59,6 +58,18 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
         setContentView(R.layout.nav_drawer_layout);
 
+        navigationDrawer = (LinearLayout)findViewById(R.id.navigation_drawer);
+//        Display display = getWindowManager().getDefaultDisplay();
+//        Point screenSize = new Point();
+//        display.getSize(screenSize);
+//
+//        DisplayMetrics metrics = getResources().getDisplayMetrics();
+//        float dpWidth = ( screenSize.x / (metrics.densityDpi / 160f) )/3;
+//
+//        DrawerLayout.LayoutParams params = (DrawerLayout.LayoutParams)navigationDrawer.getLayoutParams();
+//        params.width = (int)dpWidth;
+//        navigationDrawer.setLayoutParams(params);
+
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerListener(new DrawerLayout.SimpleDrawerListener()
         {
@@ -71,7 +82,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 drawerToggleButton.setVisibility(View.VISIBLE);
                 drawerToggleButton.setImageResource(R.drawable.drawer_open);
                 Resources r = getResources();
-                float leftpx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 260, r.getDisplayMetrics());
+                float leftpx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 170, r.getDisplayMetrics());
                 float toppx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
                 toggleButtonParams.setMargins((int)leftpx, (int)toppx, 0, 0);
                 drawerToggleButton.setLayoutParams(toggleButtonParams);
@@ -100,7 +111,6 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             }
         });
 
-        navigationDrawer = (LinearLayout)findViewById(R.id.navigation_drawer);
         mainContentFrame = (FrameLayout)findViewById(R.id.main_container);
         drawerToggleButton = (ImageView)findViewById(R.id.drawer_toggle_button);
         drawerToggleButton.setOnClickListener(new View.OnClickListener()
