@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.turbomanage.httpclient.HttpResponse;
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -78,23 +80,16 @@ public class PutMessageFileRequest extends BasePutRequest
     }
 
     @Override
-    protected boolean hasDbOperation()
+    protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        return true;
-    }
-
-    @Override
-    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
-    {
-        final ChatwalaMessage message = databaseHelper.getChatwalaMessageDao().queryForId(messageId);
-
-        message.clearMessageFile();
-        databaseHelper.getChatwalaMessageDao().update(message);
-
         File walaFile = new File(localMessageUrl);
         walaFile.getParentFile().delete();
         walaFile.delete();
+    }
 
-        return null;
+    @Override
+    protected boolean hasDbOperation()
+    {
+        return false;
     }
 }

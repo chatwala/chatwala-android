@@ -75,14 +75,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     @Override
     protected boolean hasDbOperation()
     {
-        return true;
-    }
-
-    @Override
-    protected ChatwalaMessage commitResponse(DatabaseHelper databaseHelper) throws SQLException
-    {
-        databaseHelper.getChatwalaMessageDao().create(messageMetadata);
-        return messageMetadata;
+        return false;
     }
 
     @Override
