@@ -36,6 +36,9 @@ public abstract class BaseHttpRequest<T>
 
     protected Context context;
 
+    private String clientId = "58041de0bc854d9eb514d2f22d50ad4c";
+    private String clientSecret = "ac168ea53c514cbab949a80bebe09a8a";
+
     public BaseHttpRequest(Context context)
     {
         this.context = context;
@@ -44,6 +47,7 @@ public abstract class BaseHttpRequest<T>
     public T execute() throws TransientException, PermanentException
     {
         BusHttpClient client = new BusHttpClient(ChatwalaApplication.getApiPath());
+        client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
         AbstractRequestLogger logger = new AbstractRequestLogger()
         {

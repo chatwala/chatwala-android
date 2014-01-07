@@ -85,7 +85,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     public static String getApiPath()
     {
-        return API_PATH_PROD;
+        return API_PATH_DEV;
     }
 
     public static String getApiPathString()
