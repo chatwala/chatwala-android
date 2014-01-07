@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="72dip"
     android:paddingTop="2dip">
     <ImageView
         android:id="@+id/thumb_view"
         android:layout_width="fill_parent"
-        android:layout_height="72dip"/>
+        android:layout_height="fill_parent"/>
+    <ImageView
+        android:id="@+id/status_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"/>
+    <TextView
+        android:id="@+id/time_since_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/status_image"/>
 
-</FrameLayout>
+</RelativeLayout>

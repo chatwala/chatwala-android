@@ -44,6 +44,13 @@ public class ChatwalaMessage
 
     private File messageFile = null;
 
+    @DatabaseField
+    private Long timestamp;
+
+    @DatabaseField
+    private MessageState messageState;
+
+
     public String getMessageId()
     {
         return messageId;
@@ -155,5 +162,31 @@ public class ChatwalaMessage
     {
         this.messageFile = null;
         this.fileUrl = null;
+    }
+
+    public Long getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp)
+    {
+        this.timestamp = timestamp;
+    }
+
+    public MessageState getMessageState()
+    {
+        return messageState;
+    }
+
+    public void setMessageState(MessageState messageState)
+    {
+        this.messageState = messageState;
+    }
+
+    public enum MessageState {
+        UNREAD,
+        READ,
+        REPLIED
     }
 }
