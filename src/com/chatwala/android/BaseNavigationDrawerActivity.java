@@ -263,14 +263,15 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
             final ChatwalaMessage message = (ChatwalaMessage)getItem(position);
 
+            ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
             File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
             if(thumbImage.exists())
             {
-                Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+                Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
             }
             else
             {
-                Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).fit().into((ImageView) convertView.findViewById(R.id.thumb_view));
+                Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).resize(150,70).centerCrop().noFade().into(thumbView);
                 DataProcessor.runProcess(new Runnable()
                 {
                     @Override
