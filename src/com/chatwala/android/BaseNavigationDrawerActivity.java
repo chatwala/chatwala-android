@@ -4,7 +4,9 @@ import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -280,9 +282,54 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
             }
 
+            ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
+
+            ImageView stateView = (ImageView)convertView.findViewById(R.id.status_image);
+            switch(message.getMessageState())
+            {
+                case UNREAD:
+                    stateView.setImageResource(R.drawable.unread_icon);
+                    break;
+                case REPLIED:
+                    stateView.setImageResource(R.drawable.replied_icon);
+                    break;
+                default:
+                    stateView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
             convertView.setTag(message.getMessageId());
 
             return convertView;
+        }
+    }
+
+    //This is crude for now while it needs to be done manually, should at least break it into its own class and use some meaningfully named constant variables
+    //Todo: revisit when we see what's coming back from the server for this field
+    private String formatMessageTimestamp(long messageTimestamp)
+    {
+        int secondsSince = (int)(System.currentTimeMillis() - messageTimestamp) / 1000;
+
+        if(secondsSince < 60)
+        {
+            return secondsSince + "s";
+        }
+        else if(secondsSince < (60*60))
+        {
+            return (secondsSince/60) + "m";
+        }
+        else if(secondsSince < (60*60*60))
+        {
+            return ((secondsSince/60)/60) + "h";
+        }
+        else if(secondsSince < (60*60*60*24))
+        {
+            int daysSince = (((secondsSince/60)/60)/24);
+            return  daysSince + daysSince == 1 ? " day" : " days";
+        }
+        else
+        {
+            int weeksSince = ((((secondsSince/60)/60)/24)/7);
+            return  weeksSince + weeksSince == 1 ? " week" : " weeks";
         }
     }
 
