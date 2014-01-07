@@ -35,6 +35,7 @@ import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
+import com.j256.ormlite.dao.Dao;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -581,7 +582,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outFile.getAbsolutePath(), messageId));
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outFile.getAbsolutePath(), messageId, null));
                                 }
                             });
 
@@ -601,7 +602,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), playbackMessage.getSenderId()));
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PostSubmitMessageCommand(outFile.getAbsolutePath(), playbackMessage.getSenderId(), playbackMessage.getMessageId()));
                                 }
                             });
                             Toast.makeText(NewCameraActivity.this, "Message sent.", Toast.LENGTH_LONG).show();
@@ -1081,7 +1082,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     playbackMessageId = ShareUtils.getIdFromIntent(getIntent());
                 }
 
-                playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(playbackMessageId);
+                Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao();
+                playbackMessage = messageDao.queryForId(playbackMessageId);
 
                 if(playbackMessage == null || playbackMessage.getMessageFile() == null)
                 {
@@ -1090,6 +1092,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
                 }
                 chatMessageVideoMetadata = VideoUtils.findMetadata(playbackMessage.getMessageFile());
+
+                if(playbackMessage.getMessageState() == ChatwalaMessage.MessageState.UNREAD)
+                {
+                    playbackMessage.setMessageState(ChatwalaMessage.MessageState.READ);
+                    messageDao.update(playbackMessage);
+                }
+
                 return playbackMessage;
             }
             catch (TransientException e)
@@ -1143,7 +1152,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 {
                     try
                     {
-                        ChatwalaMessage messageInfo = new PostSubmitMessageRequest(NewCameraActivity.this, null, null).execute();
+                        ChatwalaMessage messageInfo = new PostSubmitMessageRequest(NewCameraActivity.this, null, null, null).execute();
                         if (messageInfo != null)
                         {
                             messageToSendDirectly = messageInfo;

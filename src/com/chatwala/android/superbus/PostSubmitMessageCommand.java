@@ -17,14 +17,15 @@ import com.chatwala.android.http.PostSubmitMessageRequest;
 public class PostSubmitMessageCommand extends SqliteCommand
 {
     String localMessagePath;
-    String recipientId;
+    String recipientId, originalMessageId;
 
     public PostSubmitMessageCommand(){}
 
-    public PostSubmitMessageCommand(String localMessagePath, String recipientId)
+    public PostSubmitMessageCommand(String localMessagePath, String recipientId, String originalMessageId)
     {
         this.localMessagePath = localMessagePath;
         this.recipientId = recipientId;
+        this.originalMessageId = originalMessageId;
     }
 
     @Override
@@ -42,6 +43,6 @@ public class PostSubmitMessageCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new PostSubmitMessageRequest(context, localMessagePath, recipientId).execute();
+        new PostSubmitMessageRequest(context, localMessagePath, recipientId, originalMessageId).execute();
     }
 }

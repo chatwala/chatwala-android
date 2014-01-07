@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 
@@ -22,14 +23,15 @@ import java.sql.SQLException;
 public class PutMessageFileRequest extends BasePutRequest
 {
     String localMessageUrl;
-    String messageId;
+    String messageId, originalMessageId;
 
 
-    public PutMessageFileRequest(Context context, String localMessageUrl, String messageId)
+    public PutMessageFileRequest(Context context, String localMessageUrl, String messageId, String originalMessageId)
     {
         super(context);
         this.localMessageUrl = localMessageUrl;
         this.messageId = messageId;
+        this.originalMessageId = originalMessageId;
     }
 
     @Override
@@ -90,6 +92,18 @@ public class PutMessageFileRequest extends BasePutRequest
     @Override
     protected boolean hasDbOperation()
     {
-        return false;
+        return originalMessageId != null;
+    }
+
+    @Override
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    {
+        Dao<ChatwalaMessage, String> messageDao = databaseHelper.getChatwalaMessageDao();
+
+        ChatwalaMessage message = messageDao.queryForId(originalMessageId);
+        message.setMessageState(ChatwalaMessage.MessageState.REPLIED);
+        messageDao.update(message);
+
+        return null;
     }
 }

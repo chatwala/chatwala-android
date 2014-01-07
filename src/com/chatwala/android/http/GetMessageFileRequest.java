@@ -118,6 +118,14 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
+        boolean exists = databaseHelper.getChatwalaMessageDao().idExists(chatwalaMessage.getMessageId());
+
+        if(!exists)
+        {
+            chatwalaMessage.setTimestamp(System.currentTimeMillis());
+            chatwalaMessage.setMessageState(ChatwalaMessage.MessageState.UNREAD);
+        }
+
         chatwalaMessage.setMessageFile(messageFile);
 
         try

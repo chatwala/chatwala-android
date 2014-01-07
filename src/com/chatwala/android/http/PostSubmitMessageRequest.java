@@ -26,13 +26,14 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
 {
     ChatwalaMessage messageMetadata;
     String localMessagePath;
-    String recipientId;
+    String recipientId, originalMessageId;
 
-    public PostSubmitMessageRequest(Context context, String localMessagePath, String recipientId)
+    public PostSubmitMessageRequest(Context context, String localMessagePath, String recipientId, String originalMessageId)
     {
         super(context);
         this.localMessagePath = localMessagePath;
         this.recipientId = recipientId;
+        this.originalMessageId = originalMessageId;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
         if(localMessagePath != null)
-            BusHelper.submitCommandSync(context, new PutMessageFileCommand(localMessagePath, messageMetadata.getMessageId()));
+            BusHelper.submitCommandSync(context, new PutMessageFileCommand(localMessagePath, messageMetadata.getMessageId(), originalMessageId));
     }
 
     @Override

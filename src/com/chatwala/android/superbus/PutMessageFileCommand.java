@@ -16,14 +16,15 @@ import com.chatwala.android.http.PutMessageFileRequest;
  */
 public class PutMessageFileCommand extends SqliteCommand
 {
-    private String messageId, messageLocalUrl;
+    private String messageId, messageLocalUrl, originalMessageId;
 
     public PutMessageFileCommand(){}
 
-    public PutMessageFileCommand(String messageLocalUrl, String messageId)
+    public PutMessageFileCommand(String messageLocalUrl, String messageId, String originalMessageId)
     {
         this.messageId = messageId;
         this.messageLocalUrl = messageLocalUrl;
+        this.originalMessageId = originalMessageId;
     }
 
     @Override
@@ -41,6 +42,6 @@ public class PutMessageFileCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new PutMessageFileRequest(context, messageLocalUrl, messageId).execute();
+        new PutMessageFileRequest(context, messageLocalUrl, messageId, originalMessageId).execute();
     }
 }
