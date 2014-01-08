@@ -20,7 +20,6 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
-import com.chatwala.android.superbus.GetUserProfilePictureCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 
@@ -265,23 +264,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
             ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
             File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
-            if(thumbImage.exists())
-            {
-                Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
-            }
-            else
-            {
-                Picasso.with(BaseNavigationDrawerActivity.this).load(message.getThumbnailUrl()).resize(150,70).centerCrop().noFade().into(thumbView);
-                DataProcessor.runProcess(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        BusHelper.submitCommandSync(BaseNavigationDrawerActivity.this, new GetUserProfilePictureCommand(message.getSenderId()));
-                    }
-                });
-
-            }
+            Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
 
             ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
 

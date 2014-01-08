@@ -9,6 +9,7 @@ import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.util.MessageDataStore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -56,8 +57,11 @@ public class GetMessageFileCommand extends SqliteCommand
     @Override
     public void onSuccess(Context context)
     {
-        BroadcastSender.makeNewMessagesBroadcast(context);
-        ChatwalaNotificationManager.makeNewMessagesNotification(context);
+        if(MessageDataStore.findUserImageInLocalStore(messageMetadata.getSenderId()).exists())
+        {
+            BroadcastSender.makeNewMessagesBroadcast(context);
+            ChatwalaNotificationManager.makeNewMessagesNotification(context);
+        }
     }
 
     public String getMessageId()

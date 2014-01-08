@@ -1,7 +1,9 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import co.touchlab.android.superbus.PermanentException;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ShareUtils;
@@ -54,7 +56,7 @@ public class GetUserProfilePictureRequest extends BaseGetRequest
         }
         catch (FileNotFoundException e)
         {
-
+            throw new RuntimeException(e);
         }
         catch (IOException e)
         {

@@ -5,7 +5,9 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
+import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.http.GetUserProfilePictureRequest;
+import com.chatwala.android.loaders.BroadcastSender;
 
 /**
  * Created with IntelliJ IDEA.
@@ -49,6 +51,12 @@ public class GetUserProfilePictureCommand extends SqliteCommand
     public void callCommand(Context context) throws TransientException, PermanentException
     {
         new GetUserProfilePictureRequest(context, userId).execute();
+    }
+
+    @Override
+    public void onSuccess(Context context)
+    {
+        BroadcastSender.makeNewMessagesBroadcast(context);
     }
 
     public String getUserId()
