@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
@@ -103,6 +104,8 @@ public class PutMessageFileRequest extends BasePutRequest
         ChatwalaMessage message = messageDao.queryForId(originalMessageId);
         message.setMessageState(ChatwalaMessage.MessageState.REPLIED);
         messageDao.update(message);
+
+        BroadcastSender.makeNewMessagesBroadcast(context);
 
         return null;
     }

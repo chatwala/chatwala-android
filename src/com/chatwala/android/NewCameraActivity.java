@@ -30,6 +30,7 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutUserProfilePictureCommand;
@@ -1097,6 +1098,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 {
                     playbackMessage.setMessageState(ChatwalaMessage.MessageState.READ);
                     messageDao.update(playbackMessage);
+                    BroadcastSender.makeNewMessagesBroadcast(NewCameraActivity.this);
                 }
 
                 return playbackMessage;
