@@ -60,8 +60,8 @@ public class MessageDataStore
     public static boolean isEnoughSpace()
     {
         long megAvailable = megsAvailable();
-        CWLog.i(MessageDataStore.class, "Mb Available: " + megAvailable);
-        Log.d("########", "Mb Available: " + megAvailable);
+        CWLog.i(MessageDataStore.class, "Mb Available on device: " + megAvailable);
+        Log.d("########", "Mb Available on device: " + megAvailable);
         return megAvailable > MIN_SPACE_MEGS;
     }
 
@@ -72,13 +72,18 @@ public class MessageDataStore
      */
     public static boolean checkClearStore(Context context)
     {
-        long spaceUsed = megsUsed();
+        long spaceUsed = megsUsed(messageDir);
         long spaceLeft = AppPrefs.getInstance(context).getPrefDiskSpaceMax() - spaceUsed;
 
         CWLog.i(MessageDataStore.class, "Mb Used: " + spaceUsed);
-        Log.d("########", "Mb Used: " + spaceUsed);
         CWLog.i(MessageDataStore.class, "Mb Left: " + spaceLeft);
-        Log.d("########", "Mb Left: " + spaceLeft);
+
+        Log.d("########", "Message Mb Used: " + spaceUsed);
+        Log.d("########", "Message Mb Left: " + spaceLeft);
+
+        Log.d("########", "Outbox Mb Used: " + megsUsed(outboxDir));
+        Log.d("########", "Temp Mb Used: " + megsUsed(tempDir));
+        Log.d("########", "User Image Mb Used: " + megsUsed(usersDir));
 
         if(spaceLeft < 0)
         {
@@ -124,12 +129,10 @@ public class MessageDataStore
         return new File(usersDir, id + PNG_FILE_EXTENSION);
     }
 
-    private static long megsUsed()
+    private static long megsUsed(File dirToCheck)
     {
-        File videosDir = messageDir;
-
         long total = 0;
-        File[] files = videosDir.listFiles();
+        File[] files = dirToCheck.listFiles();
 
         for (File file : files)
         {
