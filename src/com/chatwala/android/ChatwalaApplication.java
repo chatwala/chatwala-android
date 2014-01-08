@@ -39,9 +39,10 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     private GsonSqlitePersistenceProvider persistenceProvider;
 
-    private static final String API_PATH_PROD     = "http://chatwala-prod.azurewebsites.net/";
-    private static final String API_PATH_DEV     = "http://chatwala-dev.azurewebsites.net/";
-    private static final String API_PATH_DUMMY = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
+    private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
+    private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
+    private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
+    private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 
     @Override
     public void onCreate()
@@ -85,12 +86,16 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     public static String getApiPath()
     {
-        return API_PATH_DEV;
+        return API_PATH_PROD_EAST;
     }
 
     public static String getApiPathString()
     {
-        if(getApiPath().equals(API_PATH_PROD))
+        if(getApiPath().equals(API_PATH_PROD_EAST))
+        {
+            return "prodeast";
+        }
+        else if(getApiPath().equals(API_PATH_PROD))
         {
             return "prod";
         }
