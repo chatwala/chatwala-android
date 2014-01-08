@@ -4,7 +4,7 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
-              android:background="@color/drawer_background">
+              android:background="@drawable/settings_background">
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dip"
@@ -109,7 +109,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_action_arrow_right"/>
+                android:src="@drawable/settings_arrow_right"/>
         </LinearLayout>
 
         <View
@@ -136,7 +136,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_action_arrow_right"/>
+                android:src="@drawable/settings_arrow_right"/>
         </LinearLayout>
     </LinearLayout>
     <View
