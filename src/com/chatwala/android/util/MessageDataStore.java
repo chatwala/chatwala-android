@@ -29,7 +29,7 @@ public class MessageDataStore
     private static final int MIN_INBOX_MESSAGES = 5;
 
     private static ChatwalaApplication chatwalaApplication = null;
-    private static File tempDir, messageDir, outboxDir, usersDir;
+    private static File tempDir, messageDir, outboxDir, usersDir, plistDir;
 
     private static final String WALA_FILE_PREFIX = "vid_";
     private static final String CHAT_DIR_PREFIX = "chat_";
@@ -41,6 +41,8 @@ public class MessageDataStore
     private static final String PREPPED_WALA_FILE = "chat.wala";
     private static final String PREPPED_METADATA_FILE = "metadata.json";
     private static final String PREPPED_VIDEO_FILE = "video.mp4";
+
+    private static final String PLIST_FILE = "killswitch.plist";
 
     public static boolean init(ChatwalaApplication application)
     {
@@ -196,10 +198,12 @@ public class MessageDataStore
         tempDir = new File(application.getFilesDir(), "temp");
         messageDir = new File(application.getFilesDir(), "messages");
         outboxDir = new File(application.getFilesDir(), "outbox");
+        plistDir = new File(application.getFilesDir(), "plist");
 
         tempDir.mkdir();
         messageDir.mkdir();
         outboxDir.mkdir();
+        plistDir.mkdir();
 
         File imagesDir = new File(application.getFilesDir(), "images");
         imagesDir.mkdir();
@@ -207,6 +211,11 @@ public class MessageDataStore
         usersDir.mkdirs();
 
         dumpTempStore();
+    }
+
+    public static File makePlistFile()
+    {
+        return new File(plistDir, PLIST_FILE);
     }
 
     public static File makeUserFile(String userId)

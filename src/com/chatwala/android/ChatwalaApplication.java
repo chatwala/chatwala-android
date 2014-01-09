@@ -1,10 +1,8 @@
 package com.chatwala.android;
 
 import android.app.Application;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
-import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
@@ -14,6 +12,7 @@ import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
@@ -38,11 +37,6 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     private boolean splashRan;
 
     private GsonSqlitePersistenceProvider persistenceProvider;
-
-    private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
-    private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
-    private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
-    private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 
     @Override
     public void onCreate()
@@ -69,48 +63,20 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
 
-        if(AppPrefs.getInstance(ChatwalaApplication.this).getUserId() == null)
+        DataProcessor.runProcess(new Runnable()
         {
-            DataProcessor.runProcess(new Runnable()
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                BusHelper.submitCommandSync(ChatwalaApplication.this, new CheckKillswitchCommand());
+                if(AppPrefs.getInstance(ChatwalaApplication.this).getUserId() == null)
                 {
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new GetRegisterUserCommand());
                 }
-            });
-        }
+            }
+        });
 
         FetchMessagesService.init(ChatwalaApplication.this, AppPrefs.getInstance(ChatwalaApplication.this).getPrefMessageLoadInterval());
-    }
-
-    public static String getApiPath()
-    {
-        return API_PATH_PROD_EAST;
-    }
-
-    public static String getApiPathString()
-    {
-        if(getApiPath().equals(API_PATH_PROD_EAST))
-        {
-            return "prodeast";
-        }
-        else if(getApiPath().equals(API_PATH_PROD))
-        {
-            return "prod";
-        }
-        else if(getApiPath().equals(API_PATH_DEV))
-        {
-            return "dev";
-        }
-        else if(getApiPath().equals(API_PATH_DUMMY))
-        {
-            return "test";
-        }
-        else
-        {
-            return "unknown";
-        }
     }
 
     public boolean isSplashRan()

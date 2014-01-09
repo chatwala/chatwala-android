@@ -34,6 +34,11 @@ public abstract class BaseHttpRequest<T>
     private static final int    STATUS_SERVER_ERROR        = 500;
     private static final int    STATUS_SERVICE_UNAVAILABLE = 503;
 
+    private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
+    private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
+    private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
+    private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
+
     protected Context context;
 
     private String clientId = "58041de0bc854d9eb514d2f22d50ad4c";
@@ -44,9 +49,38 @@ public abstract class BaseHttpRequest<T>
         this.context = context;
     }
 
+    public static String getApiPath()
+    {
+        return API_PATH_PROD_EAST;
+    }
+
+    public static String getApiPathString()
+    {
+        if(getApiPath().equals(API_PATH_PROD_EAST))
+        {
+            return "prodeast";
+        }
+        else if(getApiPath().equals(API_PATH_PROD))
+        {
+            return "prod";
+        }
+        else if(getApiPath().equals(API_PATH_DEV))
+        {
+            return "dev";
+        }
+        else if(getApiPath().equals(API_PATH_DUMMY))
+        {
+            return "test";
+        }
+        else
+        {
+            return "unknown";
+        }
+    }
+
     public T execute() throws TransientException, PermanentException
     {
-        BusHttpClient client = new BusHttpClient(ChatwalaApplication.getApiPath());
+        BusHttpClient client = new BusHttpClient(getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
         AbstractRequestLogger logger = new AbstractRequestLogger()

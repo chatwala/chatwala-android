@@ -31,6 +31,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutUserProfilePictureCommand;
@@ -281,6 +282,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         super.onCreate(savedInstanceState);
         CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
+
+        DataProcessor.runProcess(new Runnable() {
+            @Override
+            public void run() {
+                BusHelper.submitCommandSync(NewCameraActivity.this, new CheckKillswitchCommand());
+            }
+        });
 
         buttonDelayHandler = new Handler();
 

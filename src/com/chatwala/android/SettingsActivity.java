@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import com.chatwala.android.http.BaseHttpRequest;
 
 /**
  * Created with IntelliJ IDEA.
@@ -131,7 +132,7 @@ public class SettingsActivity extends BaseChatWalaActivity
         }
 
         ((TextView)findViewById(R.id.version_info_text)).setText("Version: " + appVersion);
-        ((TextView)findViewById(R.id.api_info_text)).setText("Server: " + ChatwalaApplication.getApiPathString());
+        ((TextView)findViewById(R.id.api_info_text)).setText("Server: " + BaseHttpRequest.getApiPathString());
     }
 
     @Override
