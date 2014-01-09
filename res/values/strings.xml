@@ -16,4 +16,6 @@
     <string name="max_disk_usage">Max Disk Usage: </string>
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
+
+    <string name="killswitch">KILLSWITCH</string>
 </resources>

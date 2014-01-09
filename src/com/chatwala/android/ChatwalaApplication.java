@@ -1,8 +1,10 @@
 package com.chatwala.android;
 
 import android.app.Application;
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
+import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
@@ -12,11 +14,18 @@ import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
+import xmlwise.Plist;
+import xmlwise.XmlParseException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -62,6 +71,8 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
+
+        isKillswitchActive(ChatwalaApplication.this);
 
         DataProcessor.runProcess(new Runnable()
         {
@@ -138,5 +149,42 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         {
             return DatabaseHelper.getInstance(ChatwalaApplication.this).getWritableDatabase();
         }
+    }
+
+    public static boolean isKillswitchActive(Context context)
+    {
+        try
+        {
+            File killswitchFile = MessageDataStore.makePlistFile();
+
+            if(killswitchFile.exists())
+            {
+                Map<String, Object> properties = Plist.load(killswitchFile);
+                Log.d("####KILLSWITCH####", Boolean.toString((Boolean) properties.get("APP_DISABLED")));
+                Log.d("####KILLSWITCH####", (String) properties.get("APP_DISABLED_TEXT"));
+
+                if((Boolean)properties.get("APP_DISABLED"))
+                {
+                    KillswitchActivity.startMe(context, (String)properties.get("APP_DISABLED_TEXT"));
+                    return true;
+                }
+                else
+                {
+                    BroadcastSender.makeKillswitchOffBroadcast(context);
+                }
+            }
+
+            //todo - what should we do in these cases? For now we'll just eat them
+        }
+        catch (XmlParseException e)
+        {
+            CWLog.softExceptionLog(ChatwalaApplication.class, "Unable to parse killswitch plist file", e);
+        }
+        catch (IOException e)
+        {
+            CWLog.softExceptionLog(ChatwalaApplication.class, "IO Exception with killswitch plist file", e);
+        }
+
+        return false;
     }
 }

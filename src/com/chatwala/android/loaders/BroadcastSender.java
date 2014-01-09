@@ -14,10 +14,16 @@ import android.support.v4.content.LocalBroadcastManager;
 public class BroadcastSender
 {
     public static final String NEW_MESSAGES_BROADCAST = "NEW_MESSAGES_BROADCAST";
+    public static final String KILLSWITCH_OFF_BROADCAST = "KILLSWITCH_OFF_BROADCAST";
 
     public static void makeNewMessagesBroadcast(Context context)
     {
         sendBroadcast(context, NEW_MESSAGES_BROADCAST);
+    }
+
+    public static void makeKillswitchOffBroadcast(Context context)
+    {
+        sendBroadcast(context, KILLSWITCH_OFF_BROADCAST);
     }
 
     private static void sendBroadcast(Context context, String broadcast)

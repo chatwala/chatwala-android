@@ -283,13 +283,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
 
-        DataProcessor.runProcess(new Runnable() {
-            @Override
-            public void run() {
-                BusHelper.submitCommandSync(NewCameraActivity.this, new CheckKillswitchCommand());
-            }
-        });
-
         buttonDelayHandler = new Handler();
 
         setMainContent(getLayoutInflater().inflate(R.layout.activity_main, (ViewGroup) getWindow().getDecorView(), false));
@@ -402,6 +395,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     {
         super.onResume();
         CWLog.b(NewCameraActivity.class, "onResume");
+
+        DataProcessor.runProcess(new Runnable()
+        {
+            @Override
+            public void run() {
+                BusHelper.submitCommandSync(NewCameraActivity.this, new CheckKillswitchCommand());
+            }
+        });
 
         activityActive = true;
         setAppState(AppState.Transition);

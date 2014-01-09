@@ -6,6 +6,8 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
+import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.KillswitchActivity;
 import com.chatwala.android.util.MessageDataStore;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
@@ -30,7 +32,7 @@ public class CheckKillswitchCommand extends SqliteCommand
     @Override
     public boolean same(Command command)
     {
-        return false;
+        return command instanceof CheckKillswitchCommand;
     }
 
     @Override
@@ -54,10 +56,10 @@ public class CheckKillswitchCommand extends SqliteCommand
             os.close();
             is.close();
 
-            Map<String, Object> properties = Plist.load(file);
-            Log.d("####KILLSWITCH####", Boolean.toString((Boolean) properties.get("APP_DISABLED")));
-            Log.d("####KILLSWITCH####", (String) properties.get("APP_DISABLED_TEXT"));
-
+            if(ChatwalaApplication.isKillswitchActive(context))
+            {
+                throw new TransientException("Killswitch is active");
+            }
             //todo: how to handle these errors, i.e. killswitch server having problems? Eat them? Act like the killswitch is set?
         }
         catch (MalformedURLException e)
@@ -68,9 +70,11 @@ public class CheckKillswitchCommand extends SqliteCommand
         {
             e.printStackTrace();
         }
-        catch (XmlParseException e)
-        {
-            e.printStackTrace();
-        }
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return Command.MUCH_HIGHER_PRIORITY;
     }
 }
