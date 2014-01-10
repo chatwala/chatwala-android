@@ -1,6 +1,8 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import co.touchlab.android.superbus.PermanentException;
+import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.crashlytics.android.Crashlytics;
 import com.turbomanage.httpclient.HttpResponse;
@@ -23,7 +25,7 @@ public abstract class BasePutRequest<T> extends BaseHttpRequest<T>
     }
 
     @Override
-    protected HttpResponse makeRequest(BusHttpClient client)
+    protected HttpResponse makeRequest(BusHttpClient client) throws PermanentException, TransientException
     {
         Crashlytics.log("makeRequest " + this.getClass().getName());
         //return client.post(getResourceURL(), getContentType(), getPutData());
@@ -32,7 +34,7 @@ public abstract class BasePutRequest<T> extends BaseHttpRequest<T>
 
     abstract String getContentType();
 
-    protected abstract byte[] getPutData();
+    protected abstract byte[] getPutData() throws PermanentException, TransientException;
 
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException

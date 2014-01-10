@@ -1,159 +1,194 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:background="@drawable/settings_background">
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:background="@color/settings_button_accent"/>
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dip"
-        android:paddingRight="20dip"
-        android:gravity="center_vertical"
-        android:background="@color/settings_button_background">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/delivery_method"
-            android:textColor="@color/text_white"
-            android:layout_marginRight="10dip"/>
-        <Spinner
-            android:id="@+id/delivery_spinner"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-    </LinearLayout>
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:background="@color/settings_button_accent"/>
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dip"
-        android:paddingRight="20dip"
-        android:gravity="center_vertical"
-        android:background="@color/settings_button_background">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/refresh_interval"
-            android:textColor="@color/text_white"
-            android:layout_marginRight="10dip"/>
-        <Spinner
-            android:id="@+id/refresh_spinner"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-    </LinearLayout>
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:background="@color/settings_button_accent"/>
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dip"
-        android:paddingRight="20dip"
-        android:gravity="center_vertical"
-        android:background="@color/settings_button_background">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/max_disk_usage"
-            android:textColor="@color/text_white"
-            android:layout_marginRight="10dip"/>
-        <Spinner
-            android:id="@+id/disk_space_spinner"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-    </LinearLayout>
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:background="@color/settings_button_accent"
-        android:layout_marginBottom="20dip"/>
-
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:background="@color/settings_button_accent"/>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/settings_background">
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/settings_button_background">
-        <LinearLayout
-            android:id="@+id/terms_and_conditions_row"
-            android:layout_height="wrap_content"
+        android:layout_height="wrap_content">
+        <View
             android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="20dip">
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:gravity="center_vertical"
+            android:background="@color/settings_button_background">
             <TextView
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:text="@string/terms_and_conditions"
-                android:textColor="@color/text_white"/>
-            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/settings_arrow_right"/>
+                android:text="@string/delivery_method"
+                android:textColor="@color/text_white"
+                android:layout_marginRight="10dip"/>
+            <Spinner
+                android:id="@+id/delivery_spinner"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
         </LinearLayout>
-
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:gravity="center_vertical"
+            android:background="@color/settings_button_background">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/refresh_interval"
+                android:textColor="@color/text_white"
+                android:layout_marginRight="10dip"/>
+            <Spinner
+                android:id="@+id/refresh_spinner"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+        </LinearLayout>
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
+            android:gravity="center_vertical"
+            android:background="@color/settings_button_background">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/max_disk_usage"
+                android:textColor="@color/text_white"
+                android:layout_marginRight="10dip"/>
+            <Spinner
+                android:id="@+id/disk_space_spinner"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+        </LinearLayout>
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dip"
             android:background="@color/settings_button_accent"
-            android:layout_marginLeft="20dip"
-            android:layout_marginRight="20dip"/>
+            android:layout_marginBottom="20dip"/>
 
-        <LinearLayout
-            android:id="@+id/privacy_policy_row"
-            android:layout_height="wrap_content"
+        <View
             android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+        <LinearLayout
+            android:id="@+id/edit_profile_pic_row"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="20dip">
+            android:padding="20dip"
+            android:gravity="center_vertical"
+            android:background="@color/settings_button_background">
             <TextView
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:text="@string/privacy_policy"
-                android:textColor="@color/text_white"/>
+                android:text="@string/edit_profile_picture"
+                android:textColor="@color/text_white"
+                android:layout_marginRight="10dip"/>
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/settings_arrow_right"/>
         </LinearLayout>
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"
+            android:layout_marginBottom="20dip"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/settings_button_background">
+            <LinearLayout
+                android:id="@+id/terms_and_conditions_row"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:orientation="horizontal"
+                android:padding="20dip">
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/terms_and_conditions"
+                    android:textColor="@color/text_white"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/settings_arrow_right"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dip"
+                android:background="@color/settings_button_accent"
+                android:layout_marginLeft="20dip"
+                android:layout_marginRight="20dip"/>
+
+            <LinearLayout
+                android:id="@+id/privacy_policy_row"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:orientation="horizontal"
+                android:padding="20dip">
+                <TextView
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/privacy_policy"
+                    android:textColor="@color/text_white"/>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/settings_arrow_right"/>
+            </LinearLayout>
+        </LinearLayout>
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+
+        <TextView
+            android:id="@+id/version_info_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/dot_red"/>
+
+        <TextView
+            android:id="@+id/api_info_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/dot_red"/>
+
     </LinearLayout>
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dip"
-        android:background="@color/settings_button_accent"/>
-
-    <TextView
-        android:id="@+id/version_info_text"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/dot_red"/>
-
-    <TextView
-        android:id="@+id/api_info_text"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/dot_red"/>
-
-</LinearLayout>
+</ScrollView>

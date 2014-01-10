@@ -113,7 +113,7 @@ public class ZipUtil
             }
             buildDir.delete();
 
-            if(!AppPrefs.getInstance(activity).hasSentEmail())
+            if(!MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(activity).getUserId()).exists())
             {
                 final Context applicationContext = activity.getApplicationContext();
                 DataProcessor.runProcess(new Runnable()

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -12,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.chatwala.android.http.BaseHttpRequest;
+
+import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.
@@ -98,6 +101,14 @@ public class SettingsActivity extends BaseChatWalaActivity
         });
         diskSpaceSpinner.setSelection(DiskSpaceOptions.fromSpace(AppPrefs.getInstance(SettingsActivity.this).getPrefDiskSpaceMax()).getSortOrder());
 
+        findViewById(R.id.edit_profile_pic_row).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                UpdateProfilePicActivity.startMe(SettingsActivity.this);
+            }
+        });
 
         findViewById(R.id.terms_and_conditions_row).setOnClickListener(new View.OnClickListener()
         {

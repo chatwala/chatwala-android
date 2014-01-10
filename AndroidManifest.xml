@@ -56,6 +56,11 @@
         <activity android:name="com.chatwala.android.KillswitchActivity"
                   android:label="@string/killswitch"
                   android:screenOrientation="portrait"/>
+        <activity android:name="com.chatwala.android.UpdateProfilePicActivity"
+                  android:label="@string/update_profile_pic"
+                  android:screenOrientation="portrait"
+                  android:theme="@style/ChatwalaTheme"/>
+
 
         <service android:name="com.chatwala.android.FetchMessagesService"
                  android:exported="false"/>

@@ -83,15 +83,16 @@ public abstract class BaseHttpRequest<T>
         BusHttpClient client = new BusHttpClient(getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
-        AbstractRequestLogger logger = new AbstractRequestLogger()
-        {
-            @Override
-            public void log(String msg)
-            {
-
-            }
-        };
-        client.setRequestLogger(logger);
+        //Quiet the logs, some versions of intellij don't play nice with outputting bytes to the console.
+//        AbstractRequestLogger logger = new AbstractRequestLogger()
+//        {
+//            @Override
+//            public void log(String msg)
+//            {
+//
+//            }
+//        };
+//        client.setRequestLogger(logger);
 
         final HttpResponse httpResponse = makeRequest(client);
 
@@ -170,7 +171,7 @@ public abstract class BaseHttpRequest<T>
 
     protected abstract String getResourceURL();
 
-    protected abstract HttpResponse makeRequest(BusHttpClient client);
+    protected abstract HttpResponse makeRequest(BusHttpClient client) throws PermanentException, TransientException;
 
     protected abstract void parseResponse(HttpResponse response) throws JSONException, SQLException;
 

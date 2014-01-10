@@ -23,7 +23,6 @@ public class AppPrefs
     private Application application;
 
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
-    public static final String PREF_SENT_PROFILE_IMAGE = "PREF_SENT_PROFILE_IMAGE";
     public static final String PREF_USER_ID = "USER_ID";
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
@@ -60,16 +59,6 @@ public class AppPrefs
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
-    }
-
-    public Boolean hasSentEmail()
-    {
-        return mSp.getBoolean(PREF_SENT_PROFILE_IMAGE, false);
-    }
-
-    public void setSentEmail(boolean isSent)
-    {
-        mSp.edit().putBoolean(PREF_SENT_PROFILE_IMAGE, isSent).apply();
     }
 
     public void setUserId(String userId)

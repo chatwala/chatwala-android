@@ -14,8 +14,14 @@
     <string name="delivery_method">Delivery method: </string>
     <string name="refresh_interval">Refresh Interval: </string>
     <string name="max_disk_usage">Max Disk Usage: </string>
+    <string name="edit_profile_picture">Edit Profile Picture</string>
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
+
+    <string name="update_profile_pic">UPDATE PROFILE PIC</string>
+    <string name="change_profile_pic">CHANGE!</string>
+    <string name="change_profile_pic_bottom_panel">Tap CHANGE! to update your profile pic.</string>
+    <string name="no_profile_pic">You don\'t have a profile pic yet!</string>
 
     <string name="killswitch">KILLSWITCH</string>
 </resources>
