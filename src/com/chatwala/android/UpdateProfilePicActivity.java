@@ -29,7 +29,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
 {
     private String userId;
     private ImageView profilePicImage;
-    private TextView buttonText, bottomPanelText;
+    private TextView buttonText, bottomPanelText, noImageText;
 
     File newThumbImage = null;
 
@@ -45,7 +45,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         userId = AppPrefs.getInstance(UpdateProfilePicActivity.this).getUserId();
 
         profilePicImage = (ImageView)findViewById(R.id.current_profile_pic);
-        TextView noImageText = (TextView)findViewById(R.id.no_profile_pic_text);
+        noImageText = (TextView)findViewById(R.id.no_profile_pic_text);
         File thumbImage = MessageDataStore.findUserImageInLocalStore(userId);
         if(thumbImage.exists())
         {
@@ -129,6 +129,9 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
     {
         if(requestCode == TAKE_PICTURE_REQUEST && resultCode == RESULT_OK)
         {
+            profilePicImage.setVisibility(View.VISIBLE);
+            noImageText.setVisibility(View.GONE);
+            
             try
             {
                 FileOutputStream out = new FileOutputStream(MessageDataStore.makeTempUserFile(userId));
