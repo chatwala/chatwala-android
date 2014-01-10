@@ -26,6 +26,7 @@ import xmlwise.XmlParseException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created with IntelliJ IDEA.
@@ -46,6 +47,8 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     private boolean splashRan;
 
     private GsonSqlitePersistenceProvider persistenceProvider;
+
+    public static AtomicBoolean isKillswitchShowing;
 
     @Override
     public void onCreate()
@@ -72,6 +75,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
 
+        isKillswitchShowing = new AtomicBoolean(false);
         isKillswitchActive(ChatwalaApplication.this);
 
         DataProcessor.runProcess(new Runnable()

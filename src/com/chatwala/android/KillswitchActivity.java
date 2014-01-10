@@ -46,13 +46,6 @@ public class KillswitchActivity extends BaseChatWalaActivity
         };
 
         LocalBroadcastManager.getInstance(KillswitchActivity.this).registerReceiver(killswitchReceiver, new IntentFilter(BroadcastSender.KILLSWITCH_OFF_BROADCAST));
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                BroadcastSender.makeKillswitchOffBroadcast(KillswitchActivity.this);
-            }
-        }, 10000);
     }
 
     @Override
@@ -76,9 +69,12 @@ public class KillswitchActivity extends BaseChatWalaActivity
 
     public static void startMe(Context context, String displayText)
     {
-        Intent intent = new Intent(context, KillswitchActivity.class);
-        intent.putExtra(KILLSWITCH_TEXT, displayText);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+        if(ChatwalaApplication.isKillswitchShowing.compareAndSet(false, true))
+        {
+            Intent intent = new Intent(context, KillswitchActivity.class);
+            intent.putExtra(KILLSWITCH_TEXT, displayText);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
     }
 }

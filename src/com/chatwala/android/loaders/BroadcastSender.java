@@ -3,6 +3,7 @@ package com.chatwala.android.loaders;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
+import com.chatwala.android.ChatwalaApplication;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +25,7 @@ public class BroadcastSender
     public static void makeKillswitchOffBroadcast(Context context)
     {
         sendBroadcast(context, KILLSWITCH_OFF_BROADCAST);
+        ChatwalaApplication.isKillswitchShowing.set(false);
     }
 
     private static void sendBroadcast(Context context, String broadcast)
