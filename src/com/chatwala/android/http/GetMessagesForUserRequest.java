@@ -8,8 +8,10 @@ import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.GetMessageFileCommand;
+import com.chatwala.android.superbus.GetUserProfilePictureCommand;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
@@ -75,22 +77,36 @@ public class GetMessagesForUserRequest extends BaseGetRequest
     {
         Dao<ChatwalaMessage, String> messageDao = databaseHelper.getChatwalaMessageDao();
 
-        for(ChatwalaMessage message : messageArray)
+        for(final ChatwalaMessage message : messageArray)
         {
             ChatwalaMessage check = messageDao.queryForId(message.getMessageId());
             if(check != null && check.getMessageFile() != null)
             {
                 //If a message was first in the chain, not all of this may be filled out
-                ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
+                final ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
                 updatedMessage.setRecipientId(message.getRecipientId());
                 updatedMessage.setSenderId(message.getSenderId());
-                updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
+                if(updatedMessage.getThumbnailUrl() != null && !updatedMessage.getThumbnailUrl().equals(message.getThumbnailUrl()))
+                {
+                    updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
+                    DataProcessor.runProcess(new Runnable() {
+                        @Override
+                        public void run() {
+                            BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(updatedMessage.getSenderId()));
+                        }
+                    });
+                }
                 updatedMessage.setSortId(message.getSortId());
                 messageDao.update(updatedMessage);
             }
             else
             {
-                BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+                DataProcessor.runProcess(new Runnable() {
+                    @Override
+                    public void run() {
+                        BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+                    }
+                });
             }
         }
 

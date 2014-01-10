@@ -22,6 +22,8 @@
     <string name="change_profile_pic">CHANGE!</string>
     <string name="change_profile_pic_bottom_panel">Tap CHANGE! to update your profile pic.</string>
     <string name="no_profile_pic">You don\'t have a profile pic yet!</string>
+    <string name="save_profile_pic">SAVE!</string>
+    <string name="save_profile_pic_bottom_panel">Tap SAVE! to confirm your new profile pic.</string>
 
     <string name="killswitch">KILLSWITCH</string>
 </resources>

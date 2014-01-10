@@ -264,7 +264,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
             ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
             File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
-            Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
+            Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).skipMemoryCache().resize(150,70).centerCrop().noFade().into(thumbView);
 
             ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
 

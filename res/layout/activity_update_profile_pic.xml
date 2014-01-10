@@ -47,12 +47,13 @@
         </FrameLayout>
     </LinearLayout>
     <FrameLayout
-        android:id="@+id/take_picture_button"
+        android:id="@+id/take_profile_picture_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="@drawable/record_button">
         <TextView
+            android:id="@+id/take_profile_picture_button_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

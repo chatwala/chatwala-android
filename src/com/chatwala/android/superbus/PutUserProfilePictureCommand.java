@@ -16,13 +16,15 @@ import com.chatwala.android.http.PutUserProfilePictureRequest;
  */
 public class PutUserProfilePictureCommand extends SqliteCommand
 {
-    private String videoPath;
+    private String path;
+    private boolean isPicture;
 
     public PutUserProfilePictureCommand(){}
 
-    public PutUserProfilePictureCommand(String videoPath)
+    public PutUserProfilePictureCommand(String path, Boolean isPicture)
     {
-        this.videoPath = videoPath;
+        this.path = path;
+        this.isPicture = isPicture;
     }
 
     @Override
@@ -40,6 +42,6 @@ public class PutUserProfilePictureCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new PutUserProfilePictureRequest(context, videoPath).execute();
+        new PutUserProfilePictureRequest(context, path, isPicture).execute();
     }
 }

@@ -37,6 +37,7 @@ public class MessageDataStore
     private static final String WALA_FILE_EXTENSION = ".wala";
     private static final String MP4_FILE_EXTENSION = ".mp4";
     private static final String PNG_FILE_EXTENSION = ".png";
+    private static final String JPG_FILE_EXTENSION = ".jpg";
 
     private static final String PREPPED_WALA_FILE = "chat.wala";
     private static final String PREPPED_METADATA_FILE = "metadata.json";
@@ -221,6 +222,11 @@ public class MessageDataStore
     public static File makeUserFile(String userId)
     {
         return new File(usersDir, userId + PNG_FILE_EXTENSION);
+    }
+
+    public static File makeTempUserFile(String userId)
+    {
+        return new File(tempDir, userId + JPG_FILE_EXTENSION);
     }
 
     public static File makeTempWalaFile()

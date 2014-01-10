@@ -121,7 +121,7 @@ public class ZipUtil
                     @Override
                     public void run()
                     {
-                        BusHelper.submitCommandSync(applicationContext, new PutUserProfilePictureCommand(incomingVideoFile.getPath()));
+                        BusHelper.submitCommandSync(applicationContext, new PutUserProfilePictureCommand(incomingVideoFile.getPath(), false));
                     }
                 });
             }

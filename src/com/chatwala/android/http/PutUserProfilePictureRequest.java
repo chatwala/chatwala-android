@@ -9,6 +9,7 @@ import com.chatwala.android.AppPrefs;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.VideoUtils;
 import com.turbomanage.httpclient.HttpResponse;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 
 import java.io.*;
@@ -23,12 +24,14 @@ import java.sql.SQLException;
  */
 public class PutUserProfilePictureRequest extends BasePutRequest
 {
-    String videoPath;
+    String filePath;
+    Boolean isPicture;
 
-    public PutUserProfilePictureRequest(Context context, String videoPath)
+    public PutUserProfilePictureRequest(Context context, String filePath, boolean isPicture)
     {
         super(context);
-        this.videoPath = videoPath;
+        this.filePath = filePath;
+        this.isPicture = isPicture;
     }
 
     @Override
@@ -40,38 +43,52 @@ public class PutUserProfilePictureRequest extends BasePutRequest
     @Override
     protected byte[] getPutData() throws PermanentException, TransientException
     {
-        Log.d("#######", "Getting the put data for " + videoPath);
-        Bitmap frame = VideoUtils.createVideoFrame(videoPath, 1);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        frame.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] toReturn = stream.toByteArray();
-
-        InputStream is = new ByteArrayInputStream(stream.toByteArray());
-        File file = MessageDataStore.makeUserFile(AppPrefs.getInstance(context).getUserId());
-        try
+        if(isPicture)
         {
-            FileOutputStream os = new FileOutputStream(file);
+            try
+            {
+                return FileUtils.readFileToByteArray(new File(filePath));
+            }
+            catch (IOException e)
+            {
+                throw new PermanentException(e);
+            }
+        }
+        else
+        {
+            Log.d("#######", "Getting the put data for " + filePath);
+            Bitmap frame = VideoUtils.createVideoFrame(filePath, 1);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            frame.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] toReturn = stream.toByteArray();
+
+            InputStream is = new ByteArrayInputStream(stream.toByteArray());
+            File file = MessageDataStore.makeUserFile(AppPrefs.getInstance(context).getUserId());
+            try
+            {
+                FileOutputStream os = new FileOutputStream(file);
 
 
-            final byte[] buffer = new byte[1024];
-            int read;
-            while ((read = is.read(buffer)) != -1) {
-                os.write(buffer, 0, read);
+                final byte[] buffer = new byte[1024];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, read);
+                }
+
+                os.close();
+                is.close();
+            }
+            catch (FileNotFoundException e)
+            {
+                throw new PermanentException(e);
+            }
+            catch (IOException e)
+            {
+                throw new TransientException(e);
             }
 
-            os.close();
-            is.close();
+            return toReturn;
         }
-        catch (FileNotFoundException e)
-        {
-            throw new PermanentException(e);
-        }
-        catch (IOException e)
-        {
-            throw new TransientException(e);
-        }
-
-        return toReturn;
     }
 
     @Override
@@ -83,6 +100,9 @@ public class PutUserProfilePictureRequest extends BasePutRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        new File(videoPath).delete();
+        if(!isPicture)
+        {
+            new File(filePath).delete();
+        }
     }
 }
