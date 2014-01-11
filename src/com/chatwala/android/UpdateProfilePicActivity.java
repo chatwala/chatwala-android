@@ -49,7 +49,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         File thumbImage = MessageDataStore.findUserImageInLocalStore(userId);
         if(thumbImage.exists())
         {
-            Picasso.with(UpdateProfilePicActivity.this).load(thumbImage).resize(350, 250).centerCrop().noFade().into(profilePicImage);
+            Picasso.with(UpdateProfilePicActivity.this).load(thumbImage).skipMemoryCache().resize(350, 250).centerCrop().noFade().into(profilePicImage);
         }
         else
         {
@@ -131,10 +131,16 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         {
             profilePicImage.setVisibility(View.VISIBLE);
             noImageText.setVisibility(View.GONE);
-            
+
+            newThumbImage = MessageDataStore.makeTempUserFile(userId);
+            if(newThumbImage.exists())
+            {
+                newThumbImage.delete();
+            }
+
             try
             {
-                FileOutputStream out = new FileOutputStream(MessageDataStore.makeTempUserFile(userId));
+                FileOutputStream out = new FileOutputStream(newThumbImage);
                 ((Bitmap)data.getExtras().get("data")).compress(Bitmap.CompressFormat.PNG, 100, out);
                 out.close();
             }
@@ -147,8 +153,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                 throw new RuntimeException(e);
             }
 
-            newThumbImage = MessageDataStore.makeTempUserFile(userId);
-            Picasso.with(UpdateProfilePicActivity.this).load(newThumbImage).resize(350, 250).centerCrop().noFade().into(profilePicImage);
+            Picasso.with(UpdateProfilePicActivity.this).load(newThumbImage).skipMemoryCache().resize(350, 250).centerCrop().noFade().into(profilePicImage);
 
             buttonText.setText(R.string.save_profile_pic);
             bottomPanelText.setText(R.string.save_profile_pic_bottom_panel);

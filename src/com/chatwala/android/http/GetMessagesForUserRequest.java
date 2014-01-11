@@ -88,7 +88,6 @@ public class GetMessagesForUserRequest extends BaseGetRequest
                 updatedMessage.setSenderId(message.getSenderId());
                 if(updatedMessage.getThumbnailUrl() != null && !updatedMessage.getThumbnailUrl().equals(message.getThumbnailUrl()))
                 {
-                    updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
                     DataProcessor.runProcess(new Runnable() {
                         @Override
                         public void run() {
@@ -96,6 +95,7 @@ public class GetMessagesForUserRequest extends BaseGetRequest
                         }
                     });
                 }
+                updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
                 updatedMessage.setSortId(message.getSortId());
                 messageDao.update(updatedMessage);
             }
