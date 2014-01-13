@@ -63,7 +63,6 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
 
         buttonText = (TextView)findViewById(R.id.take_profile_picture_button_text);
         bottomPanelText = (TextView)findViewById(R.id.change_profile_pic_bottom_panel_text);
-        bottomPanelText.setText(isReview ? R.string.change_profile_pic_bottom_panel_for_review : R.string.change_profile_pic_bottom_panel);
 
         findViewById(R.id.take_profile_picture_button).setOnClickListener(new View.OnClickListener() {
             @Override
