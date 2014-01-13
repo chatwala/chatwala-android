@@ -616,7 +616,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 }
                             });
                             Toast.makeText(NewCameraActivity.this, "Message sent.", Toast.LENGTH_LONG).show();
-                            NewCameraActivity.startMe(NewCameraActivity.this);
+
+                            AppPrefs prefs = AppPrefs.getInstance(NewCameraActivity.this);
+                            if(!prefs.isImageReviewed() && MessageDataStore.findUserImageInLocalStore(prefs.getUserId()).exists())
+                            {
+                                UpdateProfilePicActivity.startMe(NewCameraActivity.this, true);
+                            }
+                            else
+                            {
+                                NewCameraActivity.startMe(NewCameraActivity.this);
+                            }
+
                             finish();
                         }
                     }

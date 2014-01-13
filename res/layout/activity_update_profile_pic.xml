@@ -39,7 +39,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:padding="50dip"
-                android:text="@string/change_profile_pic_bottom_panel"
                 android:textSize="@dimen/message_text_size"
                 android:gravity="center"
                 android:textColor="@color/text_white"

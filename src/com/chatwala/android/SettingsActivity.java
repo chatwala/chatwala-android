@@ -107,7 +107,7 @@ public class SettingsActivity extends BaseChatWalaActivity
             @Override
             public void onClick(View v)
             {
-                UpdateProfilePicActivity.startMe(SettingsActivity.this);
+                UpdateProfilePicActivity.startMe(SettingsActivity.this, false);
             }
         });
 

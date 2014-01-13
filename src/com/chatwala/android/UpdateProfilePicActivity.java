@@ -28,12 +28,15 @@ import java.io.*;
 public class UpdateProfilePicActivity extends BaseChatWalaActivity
 {
     private String userId;
+    private boolean isReview;
     private ImageView profilePicImage;
     private TextView buttonText, bottomPanelText, noImageText;
 
     private File newThumbImage = null, tempThumbImage = null;
 
     private static final int TAKE_PICTURE_REQUEST = 1000;
+    private static final String IS_REVIEW = "IS_REVIEW";
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -43,6 +46,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
         userId = AppPrefs.getInstance(UpdateProfilePicActivity.this).getUserId();
+        isReview = getIntent().getBooleanExtra(IS_REVIEW, false);
 
         profilePicImage = (ImageView)findViewById(R.id.current_profile_pic);
         noImageText = (TextView)findViewById(R.id.no_profile_pic_text);
@@ -59,6 +63,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
 
         buttonText = (TextView)findViewById(R.id.take_profile_picture_button_text);
         bottomPanelText = (TextView)findViewById(R.id.change_profile_pic_bottom_panel_text);
+        bottomPanelText.setText(isReview ? R.string.change_profile_pic_bottom_panel_for_review : R.string.change_profile_pic_bottom_panel);
 
         findViewById(R.id.take_profile_picture_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,7 +114,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                 Toast.makeText(UpdateProfilePicActivity.this, "Problem updating profile, please try again", Toast.LENGTH_LONG).show();
             }
 
-            UpdateProfilePicActivity.startMe(UpdateProfilePicActivity.this);
+            UpdateProfilePicActivity.startMe(UpdateProfilePicActivity.this, isReview);
             finish();
 
         }
@@ -132,8 +137,24 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         }
     }
 
-    public static void startMe(Context context)
+    @Override
+    public void onBackPressed()
     {
-        context.startActivity(new Intent(context, UpdateProfilePicActivity.class));
+        if(isReview)
+        {
+            AppPrefs.getInstance(UpdateProfilePicActivity.this).setImageReviewed();
+            NewCameraActivity.startMe(UpdateProfilePicActivity.this);
+        }
+        else
+        {
+            super.onBackPressed();
+        }
+    }
+
+    public static void startMe(Context context, boolean isReview)
+    {
+        Intent intent = new Intent(context, UpdateProfilePicActivity.class);
+        intent.putExtra(IS_REVIEW, isReview);
+        context.startActivity(intent);
     }
 }

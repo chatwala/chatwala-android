@@ -24,6 +24,7 @@ public class AppPrefs
 
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
     public static final String PREF_USER_ID = "USER_ID";
+    public static final String PREF_IMAGE_REVIEWED = "IMAGE_REVIEWED";
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
     public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
@@ -69,6 +70,16 @@ public class AppPrefs
     public String getUserId()
     {
         return mSp.getString(PREF_USER_ID, null);
+    }
+
+    public void setImageReviewed()
+    {
+        mSp.edit().putBoolean(PREF_IMAGE_REVIEWED, true).apply();
+    }
+
+    public boolean isImageReviewed()
+    {
+        return mSp.getBoolean(PREF_IMAGE_REVIEWED, false);
     }
 
     public String getPrefSelectedEmail()
