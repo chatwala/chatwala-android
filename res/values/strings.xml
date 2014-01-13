@@ -18,6 +18,7 @@
     <string name="edit_profile_picture">Edit Profile Picture</string>
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="version_information">Version Information</string>
 
     <string name="update_profile_pic">UPDATE PROFILE PIC</string>
     <string name="change_profile_pic">CHANGE!</string>

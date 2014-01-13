@@ -1,5 +1,6 @@
 package com.chatwala.android;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -132,18 +133,23 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
         });
 
-        String appVersion;
-        try
-        {
-            appVersion = getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
-        }
-        catch (PackageManager.NameNotFoundException e)
-        {
-            appVersion = "unknown";
-        }
+        findViewById(R.id.version_info_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String appVersion;
+                try {
+                    appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                } catch (PackageManager.NameNotFoundException e) {
+                    appVersion = "unknown";
+                }
 
-        ((TextView)findViewById(R.id.version_info_text)).setText("Version: " + appVersion);
-        ((TextView)findViewById(R.id.api_info_text)).setText("Server: " + BaseHttpRequest.getApiPathString());
+                AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
+                builder.setTitle(R.string.version_information);
+                StringBuilder message = new StringBuilder("Version: ").append(appVersion).append("\nServer: ").append(BaseHttpRequest.getApiPathString());
+                builder.setMessage(message);
+                builder.show();
+            }
+        });
     }
 
     @Override
