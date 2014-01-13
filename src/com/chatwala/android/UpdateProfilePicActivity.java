@@ -31,7 +31,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
     private ImageView profilePicImage;
     private TextView buttonText, bottomPanelText, noImageText;
 
-    File newThumbImage = null;
+    private File newThumbImage = null;
 
     private static final int TAKE_PICTURE_REQUEST = 1000;
     @Override
@@ -63,63 +63,8 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         findViewById(R.id.take_profile_picture_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(newThumbImage == null)
-                {
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(intent, TAKE_PICTURE_REQUEST);
-                }
-                else
-                {
-                    new AsyncTask<Void, Void, Boolean>()
-                    {
-                        @Override
-                        protected Boolean doInBackground(Void... params)
-                        {
-                            try
-                            {
-                                final File userProfileFile = MessageDataStore.makeUserFile(userId);
-                                FileOutputStream out = new FileOutputStream(userProfileFile);
-                                FileInputStream in = new FileInputStream(newThumbImage);
-
-                                IOUtils.copy(in, out);
-
-                                newThumbImage.delete();
-
-                                DataProcessor.runProcess(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        BusHelper.submitCommandSync(UpdateProfilePicActivity.this, new PutUserProfilePictureCommand(userProfileFile.getPath(), true));
-                                    }
-                                });
-                            }
-                            catch (FileNotFoundException e)
-                            {
-                                return false;
-                            }
-                            catch (IOException e)
-                            {
-                                return false;
-                            }
-
-                            return true;
-                        }
-
-                        @Override
-                        protected void onPostExecute(Boolean aBoolean)
-                        {
-                            if(aBoolean)
-                            {
-                                Toast.makeText(UpdateProfilePicActivity.this, "Profile updated!", Toast.LENGTH_LONG).show();
-                            }
-                            else
-                            {
-                                Toast.makeText(UpdateProfilePicActivity.this, "Problem updating profile, please try again later", Toast.LENGTH_LONG).show();
-                            }
-
-                            finish();
-                        }
-                    }.execute();
-                }
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, TAKE_PICTURE_REQUEST);
             }
         });
     }
@@ -132,7 +77,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
             profilePicImage.setVisibility(View.VISIBLE);
             noImageText.setVisibility(View.GONE);
 
-            newThumbImage = MessageDataStore.makeTempUserFile(userId);
+            newThumbImage = MessageDataStore.makeUserFile(userId);
             if(newThumbImage.exists())
             {
                 newThumbImage.delete();
@@ -143,20 +88,28 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                 FileOutputStream out = new FileOutputStream(newThumbImage);
                 ((Bitmap)data.getExtras().get("data")).compress(Bitmap.CompressFormat.PNG, 100, out);
                 out.close();
+
+                DataProcessor.runProcess(new Runnable() {
+                    @Override
+                    public void run() {
+                        BusHelper.submitCommandSync(UpdateProfilePicActivity.this, new PutUserProfilePictureCommand(newThumbImage.getPath(), true));
+                    }
+                });
+
+                Toast.makeText(UpdateProfilePicActivity.this, "Profile updated!", Toast.LENGTH_LONG).show();
             }
             catch (FileNotFoundException e)
             {
-                throw new RuntimeException(e);
+                Toast.makeText(UpdateProfilePicActivity.this, "Problem updating profile, please try again", Toast.LENGTH_LONG).show();
             }
             catch (IOException e)
             {
-                throw new RuntimeException(e);
+                Toast.makeText(UpdateProfilePicActivity.this, "Problem updating profile, please try again", Toast.LENGTH_LONG).show();
             }
 
-            Picasso.with(UpdateProfilePicActivity.this).load(newThumbImage).skipMemoryCache().resize(350, 250).centerCrop().noFade().into(profilePicImage);
+            UpdateProfilePicActivity.startMe(UpdateProfilePicActivity.this);
+            finish();
 
-            buttonText.setText(R.string.save_profile_pic);
-            bottomPanelText.setText(R.string.save_profile_pic_bottom_panel);
         }
         else
         {
