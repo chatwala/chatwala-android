@@ -31,7 +31,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
     private ImageView profilePicImage;
     private TextView buttonText, bottomPanelText, noImageText;
 
-    private File newThumbImage = null;
+    private File newThumbImage = null, tempThumbImage = null;
 
     private static final int TAKE_PICTURE_REQUEST = 1000;
     @Override
@@ -64,6 +64,8 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                //tempThumbImage = MessageDataStore.makeTempUserFile(userId);
+                //intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(tempThumbImage));
                 startActivityForResult(intent, TAKE_PICTURE_REQUEST);
             }
         });
