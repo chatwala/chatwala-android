@@ -48,6 +48,8 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
     private final int messagesLoaderId = 0;
 
+    Picasso imageLoader;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -58,6 +60,8 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.nav_drawer_layout);
+
+        imageLoader = new Picasso.Builder(BaseNavigationDrawerActivity.this).build();
 
         navigationDrawer = (LinearLayout)findViewById(R.id.navigation_drawer);
 //        Display display = getWindowManager().getDefaultDisplay();
@@ -264,7 +268,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
             ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
             File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
-            Picasso.with(BaseNavigationDrawerActivity.this).load(thumbImage).skipMemoryCache().resize(150,70).centerCrop().noFade().into(thumbView);
+            imageLoader.load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
 
             ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
 
