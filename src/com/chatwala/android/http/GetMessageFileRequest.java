@@ -139,6 +139,7 @@ public class GetMessageFileRequest extends BaseGetRequest
             throw new RuntimeException(e);
         }
 
+        Log.d("###########", "New message metadata: " + metadataJson.toString());
         chatwalaMessage.saveMetadata(databaseHelper);
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
         return chatwalaMessage;
