@@ -181,6 +181,33 @@
                 android:layout_marginRight="20dip"/>
 
             <LinearLayout
+                android:id="@+id/feedback_row"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:orientation="horizontal"
+                android:padding="20dip">
+                <TextView
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/feedback"
+                        android:textColor="@color/text_white"/>
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/settings_arrow_right"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dip"
+                android:background="@color/settings_button_accent"
+                android:layout_marginLeft="20dip"
+                android:layout_marginRight="20dip"/>
+
+            <LinearLayout
                 android:id="@+id/version_info_row"
                 android:layout_height="wrap_content"
                 android:layout_width="fill_parent"

@@ -133,7 +133,22 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
         });
 
-        findViewById(R.id.version_info_row).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.feedback_row).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+
+                emailIntent.setData(Uri.parse("mailto:"));
+                emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"hello@chatwala.com"});
+                emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Chatwala Android Feedback");
+
+                startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+            }
+        });
+
+        findViewById(R.id.version_info_row).setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
                 String appVersion;
