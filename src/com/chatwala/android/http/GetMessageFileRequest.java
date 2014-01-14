@@ -81,6 +81,8 @@ public class GetMessageFileRequest extends BaseGetRequest
             metadataJson = new JSONObject(IOUtils.toString(input));
 
             input.close();
+
+            file.delete();
         }
         catch (FileNotFoundException e)
         {

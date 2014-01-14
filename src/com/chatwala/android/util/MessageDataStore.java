@@ -88,6 +88,22 @@ public class MessageDataStore
         Log.d("########", "Temp Mb Used: " + megsUsed(tempDir));
         Log.d("########", "User Image Mb Used: " + megsUsed(usersDir));
 
+        Log.d("########", "Total Data: " + megsUsed(chatwalaApplication.getFilesDir()));
+
+        StringBuilder allFiles = new StringBuilder();
+        for(File file : chatwalaApplication.getFilesDir().listFiles())
+        {
+            allFiles.append(file.getName() + " " + file.length() + " | ");
+        }
+        Log.d("########", "All Files: " + allFiles.toString());
+
+        StringBuilder messageDirFiles = new StringBuilder();
+        for(File file : messageDir.listFiles())
+        {
+            messageDirFiles.append(file.getName() + " " + file.length() + " | ");
+        }
+        Log.d("########", "Message Dir Files: " + messageDirFiles.toString());
+
         if(spaceLeft < 0)
         {
             trimOld(spaceLeft);
@@ -103,23 +119,45 @@ public class MessageDataStore
     {
         CWLog.i(MessageDataStore.class, "Dumping message store");
         Log.d("########", "Dumping message store");
-        dumpStore(messageDir);
+        deleteRecursive(messageDir);
+        messageDir.mkdir();
     }
 
     public static void dumpTempStore()
     {
         CWLog.i(MessageDataStore.class, "Dumping temp store");
         Log.d("########", "Dumping temp store");
-        dumpStore(tempDir);
+        deleteRecursive(tempDir);
+        tempDir.mkdir();
     }
 
-    private static void dumpStore(File dirToDump)
+    private static void deleteRecursive(File fileOrDirectory)
     {
-        File[] files = dirToDump.listFiles();
-        for(File file : files)
+        if (fileOrDirectory.isDirectory())
         {
-            file.delete();
+            for (File child : fileOrDirectory.listFiles())
+            {
+                deleteRecursive(child);
+            }
         }
+
+        fileOrDirectory.delete();
+    }
+
+    private static long getFileLengthRecursive(File fileOrDirectory)
+    {
+        long total = 0;
+
+        if(fileOrDirectory.isDirectory())
+        {
+            for(File child : fileOrDirectory.listFiles())
+            {
+                total += getFileLengthRecursive(child);
+            }
+        }
+
+        total += fileOrDirectory.length();
+        return total;
     }
 
     public static File findMessageInLocalStore(String id)
@@ -134,15 +172,15 @@ public class MessageDataStore
 
     private static long megsUsed(File dirToCheck)
     {
-        long total = 0;
-        File[] files = dirToCheck.listFiles();
+//        long total = 0;
+//        File[] files = dirToCheck.listFiles();
+//
+//        for (File file : files)
+//        {
+//            total += file.length();
+//        }
 
-        for (File file : files)
-        {
-            total += file.length();
-        }
-
-        return total / BYTES_IN_MEG;
+        return getFileLengthRecursive(dirToCheck) / BYTES_IN_MEG;
     }
 
     private static void trimOld(long spaceLeft)
@@ -162,18 +200,17 @@ public class MessageDataStore
 
         for(int i=0; bytesUnderCap < 0; i++)
         {
-            if( (files.length - i) < MIN_INBOX_MESSAGES)
+            CWLog.i(MessageDataStore.class, "Deleting the oldest message: " + i);
+            Log.d("#########", "Deleting the oldest message: " + i);
+
+            for(File file : files[i].listFiles())
             {
-                CWLog.softExceptionLog(MessageDataStore.class, "Store limit exceeded with less than 5 files.", new IOException("Store limit exceeded with less than 5 files."));
-                break;
+                bytesUnderCap += file.length();
+                file.delete();
             }
-            else
-            {
-                CWLog.i(MessageDataStore.class, "Deleting the oldest message: " + i + " Size: " + files[i].length());
-                Log.d("#########", "Deleting the oldest message: " + i + " Size: " + files[i].length());
-                bytesUnderCap += files[i].length();
-                files[i].delete();
-            }
+
+            bytesUnderCap += files[i].length();
+            files[i].delete();
         }
     }
 

@@ -86,8 +86,9 @@ public class PutMessageFileRequest extends BasePutRequest
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
         File walaFile = new File(localMessageUrl);
-        walaFile.getParentFile().delete();
+        File walaDir = walaFile.getParentFile();
         walaFile.delete();
+        walaDir.delete();
     }
 
     @Override
