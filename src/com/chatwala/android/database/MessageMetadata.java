@@ -52,14 +52,14 @@ public class MessageMetadata
 
     public void init(JSONObject json) throws JSONException
     {
-        threadIndex = json.getInt("thread_index");
-        threadId = json.getString("thread_id");
-        messageId = json.getString("message_id");
-        senderId = json.getString("sender_id");
-        versionId = json.getString("version_id");
-        recipientId = json.getString("recipient_id");
-        timestamp = json.getString("timestamp");
-        startRecording = json.getDouble("start_recording");
+        threadIndex = json.optInt("thread_index");
+        threadId = json.optString("thread_id");
+        messageId = json.optString("message_id");
+        senderId = json.optString("sender_id");
+        versionId = json.optString("version_id");
+        recipientId = json.optString("recipient_id");
+        timestamp = json.optString("timestamp");
+        startRecording = json.optDouble("start_recording");
     }
 
     public JSONObject toJson() throws JSONException
