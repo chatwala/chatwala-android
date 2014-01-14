@@ -11,6 +11,7 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -53,33 +54,30 @@ public class PutMessageFileRequest extends BasePutRequest
         Log.d("############ Putting local message", localMessageUrl);
         File walaFile = new File(localMessageUrl);
 
-        try
+        FileInputStream fileInputStream;
+
+        byte[] bFile = new byte[(int) walaFile.length()];
+
+        try {
+            //convert file into array of bytes
+            fileInputStream = new FileInputStream(walaFile);
+            fileInputStream.read(bFile);
+            fileInputStream.close();
+
+            for (int i = 0; i < bFile.length; i++) {
+                System.out.print((char)bFile[i]);
+            }
+        }
+        catch (FileNotFoundException e)
         {
-            FileInputStream fileInputStream = new FileInputStream(walaFile);
-
-            byte[] bFile = new byte[(int) walaFile.length()];
-
-            try {
-                //convert file into array of bytes
-                fileInputStream = new FileInputStream(walaFile);
-                fileInputStream.read(bFile);
-                fileInputStream.close();
-
-                for (int i = 0; i < bFile.length; i++) {
-                    System.out.print((char)bFile[i]);
-                }
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-            }
-
-            return bFile;
+            throw new RuntimeException(e);
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+
+        return bFile;
     }
 
     @Override

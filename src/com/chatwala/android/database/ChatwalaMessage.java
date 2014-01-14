@@ -127,9 +127,9 @@ public class ChatwalaMessage
         return messageMetadata != null ? messageMetadata.startRecording : 0;
     }
 
-    public MessageMetadata copyOrMakeNewMetadata()
+    public MessageMetadata makeNewMetadata()
     {
-        return messageMetadata != null ? messageMetadata.copy() : new MessageMetadata();
+        return messageMetadata != null ? messageMetadata.makeNew() : new MessageMetadata();
     }
 
     public File getMessageFile()

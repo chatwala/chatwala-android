@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.http.PostSubmitMessageRequest;
+import com.chatwala.android.util.VideoUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,16 +17,17 @@ import com.chatwala.android.http.PostSubmitMessageRequest;
  */
 public class PostSubmitMessageCommand extends SqliteCommand
 {
-    String localMessagePath;
-    String recipientId, originalMessageId;
+    String videoPath, recipientId, originalMessageId;
+    VideoUtils.VideoMetadata videoMetadata;
 
     public PostSubmitMessageCommand(){}
 
-    public PostSubmitMessageCommand(String localMessagePath, String recipientId, String originalMessageId)
+    public PostSubmitMessageCommand(String videoPath, String recipientId, String originalMessageId, VideoUtils.VideoMetadata videoMetadata)
     {
-        this.localMessagePath = localMessagePath;
+        this.videoPath = videoPath;
         this.recipientId = recipientId;
         this.originalMessageId = originalMessageId;
+        this.videoMetadata = videoMetadata;
     }
 
     @Override
@@ -43,6 +45,6 @@ public class PostSubmitMessageCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new PostSubmitMessageRequest(context, localMessagePath, recipientId, originalMessageId).execute();
+        new PostSubmitMessageRequest(context, videoPath, recipientId, originalMessageId, videoMetadata).execute();
     }
 }

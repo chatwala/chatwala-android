@@ -39,7 +39,7 @@ public class MessageMetadata
     public String recipientId;
 
     @DatabaseField
-    public String timestamp = "2013-11-08T13:56:08Z";
+    public String timestamp;
 
     @DatabaseField
     public double startRecording;
@@ -47,6 +47,7 @@ public class MessageMetadata
     public MessageMetadata()
     {
         id = 0;
+        timestamp = Long.toString(System.currentTimeMillis());
     }
 
     public void init(JSONObject json) throws JSONException
@@ -95,7 +96,6 @@ public class MessageMetadata
             sb.append(",").append('"').append(key).append("\": null");
     }
 
-    //todo:  Doesn't look like messageId here is ever used, but it should be being set properly anyway
     public void incrementForNewMessage()
     {
         if(threadId == null)
@@ -107,21 +107,13 @@ public class MessageMetadata
         {
             threadIndex++;
         }
-        messageId = UUID.randomUUID().toString();
     }
 
-    public MessageMetadata copy()
+    public MessageMetadata makeNew()
     {
         MessageMetadata dup = new MessageMetadata();
         dup.threadIndex = threadIndex;
         dup.threadId = threadId;
-        dup.messageId = messageId;
-        dup.senderId = recipientId;
-        dup.versionId = versionId;
-        dup.recipientId = senderId;
-        dup.startRecording = startRecording;
-        dup.timestamp = timestamp;
-
         return dup;
     }
 }

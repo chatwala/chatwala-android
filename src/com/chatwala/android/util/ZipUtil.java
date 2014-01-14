@@ -70,7 +70,7 @@ public class ZipUtil
         zipFile.close();
     }
 
-    public static File buildZipToSend(NewCameraActivity activity, final File incomingVideoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata)
+    public static File buildZipToSend(Context context, final File incomingVideoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata, String newMessageId)
     {
         File buildDir = MessageDataStore.makeTempChatDir();
         buildDir.mkdirs();
@@ -89,14 +89,16 @@ public class ZipUtil
 
             File metadataFile = MessageDataStore.makeMetadataFile(buildDir);
 
-            MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.copyOrMakeNewMetadata() : new MessageMetadata();
+            MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.makeNewMetadata() : new MessageMetadata();
             sendMessageMetadata.incrementForNewMessage();
+            sendMessageMetadata.messageId = newMessageId;
 
             long startRecordingMillis = Math.round(originalMessage != null ? originalMessage.getStartRecording() * 1000d : 0);
             long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + NewCameraActivity.VIDEO_PLAYBACK_START_DELAY);
             sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
 
-            sendMessageMetadata.senderId = AppPrefs.getInstance(activity).getUserId();
+            sendMessageMetadata.senderId = AppPrefs.getInstance(context).getUserId();
+            sendMessageMetadata.recipientId = originalMessage != null ? originalMessage.getSenderId() : "unknown_recipient";
 
             FileWriter fileWriter = new FileWriter(metadataFile);
 
@@ -113,9 +115,9 @@ public class ZipUtil
             }
             buildDir.delete();
 
-            if(!MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(activity).getUserId()).exists())
+            if(!MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId()).exists())
             {
-                final Context applicationContext = activity.getApplicationContext();
+                final Context applicationContext = context.getApplicationContext();
                 DataProcessor.runProcess(new Runnable()
                 {
                     @Override

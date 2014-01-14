@@ -286,6 +286,11 @@ public class MessageDataStore
         return makeChatDir(tempDir);
     }
 
+    public static File makeOutboxVideoFile()
+    {
+        return new File(outboxDir, WALA_FILE_PREFIX + System.currentTimeMillis() + MP4_FILE_EXTENSION);
+    }
+
     public static File makeMessageChatDir()
     {
         return makeChatDir(messageDir);

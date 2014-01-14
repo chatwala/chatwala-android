@@ -9,10 +9,13 @@ import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.superbus.PutMessageFileCommand;
+import com.chatwala.android.util.VideoUtils;
+import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.sql.SQLException;
 
 /**
@@ -24,16 +27,17 @@ import java.sql.SQLException;
  */
 public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
 {
-    ChatwalaMessage messageMetadata;
-    String localMessagePath;
-    String recipientId, originalMessageId;
+    ChatwalaMessage messageMetadata, originalMessage;
+    String recipientId, originalMessageId, messagePath;
+    VideoUtils.VideoMetadata videoMetadata;
 
-    public PostSubmitMessageRequest(Context context, String localMessagePath, String recipientId, String originalMessageId)
+    public PostSubmitMessageRequest(Context context, String videoPath, String recipientId, String originalMessageId, VideoUtils.VideoMetadata videoMetadata)
     {
         super(context);
-        this.localMessagePath = localMessagePath;
+        this.messagePath = videoPath;
         this.recipientId = recipientId;
         this.originalMessageId = originalMessageId;
+        this.videoMetadata = videoMetadata;
     }
 
     @Override
@@ -49,11 +53,6 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     protected String getResourceURL()
     {
         return "messages";
-    }
-
-    public ChatwalaMessage getMessageMetadata()
-    {
-        return messageMetadata;
     }
 
     @Override
@@ -76,14 +75,24 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     @Override
     protected boolean hasDbOperation()
     {
-        return false;
+        return videoMetadata != null;
+    }
+
+    @Override
+    protected ChatwalaMessage commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    {
+        originalMessage = databaseHelper.getChatwalaMessageDao().queryForId(originalMessageId);
+        return null;
     }
 
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        if(localMessagePath != null)
-            BusHelper.submitCommandSync(context, new PutMessageFileCommand(localMessagePath, messageMetadata.getMessageId(), originalMessageId));
+        if(videoMetadata != null)
+        {
+            File outFile = ZipUtil.buildZipToSend(context, new File(messagePath), originalMessage, videoMetadata, messageMetadata.getMessageId());
+            BusHelper.submitCommandSync(context, new PutMessageFileCommand(outFile.getPath(), messageMetadata.getMessageId(), originalMessageId));
+        }
     }
 
     @Override
