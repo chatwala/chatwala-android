@@ -136,7 +136,11 @@ public class ChatwalaMessage
     {
         if(messageFile == null && fileUrl != null)
         {
-            messageFile = new File(fileUrl);
+            File temp = new File(fileUrl);
+            if(temp.exists())
+            {
+                messageFile = temp;
+            }
         }
 
         return messageFile;

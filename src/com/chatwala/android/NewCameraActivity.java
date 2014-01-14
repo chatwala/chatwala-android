@@ -1107,6 +1107,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                 if(playbackMessage == null || playbackMessage.getMessageFile() == null)
                 {
+                    Log.d("##########", "Refetching message: " + playbackMessageId);
                     playbackMessage = new ChatwalaMessage();
                     playbackMessage.setMessageId(playbackMessageId);
                     playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
