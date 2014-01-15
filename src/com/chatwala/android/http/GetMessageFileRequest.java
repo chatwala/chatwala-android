@@ -126,21 +126,26 @@ public class GetMessageFileRequest extends BaseGetRequest
         {
             chatwalaMessage.setTimestamp(System.currentTimeMillis());
             chatwalaMessage.setMessageState(ChatwalaMessage.MessageState.UNREAD);
+
+            try
+            {
+                chatwalaMessage.initMetadata(metadataJson);
+            }
+            catch (JSONException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            Log.d("###########", "New message metadata: " + metadataJson.toString());
+            chatwalaMessage.saveMetadata(databaseHelper);
+        }
+        else
+        {
+            ChatwalaMessage existingMessage = databaseHelper.getChatwalaMessageDao().queryForId(chatwalaMessage.getMessageId());
+            chatwalaMessage = existingMessage;
         }
 
         chatwalaMessage.setMessageFile(messageFile);
-
-        try
-        {
-            chatwalaMessage.initMetadata(metadataJson);
-        }
-        catch (JSONException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        Log.d("###########", "New message metadata: " + metadataJson.toString());
-        chatwalaMessage.saveMetadata(databaseHelper);
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
         return chatwalaMessage;
     }

@@ -270,19 +270,26 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
             imageLoader.load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
 
-            ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
+            if(message.getTimestamp() != null)
+            {
+                ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
+            }
 
             ImageView stateView = (ImageView)convertView.findViewById(R.id.status_image);
-            switch(message.getMessageState())
+
+            if(message.getMessageState() != null)
             {
-                case UNREAD:
-                    stateView.setImageResource(R.drawable.unread_icon);
-                    break;
-                case REPLIED:
-                    stateView.setImageResource(R.drawable.replied_icon);
-                    break;
-                default:
-                    stateView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+                switch(message.getMessageState())
+                {
+                    case UNREAD:
+                        stateView.setImageResource(R.drawable.unread_icon);
+                        break;
+                    case REPLIED:
+                        stateView.setImageResource(R.drawable.replied_icon);
+                        break;
+                    default:
+                        stateView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
             }
 
             convertView.setTag(message.getMessageId());

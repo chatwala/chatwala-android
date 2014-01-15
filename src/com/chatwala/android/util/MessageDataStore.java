@@ -192,7 +192,7 @@ public class MessageDataStore
             @Override
             public int compare(File lhs, File rhs)
             {
-                return (int)(rhs.lastModified() - lhs.lastModified());
+                return Long.valueOf(lhs.lastModified()).compareTo(rhs.lastModified());
             }
         });
 
