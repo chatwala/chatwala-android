@@ -1,29 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:background="@color/app_background"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/splash_icon"/>
-    <com.chatwala.android.ui.RippleTimer
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:alpha=".7"
-            />
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1">
+        <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/splash_icon"/>
+        <com.chatwala.android.ui.RippleTimer
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:alpha=".7"/>
+    </FrameLayout>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_margin="75dip"
+        android:layout_marginLeft="50dip"
+        android:layout_marginRight="50dip"
+        android:layout_marginBottom="25dip"
         android:text="@string/loading_message_text"
         android:textSize="@dimen/message_text_size"
         android:gravity="center"
         android:textColor="#000000"
         android:lineSpacingExtra="@dimen/message_text_spacing"/>
 
-</FrameLayout>
+</LinearLayout>
