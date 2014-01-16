@@ -24,9 +24,8 @@ import java.util.Comparator;
  */
 public class MessageDataStore
 {
-    private static final int MIN_SPACE_MEGS = 5;
+    private static final int MIN_SPACE_MEGS = 10;
     private static final int BYTES_IN_MEG = 1048576;
-    private static final int MIN_INBOX_MESSAGES = 5;
 
     private static ChatwalaApplication chatwalaApplication = null;
     private static File tempDir, messageDir, outboxDir, usersDir, plistDir;
@@ -84,26 +83,6 @@ public class MessageDataStore
         Log.d("########", "Message Mb Used: " + spaceUsed);
         Log.d("########", "Message Mb Left: " + spaceLeft);
 
-        Log.d("########", "Outbox Mb Used: " + megsUsed(outboxDir));
-        Log.d("########", "Temp Mb Used: " + megsUsed(tempDir));
-        Log.d("########", "User Image Mb Used: " + megsUsed(usersDir));
-
-        Log.d("########", "Total Data: " + megsUsed(chatwalaApplication.getFilesDir()));
-
-        StringBuilder allFiles = new StringBuilder();
-        for(File file : chatwalaApplication.getFilesDir().listFiles())
-        {
-            allFiles.append(file.getName() + " " + file.length() + " | ");
-        }
-        Log.d("########", "All Files: " + allFiles.toString());
-
-        StringBuilder messageDirFiles = new StringBuilder();
-        for(File file : messageDir.listFiles())
-        {
-            messageDirFiles.append(file.getName() + " " + file.length() + " | ");
-        }
-        Log.d("########", "Message Dir Files: " + messageDirFiles.toString());
-
         if(spaceLeft < 0)
         {
             trimOld(spaceLeft);
@@ -158,6 +137,16 @@ public class MessageDataStore
 
         total += fileOrDirectory.length();
         return total;
+    }
+
+    public static void logDirFileInfo(File directory)
+    {
+        StringBuilder allFiles = new StringBuilder();
+        for(File file : directory.listFiles())
+        {
+            allFiles.append(file.getName() + " " + file.length() + " | ");
+        }
+        Log.d("########", "All Files: " + allFiles.toString());
     }
 
     public static File findMessageInLocalStore(String id)

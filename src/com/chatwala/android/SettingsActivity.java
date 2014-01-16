@@ -316,11 +316,12 @@ public class SettingsActivity extends BaseChatWalaActivity
 
     enum RefreshOptions
     {
-        FIVE_MINUTES(5, "Five Minutes", 0),
-        TEN_MINUTES(10, "Ten Minutes", 1),
-        THIRTY_MINUTES(30, "Thirty Minutes", 2),
-        ONE_HOUR(60, "One Hour", 3),
-        TWO_HOURS(120, "Two Hours", 4);
+        ONE_MINUTE(1, "One Minute", 0),
+        FIVE_MINUTES(5, "Five Minutes", 1),
+        TEN_MINUTES(10, "Ten Minutes", 2),
+        THIRTY_MINUTES(30, "Thirty Minutes", 3),
+        ONE_HOUR(60, "One Hour", 4),
+        TWO_HOURS(120, "Two Hours", 5);
 
         private int interval, sortOrder;
         private String displayString;
@@ -357,7 +358,7 @@ public class SettingsActivity extends BaseChatWalaActivity
                 }
             }
             //If something goes wrong, return the default
-            return TWO_HOURS;
+            return FIVE_MINUTES;
         }
     }
 

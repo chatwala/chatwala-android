@@ -36,12 +36,12 @@ public class FetchMessagesService extends IntentService
     @Override
     protected void onHandleIntent(Intent intent)
     {
+        Log.d("########", "FetchMessagesService got Intent");
         DataProcessor.runProcess(new Runnable()
         {
             @Override
             public void run()
             {
-                Log.d("########", "Running FetchMessagesService");
                 BusHelper.submitCommandSync(FetchMessagesService.this, new GetMessagesForUserCommand());
             }
         });
@@ -50,10 +50,9 @@ public class FetchMessagesService extends IntentService
     public static void init(Context context, int minutes)
     {
         context.startService(new Intent(context, FetchMessagesService.class));
-        Log.d("########", "Initializing FetchMessagesService");
         AlarmManager manager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
         Intent i = new Intent(context, FetchMessagesService.class);
         PendingIntent receiver = PendingIntent.getService(context, 0, i, 0);
-        manager.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + ONE_MINUTE, minutes * ONE_MINUTE, receiver);
+        manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + ONE_MINUTE, minutes * ONE_MINUTE, receiver);
     }
 }

@@ -86,15 +86,6 @@ public class GetMessagesForUserRequest extends BaseGetRequest
                 final ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
                 updatedMessage.setRecipientId(message.getRecipientId());
                 updatedMessage.setSenderId(message.getSenderId());
-                if(updatedMessage.getThumbnailUrl() != null && !updatedMessage.getThumbnailUrl().equals(message.getThumbnailUrl()))
-                {
-                    DataProcessor.runProcess(new Runnable() {
-                        @Override
-                        public void run() {
-                            BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(updatedMessage.getSenderId()));
-                        }
-                    });
-                }
                 updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
                 updatedMessage.setSortId(message.getSortId());
                 messageDao.update(updatedMessage);
