@@ -1,6 +1,9 @@
 package com.chatwala.android;
 
 import android.app.Activity;
+import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.google.analytics.tracking.android.EasyTracker;
 
 /**
@@ -17,6 +20,25 @@ public abstract class BaseChatWalaActivity extends Activity
     {
         super.onStart();
         EasyTracker.getInstance(this).activityStart(this);
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if(ChatwalaApplication.isKillswitchActive(BaseChatWalaActivity.this) && !(this instanceof KillswitchActivity))
+        {
+            finish();
+        }
+
+        DataProcessor.runProcess(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                BusHelper.submitCommandSync(BaseChatWalaActivity.this, new CheckKillswitchCommand());
+            }
+        });
     }
 
     @Override

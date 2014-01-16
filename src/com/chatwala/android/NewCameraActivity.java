@@ -397,14 +397,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         super.onResume();
         CWLog.b(NewCameraActivity.class, "onResume");
 
-        DataProcessor.runProcess(new Runnable()
-        {
-            @Override
-            public void run() {
-                BusHelper.submitCommandSync(NewCameraActivity.this, new CheckKillswitchCommand());
-            }
-        });
-
         activityActive = true;
         setAppState(AppState.Transition);
 
