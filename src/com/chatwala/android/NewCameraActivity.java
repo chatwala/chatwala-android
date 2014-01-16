@@ -576,7 +576,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     }
                     else
                     {
-                        if (playbackMessage == null)
+                        if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
                             final String messageId = messageToSendDirectly.getMessageId();
                             messageToSendDirectly = null;
