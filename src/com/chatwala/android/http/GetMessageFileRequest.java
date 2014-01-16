@@ -159,12 +159,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        if(!MessageDataStore.findUserImageInLocalStore(chatwalaMessage.getSenderId()).exists())
-        {
-            Log.d("##########", "Cache Miss " + chatwalaMessage.getSenderId());
-            BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(chatwalaMessage.getSenderId()));
-        }
-
+        BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(chatwalaMessage.getSenderId()));
         BusHelper.submitCommandSync(context, new ClearStoreCommand());
     }
 }
