@@ -140,7 +140,7 @@ public class AppPrefs
 
     public int getPrefMessageLoadInterval()
     {
-        return mSp.getInt(PREF_MESSAGE_LOAD_INTERVAL, 5);
+        return mSp.getInt(PREF_MESSAGE_LOAD_INTERVAL, 60);
     }
 
     public void setPrefDiskSpaceMax(int max)
