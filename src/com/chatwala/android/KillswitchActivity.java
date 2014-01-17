@@ -49,17 +49,6 @@ public class KillswitchActivity extends BaseChatWalaActivity
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        DataProcessor.runProcess(new Runnable() {
-            @Override
-            public void run() {
-                BusHelper.submitCommandSync(KillswitchActivity.this, new CheckKillswitchCommand());
-            }
-        });
-    }
-
-    @Override
     protected void onDestroy()
     {
         super.onDestroy();

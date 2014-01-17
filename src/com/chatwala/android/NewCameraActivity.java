@@ -31,7 +31,6 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutUserProfilePictureCommand;
