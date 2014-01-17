@@ -66,4 +66,10 @@ public class KillswitchActivity extends BaseChatWalaActivity
             context.startActivity(intent);
         }
     }
+
+    @Override
+    public void onBackPressed()
+    {
+        //Do nothing, no getting out of the killswitch.
+    }
 }
