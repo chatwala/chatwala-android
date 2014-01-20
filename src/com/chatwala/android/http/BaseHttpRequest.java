@@ -66,7 +66,7 @@ public abstract class BaseHttpRequest<T>
         {
             return "prodeast";
         }
-        else if(getApiPath().equals(API_PATH_PROD_EAST))
+        else if(getApiPath().equals(API_PATH_DEV_EAST))
         {
             return "deveast";
         }
