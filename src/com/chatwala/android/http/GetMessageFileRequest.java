@@ -45,6 +45,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     public GetMessageFileRequest(Context context, ChatwalaMessage messageMetadata)
     {
         super(context);
+
         this.chatwalaMessage = messageMetadata;
     }
 
