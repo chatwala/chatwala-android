@@ -7,6 +7,7 @@ import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
 import com.turbomanage.httpclient.AbstractRequestLogger;
@@ -14,7 +15,10 @@ import com.turbomanage.httpclient.ConsoleRequestLogger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
@@ -29,6 +33,7 @@ public abstract class BaseHttpRequest<T>
 {
     private static final int    STATUS_OK                  = 200;
     private static final int    STATUS_NO_CONTENT          = 204;
+    private static final int    STATUS_REDIRECT            = 302;
     private static final int    STATUS_BAD_REQUEST         = 400;
     private static final int    STATUS_UNAUTHORIZED        = 401;
     private static final int    STATUS_SERVER_ERROR        = 500;
@@ -85,7 +90,7 @@ public abstract class BaseHttpRequest<T>
 
     public T execute() throws TransientException, PermanentException
     {
-        BusHttpClient client = new BusHttpClient(getApiPath());
+        ChatwalaHttpClient client = new ChatwalaHttpClient(getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
         //Quiet the logs, some versions of intellij don't play nice with outputting bytes to the console.
@@ -99,7 +104,38 @@ public abstract class BaseHttpRequest<T>
 //        };
 //        client.setRequestLogger(logger);
 
-        final HttpResponse httpResponse = makeRequest(client);
+        HttpResponse httpResponse = makeRequest(client);
+
+        if(httpResponse.getStatus() == STATUS_REDIRECT)
+        {
+            try
+            {
+                URL url = new URL(httpResponse.getUrl());
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+
+                InputStream is = new BufferedInputStream(urlConnection.getInputStream());
+
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+                final byte[] buffer = new byte[1024];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, read);
+                }
+
+                is.close();
+
+                httpResponse = new HttpResponse(urlConnection, os.toByteArray());
+            }
+            catch (MalformedURLException e)
+            {
+                throw new PermanentException(e);
+            }
+            catch (IOException e)
+            {
+                throw new PermanentException(e);
+            }
+        }
 
         if (httpResponse.getStatus() == STATUS_OK)
         {

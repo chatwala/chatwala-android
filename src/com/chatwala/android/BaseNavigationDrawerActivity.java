@@ -318,13 +318,15 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         }
         else if(secondsSince < (60*60*60*24))
         {
-            int daysSince = (((secondsSince/60)/60)/24);
-            return  daysSince + daysSince == 1 ? " day" : " days";
+            return (((secondsSince/60)/60)/24) + "d";
+//            int daysSince = (((secondsSince/60)/60)/24);
+//            return  daysSince + daysSince == 1 ? " day" : " days";
         }
         else
         {
-            int weeksSince = ((((secondsSince/60)/60)/24)/7);
-            return  weeksSince + weeksSince == 1 ? " week" : " weeks";
+            return ((((secondsSince/60)/60)/24)/7) + "w";
+//            int weeksSince = ((((secondsSince/60)/60)/24)/7);
+//            return  weeksSince + weeksSince == 1 ? " week" : " weeks";
         }
     }
 
