@@ -23,6 +23,9 @@ public class CWLog
     private static final String VIDEO_HEIGHT = "VIDEO_HEIGHT";
     private static final String FRAMERATE = "FRAMERATE";
     private static final String SHARE_LINK = "SHARE_LINK";
+    private static final String USING_SMS = "USING_SMS";
+    private static final String REFRESH_INTERVAL = "REFRESH_INTERVAL";
+    private static final String STORAGE_LIMIT = "STORAGE_LIMIT";
 
     public static void i(Class cl, String s)
     {
@@ -87,5 +90,20 @@ public class CWLog
     public static void logShareLink(String link)
     {
         Crashlytics.setString(SHARE_LINK, link);
+    }
+
+    public static void logUsingSms(Boolean usingSms)
+    {
+        Crashlytics.setBool(USING_SMS, usingSms);
+    }
+
+    public static void logRefreshInterval(int refreshInterval)
+    {
+        Crashlytics.setInt(REFRESH_INTERVAL, refreshInterval);
+    }
+
+    public static void logStorageLimit(int storageLimit)
+    {
+        Crashlytics.setInt(STORAGE_LIMIT, storageLimit);
     }
 }

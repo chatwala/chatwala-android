@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.chatwala.android.http.BaseHttpRequest;
+import com.chatwala.android.util.CWLog;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 
@@ -48,9 +50,11 @@ public class SettingsActivity extends BaseChatWalaActivity
                 {
                     case SMS:
                         AppPrefs.getInstance(SettingsActivity.this).setPrefUseSms(true);
+                        CWLog.logUsingSms(true);
                         break;
                     case Email:
                         AppPrefs.getInstance(SettingsActivity.this).setPrefUseSms(false);
+                        CWLog.logUsingSms(false);
                         break;
                     default:
                 }
@@ -73,6 +77,7 @@ public class SettingsActivity extends BaseChatWalaActivity
             {
                 RefreshOptions selected = (RefreshOptions)view.getTag();
                 AppPrefs.getInstance(SettingsActivity.this).setPrefMessageLoadInterval(selected.getInterval());
+                CWLog.logRefreshInterval(selected.getInterval());
             }
 
             @Override
@@ -92,6 +97,7 @@ public class SettingsActivity extends BaseChatWalaActivity
             {
                 DiskSpaceOptions selected = (DiskSpaceOptions)view.getTag();
                 AppPrefs.getInstance(SettingsActivity.this).setPrefDiskSpaceMax(selected.getSpace());
+                CWLog.logStorageLimit(selected.getSpace());
             }
 
             @Override
@@ -358,7 +364,7 @@ public class SettingsActivity extends BaseChatWalaActivity
                 }
             }
             //If something goes wrong, return the default
-            return FIVE_MINUTES;
+            return ONE_HOUR;
         }
     }
 

@@ -46,7 +46,6 @@ public class MessageMetadata
 
     public MessageMetadata()
     {
-        id = 0;
         timestamp = Long.toString(System.currentTimeMillis());
     }
 
