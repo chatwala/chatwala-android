@@ -5,6 +5,8 @@
     <string name="now_record_reply">Now reply!</string>
     <string name="play_message_record_reaction">Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!</string>
     <string name="basic_instructions">Tap to record and send a message. Your friend\'s reaction will appear here when they reply.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="sure">Sure!</string>
     <string name="message_subject">Chatwala Message</string>
     <string name="couldnt_find_message">Couldn\'t load message. Please try again.</string>
@@ -26,6 +28,10 @@
     <string name="no_profile_pic">You don\'t have a profile pic yet!</string>
     <string name="save_profile_pic">SAVE!</string>
     <string name="save_profile_pic_bottom_panel">Tap SAVE! to confirm your new profile pic.</string>
+
+    <string name="are_you_happy_text">Are you happy with Chatwala?</string>
+    <string name="rate_us_text">Great! How about rating us on the Play Store?</string>
+    <string name="sorry_message_text">Sorry about that. We want to improve. Send us a message?</string>
 
     <string name="killswitch">KILLSWITCH</string>
 </resources>

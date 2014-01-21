@@ -2,6 +2,7 @@ package com.chatwala.android;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.ViewGroup;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
@@ -53,5 +54,10 @@ public abstract class BaseChatWalaActivity extends Activity
     {
         super.onStop();
         EasyTracker.getInstance(this).activityStop(this);
+    }
+
+    public ViewGroup findViewRoot()
+    {
+        return (ViewGroup) getWindow().getDecorView().findViewById(android.R.id.content);
     }
 }

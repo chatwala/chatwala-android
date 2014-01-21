@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.chatwala.android.http.BaseHttpRequest;
+import com.chatwala.android.ui.dialog.FeedbackDialog;
 import com.chatwala.android.util.CWLog;
 import com.crashlytics.android.Crashlytics;
 
@@ -143,13 +144,7 @@ public class SettingsActivity extends BaseChatWalaActivity
         {
             @Override
             public void onClick(View v) {
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-
-                emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"hello@chatwala.com"});
-                emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Chatwala Android Feedback");
-
-                startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+                new FeedbackDialog(SettingsActivity.this).showDialog();
             }
         });
 

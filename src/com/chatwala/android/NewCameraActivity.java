@@ -96,7 +96,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private View closeRecordPreviewView;
     private ImageView timerKnob;
     private TimerDial timerDial;
-    private ViewGroup blueMessageDialag;
     private View splash;
     // ************* onCreate only *************
 
@@ -208,74 +207,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         timerKnob.setImageResource(R.drawable.record_stop);
     }
 
-    class DialagButton
-    {
-        View.OnClickListener listener;
-        int stringRes;
-
-        DialagButton(View.OnClickListener listener, int stringRes)
-        {
-            this.listener = listener;
-            this.stringRes = stringRes;
-        }
-    }
-
-    private void showDialag(int messageRes, DialagButton... buttons)
-    {
-        hideDialag();
-
-        blueMessageDialag = (ViewGroup) getLayoutInflater().inflate(R.layout.message_dialag, null);
-
-        blueMessageDialag.findViewById(R.id.messageClose).setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                hideDialag();
-            }
-        });
-        Typeface fontMd = ((ChatwalaApplication) getApplication()).fontMd;
-        ((TextView) blueMessageDialag.findViewById(R.id.feedbackTitle)).setTypeface(fontMd);
-        TextView messageText = (TextView) blueMessageDialag.findViewById(R.id.message_dialag_text);
-        TextView messageFiller = (TextView) blueMessageDialag.findViewById(R.id.message_dialag_filler);
-
-        messageText.setTypeface(fontMd);
-        messageText.setText(messageRes);
-
-        messageFiller.setTypeface(fontMd);
-        messageFiller.setText(messageRes);
-
-        ViewGroup buttonLayout = (ViewGroup) blueMessageDialag.findViewById(R.id.messageDialagButtonContainer);
-        for (DialagButton button : buttons)
-        {
-            View buttonView = makeDialagButton(buttonLayout, button);
-        }
-
-        findViewRoot().addView(blueMessageDialag);
-    }
-
-    private void hideDialag()
-    {
-        if (blueMessageDialag != null)
-        {
-            findViewRoot().removeView(blueMessageDialag);
-            blueMessageDialag = null;
-        }
-    }
-
-    private View makeDialagButton(ViewGroup parent, DialagButton buttonDef)
-    {
-        View button = getLayoutInflater().inflate(R.layout.message_dialag_button, null);
-
-        Button buttonText = (Button) button.findViewById(R.id.buttonText);
-        buttonText.setTypeface(((ChatwalaApplication) getApplication()).fontDemi);
-        buttonText.setText(buttonDef.stringRes);
-        parent.addView(button);
-        buttonText.setOnClickListener(buttonDef.listener);
-
-        return button;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -383,11 +314,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
             splash = null;
         }
-    }
-
-    private ViewGroup findViewRoot()
-    {
-        return (ViewGroup) getWindow().getDecorView().findViewById(android.R.id.content);
     }
 
     @Override
