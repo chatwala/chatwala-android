@@ -1,5 +1,7 @@
 package com.chatwala.android.ui.dialog;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.widget.Toast;
 import com.chatwala.android.BaseChatWalaActivity;
@@ -34,7 +36,7 @@ public class RateAppDialog extends ChatwalaBlueDialog
                 @Override
                 public void onClick(View v)
                 {
-                    Toast.makeText(chatwalaActivity, "This is where we launch the store page.", Toast.LENGTH_LONG).show();
+                    chatwalaActivity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.chatwala.chatwala")));
                     hideDialog();
                 }
             }, R.string.sure)
