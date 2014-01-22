@@ -1160,7 +1160,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         String uriText = "mailto:";
 
         Uri mailtoUri = Uri.parse(uriText);
-        String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
+        //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
+        String messageLink = "http://chatwala.com/?" + messageId;
 
         boolean gmailOk = false;
 
@@ -1168,7 +1169,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ComposeActivityGmail");
         gmailIntent.setData(mailtoUri);
         gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-        gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+        //gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+        gmailIntent.putExtra(Intent.EXTRA_TEXT, "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + messageLink);
 
         try
         {
@@ -1187,7 +1189,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
             intent.setData(mailtoUri);
             intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
-            intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+            //intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
+            intent.putExtra(Intent.EXTRA_TEXT, "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + messageLink);
 
             startActivity(Intent.createChooser(intent, "Send email..."));
         }

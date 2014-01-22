@@ -143,6 +143,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
         {
             AppPrefs.getInstance(UpdateProfilePicActivity.this).setImageReviewed();
             NewCameraActivity.startMe(UpdateProfilePicActivity.this);
+            finish();
         }
         else
         {
