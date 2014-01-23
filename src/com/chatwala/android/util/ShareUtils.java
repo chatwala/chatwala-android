@@ -28,6 +28,7 @@ public class ShareUtils
     public static final String ALT_WEB_STRING = "http://chatwala.com/?";
     public static final String HASH_STRING = "http://www.chatwala.com/#";
     public static final String ALT_HASH_STRING = "http://chatwala.com/#";
+    public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
     public static ChatwalaMessage extractFileAttachment(Activity activity, String walaFileUrl)
     {
@@ -113,6 +114,8 @@ public class ShareUtils
             return uri.replace(WEB_STRING, "");
         else if(uri.startsWith(ALT_WEB_STRING))
             return uri.replace(ALT_WEB_STRING, "");
+        else if(uri.startsWith(REDIRECT_STRING))
+            return uri.replace(REDIRECT_STRING, "");
         else if(uri.startsWith(MARKET_STRING))
             return uri.replace(MARKET_STRING, "");
         else if(uri.startsWith(HASH_STRING))
