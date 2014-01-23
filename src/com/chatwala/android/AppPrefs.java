@@ -8,7 +8,6 @@ import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CameraUtils;
-import com.chatwala.android.util.MessageDataStore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,6 +31,8 @@ public class AppPrefs
     public static final String PREF_USE_SMS = "PREF_USE_SMS";
     public static final String PREF_MESSAGE_LOAD_INTERVAL = "PREF_MESSAGE_LOAD_INTERVAL";
     public static final String PREF_DISK_SPACE_MAX = "PREF_DISK_SPACE_MAX";
+    public static final String PREF_FEEDBACK_SHOWN = "PREF_FEEDBACK_SHOWN";
+    public static final String PREF_FEEDBACK_MESSAGE_COUNT = "PREF_FEEDBACK_MESSAGE_COUNT";
 
     public static synchronized AppPrefs getInstance(Context context)
     {
@@ -159,5 +160,31 @@ public class AppPrefs
     public int getPrefDiskSpaceMax()
     {
         return mSp.getInt(PREF_DISK_SPACE_MAX, 500);
+    }
+
+    public void setPrefFeedbackShown(boolean shouldShowFeedback)
+    {
+        mSp.edit().putBoolean(PREF_FEEDBACK_SHOWN, shouldShowFeedback).apply();
+    }
+
+    public boolean getPrefFeedbackShown()
+    {
+        return mSp.getBoolean(PREF_FEEDBACK_SHOWN, false);
+    }
+
+    public boolean recordMessageSent()
+    {
+        int showCount = mSp.getInt(PREF_FEEDBACK_MESSAGE_COUNT, 0);
+        showCount++;
+        mSp.edit().putInt(PREF_FEEDBACK_MESSAGE_COUNT, showCount).apply();
+        if(showCount >= 5)
+        {
+            setPrefFeedbackShown(true);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

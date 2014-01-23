@@ -570,9 +570,19 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                             Toast.makeText(NewCameraActivity.this, "Message sent.", Toast.LENGTH_LONG).show();
 
                             AppPrefs prefs = AppPrefs.getInstance(NewCameraActivity.this);
+                            boolean showFeedback = false;
+                            if(!prefs.getPrefFeedbackShown())
+                            {
+                                showFeedback = prefs.recordMessageSent();
+                            }
+
                             if(!prefs.isImageReviewed() && MessageDataStore.findUserImageInLocalStore(prefs.getUserId()).exists())
                             {
                                 UpdateProfilePicActivity.startMe(NewCameraActivity.this, true);
+                            }
+                            else if(showFeedback)
+                            {
+                                FeedbackActivity.startMe(NewCameraActivity.this, true);
                             }
                             else
                             {

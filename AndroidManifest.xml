@@ -60,6 +60,10 @@
                   android:label="@string/update_profile_pic"
                   android:screenOrientation="portrait"
                   android:theme="@style/ChatwalaTheme"/>
+        <activity android:name="com.chatwala.android.FeedbackActivity"
+                  android:label="@string/feedback_caps"
+                  android:screenOrientation="portrait"
+                  android:theme="@style/ChatwalaTheme"/>
 
 
         <service android:name="com.chatwala.android.FetchMessagesService"

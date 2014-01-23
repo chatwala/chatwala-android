@@ -4,6 +4,7 @@ import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.chatwala.android.BaseChatWalaActivity;
 import com.chatwala.android.ChatwalaApplication;
@@ -30,14 +31,20 @@ public abstract class ChatwalaBlueDialog
 
         blueMessageDialog = (ViewGroup) chatwalaActivity.getLayoutInflater().inflate(R.layout.message_dialag, null);
 
-        blueMessageDialog.findViewById(R.id.messageClose).setOnClickListener(new View.OnClickListener()
+        if(showHeaderStuff())
         {
-            @Override
-            public void onClick(View v)
-            {
-                hideDialog();
-            }
-        });
+            ImageView closeButton = (ImageView)blueMessageDialog.findViewById(R.id.messageClose);
+            closeButton.setVisibility(View.VISIBLE);
+            closeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideDialog();
+                }
+            });
+
+            blueMessageDialog.findViewById(R.id.feedbackTitle).setVisibility(View.VISIBLE);
+        }
+        
         Typeface fontMd = ((ChatwalaApplication)chatwalaActivity.getApplication()).fontMd;
         ((TextView) blueMessageDialog.findViewById(R.id.feedbackTitle)).setTypeface(fontMd);
         TextView messageText = (TextView) blueMessageDialog.findViewById(R.id.message_dialag_text);
@@ -81,6 +88,7 @@ public abstract class ChatwalaBlueDialog
 
     protected abstract int getTopMessageResource();
     protected abstract List<DialogButton> getDialogButtons();
+    protected abstract boolean showHeaderStuff();
 
     class DialogButton
     {

@@ -143,8 +143,9 @@ public class SettingsActivity extends BaseChatWalaActivity
         findViewById(R.id.feedback_row).setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View v) {
-                new FeedbackDialog(SettingsActivity.this).showDialog();
+            public void onClick(View v)
+            {
+                FeedbackActivity.startMe(SettingsActivity.this, false);
             }
         });
 

@@ -58,4 +58,10 @@ public class FeedbackDialog extends ChatwalaBlueDialog
 
         return buttonList;
     }
+
+    @Override
+    protected boolean showHeaderStuff()
+    {
+        return false;
+    }
 }

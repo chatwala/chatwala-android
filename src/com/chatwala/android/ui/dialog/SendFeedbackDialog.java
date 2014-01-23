@@ -50,4 +50,10 @@ public class SendFeedbackDialog extends ChatwalaBlueDialog
 
         return buttonList;
     }
+
+    @Override
+    protected boolean showHeaderStuff()
+    {
+        return false;
+    }
 }
