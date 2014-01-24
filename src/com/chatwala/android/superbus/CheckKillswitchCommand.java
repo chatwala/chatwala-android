@@ -1,22 +1,17 @@
 package com.chatwala.android.superbus;
 
 import android.content.Context;
-import android.util.Log;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.ChatwalaApplication;
-import com.chatwala.android.KillswitchActivity;
 import com.chatwala.android.util.MessageDataStore;
-import xmlwise.Plist;
-import xmlwise.XmlParseException;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * Created by matthewdavis on 1/9/14.

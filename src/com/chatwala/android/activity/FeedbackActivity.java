@@ -1,4 +1,4 @@
-package com.chatwala.android;
+package com.chatwala.android.activity;
 
 import android.content.Context;
 import android.content.Intent;

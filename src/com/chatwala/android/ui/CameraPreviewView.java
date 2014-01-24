@@ -1,6 +1,5 @@
-package com.chatwala.android;
+package com.chatwala.android.ui;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -9,6 +8,8 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
+import com.chatwala.android.AppPrefs;
+import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.CameraUtils;
 import com.chatwala.android.util.MessageDataStore;

@@ -1,4 +1,4 @@
-package com.chatwala.android;
+package com.chatwala.android.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;

@@ -1,10 +1,12 @@
-package com.chatwala.android;
+package com.chatwala.android.ui;
 
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.view.ViewGroup;
 import android.widget.VideoView;
+import com.chatwala.android.R;
+import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.util.AndroidUtils;
 
 import java.io.File;

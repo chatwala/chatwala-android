@@ -1,24 +1,22 @@
-package com.chatwala.android;
+package com.chatwala.android.activity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.AppPrefs;
+import com.chatwala.android.R;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
-import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 

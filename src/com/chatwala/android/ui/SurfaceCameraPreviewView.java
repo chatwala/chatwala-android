@@ -1,4 +1,4 @@
-package com.chatwala.android;
+package com.chatwala.android.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.media.MediaRecorder;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
+import com.chatwala.android.R;
 import com.chatwala.android.util.CameraUtils;
 import com.chatwala.android.util.MessageDataStore;
 

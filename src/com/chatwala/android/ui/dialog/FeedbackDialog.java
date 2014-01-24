@@ -1,13 +1,7 @@
 package com.chatwala.android.ui.dialog;
 
-import android.app.Activity;
-import android.graphics.Typeface;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-import com.chatwala.android.BaseChatWalaActivity;
-import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.activity.BaseChatWalaActivity;
 import com.chatwala.android.R;
 
 import java.util.ArrayList;

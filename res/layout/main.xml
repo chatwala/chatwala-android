@@ -18,7 +18,7 @@
             android:layout_height="220dp"
             >
 
-        <com.chatwala.android.CameraPreviewView
+        <com.chatwala.android.ui.CameraPreviewView
                 android:id="@+id/camera_preview"
                 android:layout_width="320dp"
                 android:layout_height="480dp"

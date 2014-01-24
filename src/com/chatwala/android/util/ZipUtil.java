@@ -3,7 +3,7 @@ package com.chatwala.android.util;
 import android.content.Context;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.AppPrefs;
-import com.chatwala.android.NewCameraActivity;
+import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.MessageMetadata;
 import com.chatwala.android.dataops.DataProcessor;
@@ -17,7 +17,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**

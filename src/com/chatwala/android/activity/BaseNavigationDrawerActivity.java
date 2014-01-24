@@ -1,32 +1,23 @@
-package com.chatwala.android;
+package com.chatwala.android.activity;
 
-import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.*;
 import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.ChatwalaNotificationManager;
+import com.chatwala.android.R;
+import com.chatwala.android.adapters.DrawerConversationsAdapter;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
-import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -145,7 +136,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             @Override
             public void onLoadFinished(Loader<List<ChatwalaMessage>> loader, List<ChatwalaMessage> data)
             {
-                messagesListView.setAdapter(new DrawerMessagesAdapter(data));
+                messagesListView.setAdapter(new DrawerConversationsAdapter(BaseNavigationDrawerActivity.this, imageLoader, data));
             }
 
             @Override
@@ -209,124 +200,6 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         {
             drawerToggleButton.setVisibility(View.GONE);
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, navigationDrawer);
-        }
-    }
-
-    class DrawerMessagesAdapter extends BaseAdapter
-    {
-        ArrayList<ChatwalaMessage> messageList;
-
-        DrawerMessagesAdapter(List<ChatwalaMessage> messageList)
-        {
-            this.messageList = new ArrayList<ChatwalaMessage>(messageList);
-            Collections.sort(this.messageList, new Comparator<ChatwalaMessage>()
-            {
-                @Override
-                public int compare(ChatwalaMessage lhs, ChatwalaMessage rhs)
-                {
-                    return lhs.getSortId() - rhs.getSortId();
-                }
-            });
-        }
-
-        @Override
-        public int getCount()
-        {
-            return messageList.size();
-        }
-
-        @Override
-        public Object getItem(int position)
-        {
-            return messageList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position)
-        {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            if(convertView == null)
-            {
-                convertView = getLayoutInflater().inflate(R.layout.row_drawer_thumb, parent, false);
-                convertView.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        NewCameraActivity.startMeWithId(BaseNavigationDrawerActivity.this, (String)v.getTag());
-                        finish();
-                    }
-                });
-            }
-
-            final ChatwalaMessage message = (ChatwalaMessage)getItem(position);
-
-            ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
-            File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
-            imageLoader.load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
-
-            if(message.getTimestamp() != null)
-            {
-                ((TextView)convertView.findViewById(R.id.time_since_text)).setText(formatMessageTimestamp(message.getTimestamp()));
-            }
-
-            ImageView stateView = (ImageView)convertView.findViewById(R.id.status_image);
-
-            if(message.getMessageState() != null)
-            {
-                switch(message.getMessageState())
-                {
-                    case UNREAD:
-                        stateView.setImageResource(R.drawable.unread_icon);
-                        break;
-                    case REPLIED:
-                        stateView.setImageResource(R.drawable.replied_icon);
-                        break;
-                    default:
-                        stateView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
-                }
-            }
-
-            convertView.setTag(message.getMessageId());
-
-            return convertView;
-        }
-    }
-
-    //This is crude for now while it needs to be done manually, should at least break it into its own class and use some meaningfully named constant variables
-    //Todo: revisit when we see what's coming back from the server for this field
-    private String formatMessageTimestamp(long messageTimestamp)
-    {
-        int secondsSince = (int)(System.currentTimeMillis() - messageTimestamp) / 1000;
-
-        if(secondsSince < 60)
-        {
-            return secondsSince + "s";
-        }
-        else if(secondsSince < (60*60))
-        {
-            return (secondsSince/60) + "m";
-        }
-        else if(secondsSince < (60*60*60))
-        {
-            return ((secondsSince/60)/60) + "h";
-        }
-        else if(secondsSince < (60*60*60*24))
-        {
-            return (((secondsSince/60)/60)/24) + "d";
-//            int daysSince = (((secondsSince/60)/60)/24);
-//            return  daysSince + daysSince == 1 ? " day" : " days";
-        }
-        else
-        {
-            return ((((secondsSince/60)/60)/24)/7) + "w";
-//            int weeksSince = ((((secondsSince/60)/60)/24)/7);
-//            return  weeksSince + weeksSince == 1 ? " week" : " weeks";
         }
     }
 

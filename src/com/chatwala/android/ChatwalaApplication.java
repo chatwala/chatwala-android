@@ -12,6 +12,7 @@ import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
+import com.chatwala.android.activity.KillswitchActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
@@ -169,7 +170,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
                 if((Boolean)properties.get("APP_DISABLED"))
                 {
-                    KillswitchActivity.startMe(context, (String)properties.get("APP_DISABLED_TEXT"));
+                    KillswitchActivity.startMe(context, (String) properties.get("APP_DISABLED_TEXT"));
                     return true;
                 }
                 else

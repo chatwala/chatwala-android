@@ -1,4 +1,4 @@
-package com.chatwala.android;
+package com.chatwala.android.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -6,19 +6,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import com.chatwala.android.*;
 import com.chatwala.android.http.BaseHttpRequest;
-import com.chatwala.android.ui.dialog.FeedbackDialog;
 import com.chatwala.android.util.CWLog;
-import com.crashlytics.android.Crashlytics;
-
-import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.

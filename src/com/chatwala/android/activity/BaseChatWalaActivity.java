@@ -1,9 +1,10 @@
-package com.chatwala.android;
+package com.chatwala.android.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.google.analytics.tracking.android.EasyTracker;

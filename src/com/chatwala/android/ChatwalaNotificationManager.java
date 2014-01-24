@@ -6,6 +6,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import com.chatwala.android.activity.NewCameraActivity;
 
 import java.io.File;
 

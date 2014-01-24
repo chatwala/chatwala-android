@@ -1,19 +1,17 @@
-package com.chatwala.android;
+package com.chatwala.android.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-import co.touchlab.android.superbus.BusHelper;
-import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.R;
 import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.superbus.CheckKillswitchCommand;
 
 /**
  * Created by matthewdavis on 1/9/14.
