@@ -38,6 +38,7 @@ public class GetRegisterUserRequest extends BaseGetRequest
 //        JSONObject bodyAsJson = new JSONObject(response.getBodyAsString());
 //        String userId = bodyAsJson.getString("user_id");
 
+        Log.d("########### Register User Response: ", response.getBodyAsString());
         Log.d("##### USERID", userId);
         AppPrefs.getInstance(context).setUserId(userId);
     }

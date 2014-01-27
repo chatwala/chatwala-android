@@ -18,6 +18,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
+import com.chatwala.android.superbus.PostRegisterGCMCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
@@ -89,6 +90,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
                 {
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new GetRegisterUserCommand());
                 }
+                BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterGCMCommand());
             }
         });
 
