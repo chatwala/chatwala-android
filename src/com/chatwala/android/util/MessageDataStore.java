@@ -83,6 +83,11 @@ public class MessageDataStore
         Log.d("########", "Message Mb Used: " + spaceUsed);
         Log.d("########", "Message Mb Left: " + spaceLeft);
 
+//        Log.d("########", "Message Folder Size: " + getFileLengthRecursive(messageDir));
+//        Log.d("########", "Outbox Folder Size: " + getFileLengthRecursive(outboxDir));
+//        Log.d("########", "Temp Folder Size: " + getFileLengthRecursive(tempDir));
+//        Log.d("########", "Image Folder Size: " + getFileLengthRecursive(usersDir));
+
         if(spaceLeft < 0)
         {
             trimOld(spaceLeft);
