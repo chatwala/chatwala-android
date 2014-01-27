@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
@@ -15,6 +16,7 @@ import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.activity.KillswitchActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.http.PostRegisterGCMRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
@@ -22,6 +24,7 @@ import com.chatwala.android.superbus.PostRegisterGCMCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
 
@@ -193,5 +196,59 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         }
 
         return false;
+    }
+
+    private void registerInBackground()
+    {
+        new AsyncTask<Void, Void, String>()
+        {
+            @Override
+            protected String doInBackground(Void... params)
+            {
+                GoogleCloudMessaging gcm = null;
+                String regid;
+
+                String msg = "";
+                try {
+                    gcm = GoogleCloudMessaging.getInstance(ChatwalaApplication.this);
+
+                    regid = gcm.register(AppPrefs.getInstance(ChatwalaApplication.this).getUserId());
+                    msg = "Device registered, registration ID=" + regid;
+
+                    AppPrefs.getInstance(ChatwalaApplication.this).setGcmToken(regid);
+
+                    new PostRegisterGCMRequest(ChatwalaApplication.this).execute();
+
+                    // You should send the registration ID to your server over HTTP,
+                    // so it can use GCM/HTTP or CCS to send messages to your app.
+                    // The request to your server should be authenticated if your app
+                    // is using accounts.
+                    //sendRegistrationIdToBackend();
+
+                    // For this demo: we don't need to send it because the device
+                    // will send upstream messages to a server that echo back the
+                    // message using the 'from' address in the message.
+
+                    // Persist the regID - no need to register again.
+                    //storeRegistrationId(context, regid);
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                    // If there is an error, don't just keep trying to register.
+                    // Require the user to click a button again, or perform
+                    // exponential back-off.
+                } catch (TransientException e) {
+                    e.printStackTrace();
+                } catch (PermanentException e) {
+                    e.printStackTrace();
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg)
+            {
+                Log.d("########", msg);
+            }
+        }.execute(null, null, null);
     }
 }

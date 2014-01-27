@@ -23,9 +23,11 @@ public class PostRegisterGCMRequest extends BasePostRequest
     @Override
     protected JSONObject makeBodyJson() throws JSONException, SQLException
     {
+        AppPrefs prefs = AppPrefs.getInstance(context);
         JSONObject object = new JSONObject();
-        object.put("user_id", AppPrefs.getInstance(context).getUserId());
+        object.put("user_id", prefs.getUserId());
         object.put("platform_type", "android");
+        object.put("push_token", prefs.getGcmToken());
         return object;
     }
 
