@@ -3,10 +3,12 @@ package com.chatwala.android.http;
 import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 /**
@@ -18,6 +20,17 @@ public class PostRegisterGCMRequest extends BasePostRequest
     public PostRegisterGCMRequest(Context context)
     {
         super(context);
+
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
+        try
+        {
+            String regid = gcm.register(AppPrefs.getInstance(context).getUserId());
+            AppPrefs.getInstance(context).setGcmToken(regid);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
