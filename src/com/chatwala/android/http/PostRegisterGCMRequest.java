@@ -24,7 +24,7 @@ public class PostRegisterGCMRequest extends BasePostRequest
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
         try
         {
-            String regid = gcm.register(AppPrefs.getInstance(context).getUserId());
+            String regid = gcm.register("419895337876");
             AppPrefs.getInstance(context).setGcmToken(regid);
         }
         catch (IOException e)
