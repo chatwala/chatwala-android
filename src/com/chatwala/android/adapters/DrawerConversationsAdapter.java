@@ -1,7 +1,10 @@
 package com.chatwala.android.adapters;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -81,7 +84,19 @@ public class DrawerConversationsAdapter extends BaseDrawerAdapter
 
         ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
         File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
-        imageLoader.load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
+
+        Bitmap thumbBitmap = BitmapFactory.decodeFile(thumbImage.getPath());
+        Log.d("######", "thumb width: " + thumbBitmap.getWidth() + "thumb height: " + thumbBitmap.getHeight());
+        if(thumbBitmap.getWidth() < thumbBitmap.getHeight())
+        {
+            imageLoader.load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
+        }
+        else
+        {
+            imageLoader.load(thumbImage).resize(70,150).centerCrop().noFade().into(thumbView);
+        }
+        thumbBitmap.recycle();
+        thumbBitmap = null;
 
         if(message.getTimestamp() != null)
         {
