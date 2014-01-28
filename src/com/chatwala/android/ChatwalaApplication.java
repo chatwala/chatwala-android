@@ -2,6 +2,8 @@ package com.chatwala.android;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -22,6 +24,7 @@ import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
 import com.chatwala.android.superbus.PostRegisterGCMCommand;
 import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.GCMUtils;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
@@ -97,7 +100,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new GetRegisterUserCommand());
                 }
 
-                if(checkPlayServices() && (AppPrefs.getInstance(ChatwalaApplication.this).getGcmToken() != null))
+                if(GCMUtils.shouldRegisterForGcm(ChatwalaApplication.this))
                 {
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterGCMCommand());
                 }
@@ -203,26 +206,5 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         }
 
         return false;
-    }
-
-    private boolean checkPlayServices()
-    {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS)
-        {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode))
-            {
-                Log.d("############", "Play services is present but may be supported.");
-                CWLog.b(ChatwalaApplication.class, "Play services is not present but may be supported.");
-                //GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            }
-            else
-            {
-                Log.d("############", "Play services is not supported.");
-                CWLog.b(ChatwalaApplication.class, "Play services is not supported.");
-            }
-            return false;
-        }
-        return true;
     }
 }

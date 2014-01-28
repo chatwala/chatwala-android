@@ -3,6 +3,7 @@ package com.chatwala.android.http;
 import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.util.GCMUtils;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
@@ -24,8 +25,19 @@ public class PostRegisterGCMRequest extends BasePostRequest
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
         try
         {
+            AppPrefs prefs = AppPrefs.getInstance(context);
+
             String regid = gcm.register("419895337876");
-            AppPrefs.getInstance(context).setGcmToken(regid);
+            prefs.setGcmToken(regid);
+
+            try
+            {
+                prefs.setGcmAppVersion(GCMUtils.getAppVersion(context));
+            }
+            catch (Exception e)
+            {
+                prefs.setGcmAppVersion(0);
+            }
         }
         catch (IOException e)
         {
@@ -53,7 +65,7 @@ public class PostRegisterGCMRequest extends BasePostRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        Log.d("############ GCM Response: ", response.getBodyAsString());
+        //Log.d("############ GCM Response: ", response.getBodyAsString());
     }
 
     @Override
