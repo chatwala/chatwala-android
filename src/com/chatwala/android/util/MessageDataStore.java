@@ -197,10 +197,13 @@ public class MessageDataStore
             CWLog.i(MessageDataStore.class, "Deleting the oldest message: " + i);
             Log.d("#########", "Deleting the oldest message: " + i);
 
-            for(File file : files[i].listFiles())
+            if(files[i].isDirectory())
             {
-                bytesUnderCap += file.length();
-                file.delete();
+                for(File file : files[i].listFiles())
+                {
+                    bytesUnderCap += file.length();
+                    file.delete();
+                }
             }
 
             bytesUnderCap += files[i].length();
