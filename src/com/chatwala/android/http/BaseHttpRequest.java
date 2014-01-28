@@ -7,6 +7,7 @@ import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
@@ -113,6 +114,7 @@ public abstract class BaseHttpRequest<T>
 
         if(httpResponse.getStatus() == STATUS_REDIRECT)
         {
+            CWLog.i(BaseHttpRequest.class, "Call redirected");
             try
             {
                 URL url = new URL(httpResponse.getUrl());
@@ -141,6 +143,8 @@ public abstract class BaseHttpRequest<T>
                 throw new PermanentException(e);
             }
         }
+
+        CWLog.i(BaseHttpRequest.class, "Request response code: " + httpResponse.getStatus());
 
         if (httpResponse.getStatus() == STATUS_OK)
         {
