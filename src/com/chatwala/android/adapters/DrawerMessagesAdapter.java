@@ -34,18 +34,11 @@ public class DrawerMessagesAdapter extends BaseAdapter
     protected Picasso imageLoader;
     protected List<DrawerMessageWrapper> messageList;
 
-    public DrawerMessagesAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<DrawerMessageWrapper> messageList)
+    public DrawerMessagesAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader)
     {
         this.activity = activity;
         this.imageLoader = imageLoader;
-        this.messageList = new ArrayList<DrawerMessageWrapper>(messageList);
-        Collections.sort(this.messageList, new Comparator<DrawerMessageWrapper>()
-        {
-            @Override
-            public int compare(DrawerMessageWrapper lhs, DrawerMessageWrapper rhs) {
-                return lhs.getSortId() - rhs.getSortId();
-            }
-        });
+        this.messageList = new ArrayList<DrawerMessageWrapper>();
     }
 
     @Override
@@ -140,6 +133,13 @@ public class DrawerMessagesAdapter extends BaseAdapter
     public void swapData(List<DrawerMessageWrapper> incomingList)
     {
         messageList = incomingList;
+        Collections.sort(this.messageList, new Comparator<DrawerMessageWrapper>()
+        {
+            @Override
+            public int compare(DrawerMessageWrapper lhs, DrawerMessageWrapper rhs) {
+                return lhs.getSortId() - rhs.getSortId();
+            }
+        });
         notifyDataSetChanged();
     }
 }

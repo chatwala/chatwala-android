@@ -39,7 +39,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     private ListView messagesListView;
 
     private DrawerMessagesAdapter drawerMessagesAdapter;
-    private List<DrawerMessageWrapper> topLevelMessageList;
+    private List<DrawerMessageWrapper> topLevelMessageList = null;
 
     private ImageView settingsButton, addButton, backButton;
 
@@ -132,6 +132,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
         });
 
         messagesListView = (ListView)findViewById(R.id.conversation_list);
+        drawerMessagesAdapter = new DrawerMessagesAdapter(BaseNavigationDrawerActivity.this, imageLoader);
         getLoaderManager().initLoader(messagesLoaderId, null, new LoaderManager.LoaderCallbacks<List<ChatwalaMessage>>() {
             @Override
             public Loader<List<ChatwalaMessage>> onCreateLoader(int id, Bundle args)
@@ -142,9 +143,13 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             @Override
             public void onLoadFinished(Loader<List<ChatwalaMessage>> loader, List<ChatwalaMessage> data)
             {
+                boolean first = topLevelMessageList == null;
                 topLevelMessageList = makeWrappersFromLoaderData(data);
-                drawerMessagesAdapter = new DrawerMessagesAdapter(BaseNavigationDrawerActivity.this, imageLoader, topLevelMessageList);
-                messagesListView.setAdapter(drawerMessagesAdapter);
+                if(first)
+                {
+                    messagesListView.setAdapter(drawerMessagesAdapter);
+                    setDefaultAdapterData();
+                }
             }
 
             @Override
