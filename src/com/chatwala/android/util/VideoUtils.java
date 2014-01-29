@@ -26,7 +26,16 @@ public class VideoUtils
         try
         {
             retriever.setDataSource(filePath);
-            int sourceRotation = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+            int sourceRotation;
+
+            try
+            {
+                sourceRotation = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION));
+            }
+            catch(Exception e)
+            {
+                sourceRotation = 0;
+            }
 
             CWLog.b(VideoUtils.class, "sourceRotation: "+ sourceRotation);
 
