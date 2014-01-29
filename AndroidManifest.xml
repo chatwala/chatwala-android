@@ -66,7 +66,7 @@
                   android:screenOrientation="portrait"
                   android:theme="@style/ChatwalaTheme"/>
         <activity android:name=".activity.FeedbackActivity"
-                  android:label="@string/feedback_caps"
+                  android:label="@string/feedback"
                   android:screenOrientation="portrait"
                   android:theme="@style/ChatwalaTheme"/>
 
@@ -94,6 +94,7 @@
         </receiver>
 
         <meta-data android:name="com.crashlytics.ApiKey" android:value="b0462fa18b0b7748606c6c8cc641889ad1ee6eb1"/>
+        <meta-data android:name="com.google.android.gms.version" android:value="4132530"/>
     </application>
 
 </manifest>
