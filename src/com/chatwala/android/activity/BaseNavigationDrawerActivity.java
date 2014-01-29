@@ -11,13 +11,16 @@ import android.widget.*;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.R;
-import com.chatwala.android.adapters.DrawerConversationsAdapter;
+import com.chatwala.android.adapters.DrawerMessagesAdapter;
 import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.database.DrawerMessageWrapper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -35,11 +38,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     private ImageView drawerToggleButton;
     private ListView messagesListView;
 
-    private ImageView settingsButton, addButton;
+    private DrawerMessagesAdapter drawerMessagesAdapter;
+    private List<DrawerMessageWrapper> topLevelMessageList;
+
+    private ImageView settingsButton, addButton, backButton;
 
     private final int messagesLoaderId = 0;
 
-    Picasso imageLoader;
+    private Picasso imageLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -136,7 +142,9 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             @Override
             public void onLoadFinished(Loader<List<ChatwalaMessage>> loader, List<ChatwalaMessage> data)
             {
-                messagesListView.setAdapter(new DrawerConversationsAdapter(BaseNavigationDrawerActivity.this, imageLoader, data));
+                topLevelMessageList = makeWrappersFromLoaderData(data);
+                drawerMessagesAdapter = new DrawerMessagesAdapter(BaseNavigationDrawerActivity.this, imageLoader, topLevelMessageList);
+                messagesListView.setAdapter(drawerMessagesAdapter);
             }
 
             @Override
@@ -153,6 +161,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             public void onClick(View v)
             {
                 performAddButtonAction();
+            }
+        });
+
+        backButton = (ImageView)findViewById(R.id.drawer_back_button);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setDefaultAdapterData();
             }
         });
 
@@ -204,4 +220,43 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     }
 
     protected abstract void performAddButtonAction();
+
+    private void setDefaultAdapterData()
+    {
+        backButton.setVisibility(View.GONE);
+        drawerMessagesAdapter.swapData(topLevelMessageList);
+    }
+
+    public void setAdapterData(List<DrawerMessageWrapper> incomingList)
+    {
+        backButton.setVisibility(View.VISIBLE);
+        drawerMessagesAdapter.swapData(incomingList);
+    }
+
+    private List<DrawerMessageWrapper> makeWrappersFromLoaderData(List<ChatwalaMessage> messageList)
+    {
+        HashMap<String, ArrayList<ChatwalaMessage>> messageListMap = new HashMap<String, ArrayList<ChatwalaMessage>>();
+
+        for(ChatwalaMessage message : messageList)
+        {
+            if(messageListMap.containsKey(message.getSenderId()))
+            {
+                messageListMap.get(message.getSenderId()).add(message);
+            }
+            else
+            {
+                ArrayList<ChatwalaMessage> newList = new ArrayList<ChatwalaMessage>();
+                newList.add(message);
+                messageListMap.put(message.getSenderId(), newList);
+            }
+        }
+
+        ArrayList<DrawerMessageWrapper> drawerMessageWrapperList = new ArrayList<DrawerMessageWrapper>();
+        for(ArrayList<ChatwalaMessage> messageListFromMap : messageListMap.values())
+        {
+            drawerMessageWrapperList.add(new DrawerMessageWrapper(messageListFromMap));
+        }
+
+        return drawerMessageWrapperList;
+    }
 }

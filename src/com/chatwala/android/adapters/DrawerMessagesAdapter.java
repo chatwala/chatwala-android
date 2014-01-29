@@ -26,20 +26,26 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by matthewdavis on 1/24/14.
- */
-public abstract class BaseDrawerAdapter extends BaseAdapter
+* Created by matthewdavis on 1/24/14.
+*/
+public class DrawerMessagesAdapter extends BaseAdapter
 {
     protected BaseNavigationDrawerActivity activity;
     protected Picasso imageLoader;
-    protected ArrayList<DrawerMessageWrapper> messageList;
+    protected List<DrawerMessageWrapper> messageList;
 
-    public BaseDrawerAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<ChatwalaMessage> messageList)
+    public DrawerMessagesAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<DrawerMessageWrapper> messageList)
     {
         this.activity = activity;
         this.imageLoader = imageLoader;
         this.messageList = new ArrayList<DrawerMessageWrapper>(messageList);
-        Collections.sort(this.messageList, getMessageComparator());
+        Collections.sort(this.messageList, new Comparator<DrawerMessageWrapper>()
+        {
+            @Override
+            public int compare(DrawerMessageWrapper lhs, DrawerMessageWrapper rhs) {
+                return lhs.getSortId() - rhs.getSortId();
+            }
+        });
     }
 
     @Override
@@ -71,13 +77,22 @@ public abstract class BaseDrawerAdapter extends BaseAdapter
                 @Override
                 public void onClick(View v)
                 {
-                    NewCameraActivity.startMeWithId(activity, (String)v.getTag());
-                    activity.finish();
+                    DrawerMessageWrapper message = (DrawerMessageWrapper)v.getTag();
+
+                    if(message.isMessageGroup())
+                    {
+                        activity.setAdapterData(message.getMessageWrapperList());
+                    }
+                    else
+                    {
+                        NewCameraActivity.startMeWithId(activity, message.getMessageId());
+                        activity.finish();
+                    }
                 }
             });
         }
 
-        final ChatwalaMessage message = (ChatwalaMessage)getItem(position);
+        final DrawerMessageWrapper message = (DrawerMessageWrapper)getItem(position);
 
         ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
         File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
@@ -117,15 +132,14 @@ public abstract class BaseDrawerAdapter extends BaseAdapter
             }
         }
 
-        convertView.setTag(message.getMessageId());
+        convertView.setTag(message);
 
         return convertView;
     }
 
-    private void setMessageState(ImageView stateView, DrawerMessageWrapper message)
+    public void swapData(List<DrawerMessageWrapper> incomingList)
     {
-
+        messageList = incomingList;
+        notifyDataSetChanged();
     }
-
-    protected abstract Comparator<DrawerMessageWrapper> getMessageComparator();
 }
