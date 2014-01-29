@@ -29,7 +29,7 @@ import java.util.List;
 */
 public class DrawerConversationsAdapter extends BaseDrawerAdapter
 {
-    public DrawerConversationsAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<ChatwalaMessage> messageList)
+    public DrawerConversationsAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<DrawerMessageInfo> messageList)
     {
         super(activity, imageLoader, messageList);
     }

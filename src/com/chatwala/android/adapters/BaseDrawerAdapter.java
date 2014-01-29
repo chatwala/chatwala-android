@@ -34,7 +34,7 @@ public abstract class BaseDrawerAdapter extends BaseAdapter
     protected Picasso imageLoader;
     protected ArrayList<DrawerMessageInfo> messageList;
 
-    public BaseDrawerAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<ChatwalaMessage> messageList)
+    public BaseDrawerAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<DrawerMessageInfo> messageList)
     {
         this.activity = activity;
         this.imageLoader = imageLoader;
