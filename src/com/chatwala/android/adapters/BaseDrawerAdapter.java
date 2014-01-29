@@ -14,7 +14,7 @@ import com.chatwala.android.R;
 import com.chatwala.android.activity.BaseNavigationDrawerActivity;
 import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.database.ChatwalaMessage;
-import com.chatwala.android.database.DrawerMessageInfo;
+import com.chatwala.android.database.DrawerMessageWrapper;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.TimestampUtils;
 import com.squareup.picasso.Picasso;
@@ -32,13 +32,13 @@ public abstract class BaseDrawerAdapter extends BaseAdapter
 {
     protected BaseNavigationDrawerActivity activity;
     protected Picasso imageLoader;
-    protected ArrayList<DrawerMessageInfo> messageList;
+    protected ArrayList<DrawerMessageWrapper> messageList;
 
-    public BaseDrawerAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<DrawerMessageInfo> messageList)
+    public BaseDrawerAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<ChatwalaMessage> messageList)
     {
         this.activity = activity;
         this.imageLoader = imageLoader;
-        this.messageList = new ArrayList<DrawerMessageInfo>(messageList);
+        this.messageList = new ArrayList<DrawerMessageWrapper>(messageList);
         Collections.sort(this.messageList, getMessageComparator());
     }
 
@@ -122,5 +122,10 @@ public abstract class BaseDrawerAdapter extends BaseAdapter
         return convertView;
     }
 
-    protected abstract Comparator<DrawerMessageInfo> getMessageComparator();
+    private void setMessageState(ImageView stateView, DrawerMessageWrapper message)
+    {
+
+    }
+
+    protected abstract Comparator<DrawerMessageWrapper> getMessageComparator();
 }

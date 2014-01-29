@@ -1,26 +1,10 @@
 package com.chatwala.android.adapters;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import com.chatwala.android.activity.BaseNavigationDrawerActivity;
-import com.chatwala.android.activity.NewCameraActivity;
-import com.chatwala.android.R;
 import com.chatwala.android.database.ChatwalaMessage;
-import com.chatwala.android.database.DrawerMessageInfo;
-import com.chatwala.android.util.MessageDataStore;
-import com.chatwala.android.util.TimestampUtils;
+import com.chatwala.android.database.DrawerMessageWrapper;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -29,18 +13,18 @@ import java.util.List;
 */
 public class DrawerConversationsAdapter extends BaseDrawerAdapter
 {
-    public DrawerConversationsAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<DrawerMessageInfo> messageList)
+    public DrawerConversationsAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader, List<ChatwalaMessage> messageList)
     {
         super(activity, imageLoader, messageList);
     }
 
     @Override
-    protected Comparator<DrawerMessageInfo> getMessageComparator()
+    protected Comparator<DrawerMessageWrapper> getMessageComparator()
     {
-        return new Comparator<DrawerMessageInfo>()
+        return new Comparator<DrawerMessageWrapper>()
         {
             @Override
-            public int compare(DrawerMessageInfo lhs, DrawerMessageInfo rhs) {
+            public int compare(DrawerMessageWrapper lhs, DrawerMessageWrapper rhs) {
                 return lhs.getSortId() - rhs.getSortId();
             }
         };

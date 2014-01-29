@@ -16,7 +16,7 @@ import java.sql.SQLException;
  * To change this template use File | Settings | File Templates.
  */
 @DatabaseTable(tableName = "message")
-public class ChatwalaMessage
+public class ChatwalaMessage implements DrawerMessageWrapper
 {
     @DatabaseField(id = true)
     private String messageId;
