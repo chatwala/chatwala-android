@@ -2,8 +2,11 @@ package com.chatwala.android;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
@@ -15,13 +18,18 @@ import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.activity.KillswitchActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.http.PostRegisterGCMRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.GetRegisterUserCommand;
 import com.chatwala.android.superbus.PostRegisterGCMCommand;
 import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.GCMUtils;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
 
@@ -86,11 +94,16 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             public void run()
             {
                 BusHelper.submitCommandSync(ChatwalaApplication.this, new CheckKillswitchCommand());
+
                 if(AppPrefs.getInstance(ChatwalaApplication.this).getUserId() == null)
                 {
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new GetRegisterUserCommand());
                 }
-                BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterGCMCommand());
+
+                if(GCMUtils.shouldRegisterForGcm(ChatwalaApplication.this))
+                {
+                    BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterGCMCommand());
+                }
             }
         });
 

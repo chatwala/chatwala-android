@@ -7,6 +7,7 @@ import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
@@ -41,6 +42,7 @@ public abstract class BaseHttpRequest<T>
 
     private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
     private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
+    private static final String API_PATH_SANDBOX    = "http://chatwala-sandbox.azurewebsites.net/";
     private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
     private static final String API_PATH_DEV_EAST   = "http://chatwala-deveast.azurewebsites.net/";
     private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
@@ -57,7 +59,7 @@ public abstract class BaseHttpRequest<T>
 
     public static String getApiPath()
     {
-        return API_PATH_DEV_EAST;
+        return API_PATH_SANDBOX;
     }
 
     public static String getApiPathString()
@@ -69,6 +71,10 @@ public abstract class BaseHttpRequest<T>
         else if(getApiPath().equals(API_PATH_DEV_EAST))
         {
             return "deveast";
+        }
+        else if(getApiPath().equals(API_PATH_SANDBOX))
+        {
+            return "sandbox";
         }
         else if(getApiPath().equals(API_PATH_PROD))
         {
@@ -108,6 +114,7 @@ public abstract class BaseHttpRequest<T>
 
         if(httpResponse.getStatus() == STATUS_REDIRECT)
         {
+            CWLog.i(BaseHttpRequest.class, "Call redirected");
             try
             {
                 URL url = new URL(httpResponse.getUrl());
@@ -136,6 +143,8 @@ public abstract class BaseHttpRequest<T>
                 throw new PermanentException(e);
             }
         }
+
+        CWLog.i(BaseHttpRequest.class, "Request response code: " + httpResponse.getStatus());
 
         if (httpResponse.getStatus() == STATUS_OK)
         {

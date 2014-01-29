@@ -23,6 +23,8 @@ public class AppPrefs
 
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
     public static final String PREF_USER_ID = "USER_ID";
+    public static final String PREF_GCM_TOKEN = "GCM_TOKEN";
+    public static final String PREF_GCM_APP_VERSION = "GCM_APP_VERSION";
     public static final String PREF_IMAGE_REVIEWED = "IMAGE_REVIEWED";
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
@@ -71,6 +73,26 @@ public class AppPrefs
     public String getUserId()
     {
         return mSp.getString(PREF_USER_ID, null);
+    }
+
+    public void setGcmToken(String token)
+    {
+        mSp.edit().putString(PREF_GCM_TOKEN, token).apply();
+    }
+
+    public String getGcmToken()
+    {
+        return mSp.getString(PREF_GCM_TOKEN, null);
+    }
+
+    public void setGcmAppVersion(Integer version)
+    {
+        mSp.edit().putInt(PREF_GCM_APP_VERSION, version).apply();
+    }
+
+    public Integer getGcmAppVersion()
+    {
+        return mSp.getInt(PREF_GCM_APP_VERSION, 0);
     }
 
     public void setImageReviewed()
