@@ -1339,12 +1339,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, openingVolume, 0);
         }*/
 
-    public static void startMe(Context context)
+    public static void startMe(final Context context)
     {
-        context.startActivity(new Intent(context, NewCameraActivity.class));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                context.startActivity(new Intent(context, NewCameraActivity.class));
+            }
+        }, 100);
     }
 
-    public static void startMeWithId(Context context, String messageId)
+    public static void startMeWithId(final Context context, final String messageId)
     {
         Intent intent = new Intent(context, NewCameraActivity.class);
         intent.putExtra(MESSAGE_ID, messageId);
