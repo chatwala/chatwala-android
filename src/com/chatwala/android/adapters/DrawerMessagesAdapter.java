@@ -34,11 +34,14 @@ public class DrawerMessagesAdapter extends BaseAdapter
     protected Picasso imageLoader;
     protected List<DrawerMessageWrapper> messageList;
 
+    private String currentSenderId;
+
     public DrawerMessagesAdapter(BaseNavigationDrawerActivity activity, Picasso imageLoader)
     {
         this.activity = activity;
         this.imageLoader = imageLoader;
         this.messageList = new ArrayList<DrawerMessageWrapper>();
+        this.currentSenderId = null;
     }
 
     @Override
@@ -130,8 +133,10 @@ public class DrawerMessagesAdapter extends BaseAdapter
         return convertView;
     }
 
-    public void swapData(List<DrawerMessageWrapper> incomingList)
+    public void swapData(List<DrawerMessageWrapper> incomingList, String listSenderId)
     {
+        currentSenderId = listSenderId;
+
         messageList = incomingList;
         Collections.sort(this.messageList, new Comparator<DrawerMessageWrapper>()
         {
@@ -141,5 +146,10 @@ public class DrawerMessagesAdapter extends BaseAdapter
             }
         });
         notifyDataSetChanged();
+    }
+
+    public String getCurrentSenderId()
+    {
+        return currentSenderId;
     }
 }

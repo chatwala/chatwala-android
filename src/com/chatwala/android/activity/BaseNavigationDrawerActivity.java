@@ -148,7 +148,23 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                 if(first)
                 {
                     messagesListView.setAdapter(drawerMessagesAdapter);
+                }
+
+                if(drawerMessagesAdapter.getCurrentSenderId() == null)
+                {
                     setDefaultAdapterData();
+                }
+                else
+                {
+                    String currentDataSender = drawerMessagesAdapter.getCurrentSenderId();
+                    for(DrawerMessageWrapper message : topLevelMessageList)
+                    {
+                        if(message.getSenderId().equals(currentDataSender))
+                        {
+                            setAdapterData(message.getMessageWrapperList());
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -230,14 +246,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     {
         backButton.setVisibility(View.GONE);
         addButton.setVisibility(View.VISIBLE);
-        drawerMessagesAdapter.swapData(topLevelMessageList);
+        drawerMessagesAdapter.swapData(topLevelMessageList, null);
     }
 
     public void setAdapterData(List<DrawerMessageWrapper> incomingList)
     {
         backButton.setVisibility(View.VISIBLE);
         addButton.setVisibility(View.GONE);
-        drawerMessagesAdapter.swapData(incomingList);
+        drawerMessagesAdapter.swapData(incomingList, incomingList.get(0).getSenderId());
     }
 
     private List<DrawerMessageWrapper> makeWrappersFromLoaderData(List<ChatwalaMessage> messageList)
