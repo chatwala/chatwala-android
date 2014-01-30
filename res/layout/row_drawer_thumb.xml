@@ -11,7 +11,7 @@
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:background="@drawable/thumbnail_overlay"/>
+        android:background="@drawable/drawer_image_states"/>
     <ImageView
         android:id="@+id/status_image"
         android:layout_width="wrap_content"

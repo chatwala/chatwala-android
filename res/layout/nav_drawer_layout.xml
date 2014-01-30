@@ -36,7 +36,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:src="@drawable/ic_action_back"
-                android:layout_marginRight="1dip"
                 android:visibility="gone"
                 android:paddingTop="15dip"
                 android:paddingBottom="15dip"

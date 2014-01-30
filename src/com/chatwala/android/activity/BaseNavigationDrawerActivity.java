@@ -229,12 +229,14 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
     private void setDefaultAdapterData()
     {
         backButton.setVisibility(View.GONE);
+        addButton.setVisibility(View.VISIBLE);
         drawerMessagesAdapter.swapData(topLevelMessageList);
     }
 
     public void setAdapterData(List<DrawerMessageWrapper> incomingList)
     {
         backButton.setVisibility(View.VISIBLE);
+        addButton.setVisibility(View.GONE);
         drawerMessagesAdapter.swapData(incomingList);
     }
 
