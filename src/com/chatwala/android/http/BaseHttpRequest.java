@@ -59,7 +59,7 @@ public abstract class BaseHttpRequest<T>
 
     public static String getApiPath()
     {
-        return API_PATH_DEV_EAST;
+        return API_PATH_SANDBOX;
     }
 
     public static String getApiPathString()
