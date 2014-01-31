@@ -42,6 +42,11 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
 
             //Returns 201
             Log.d("############", "PUT resp code: " + urlConnection.getResponseCode());
+
+            if(urlConnection.getResponseCode() != 201)
+            {
+                throw new TransientException("Put failed, retrying.");
+            }
         }
         catch (MalformedURLException e)
         {
