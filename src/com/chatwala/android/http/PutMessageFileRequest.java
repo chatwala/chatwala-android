@@ -2,11 +2,14 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.util.Log;
+import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.superbus.PostFinalizeMessageCommand;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
@@ -101,6 +104,11 @@ public class PutMessageFileRequest extends BaseSasPutRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        new PostFinalizeMessageRequest(context, messageId, message.getSenderId(), message.getRecipientId());
+        DataProcessor.runProcess(new Runnable() {
+            @Override
+            public void run() {
+                BusHelper.submitCommandSync(context, new PostFinalizeMessageCommand(messageId, message.getSenderId(), message.getRecipientId()));
+            }
+        });
     }
 }
