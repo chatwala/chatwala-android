@@ -506,7 +506,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outFile.getAbsolutePath(), messageId, null));
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outFile.getAbsolutePath(), messageId, null, "unknown_recipient"));
                                 }
                             });
 

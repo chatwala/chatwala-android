@@ -5,6 +5,7 @@ import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
@@ -30,17 +31,18 @@ import java.sql.SQLException;
  */
 public class PutMessageFileRequest extends BaseSasPutRequest
 {
-    String localMessageUrl;
-    String messageId, originalMessageId;
+    private String localMessageUrl;
+    private String messageId, originalMessageId, recipientId;
 
     ChatwalaMessage message;
 
-    public PutMessageFileRequest(Context context, String localMessageUrl, String messageId, String originalMessageId)
+    public PutMessageFileRequest(Context context, String localMessageUrl, String messageId, String originalMessageId, String recipientId)
     {
         super(context);
         this.localMessageUrl = localMessageUrl;
         this.messageId = messageId;
         this.originalMessageId = originalMessageId;
+        this.recipientId = recipientId;
     }
 
     @Override
@@ -107,7 +109,7 @@ public class PutMessageFileRequest extends BaseSasPutRequest
         DataProcessor.runProcess(new Runnable() {
             @Override
             public void run() {
-                BusHelper.submitCommandSync(context, new PostFinalizeMessageCommand(messageId, message.getSenderId(), message.getRecipientId()));
+                BusHelper.submitCommandSync(context, new PostFinalizeMessageCommand(messageId, AppPrefs.getInstance(context).getUserId(), recipientId));
             }
         });
     }
