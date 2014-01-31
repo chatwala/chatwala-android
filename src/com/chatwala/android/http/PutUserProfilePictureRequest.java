@@ -6,13 +6,18 @@ import android.util.Log;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.VideoUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.SQLException;
 
 /**
@@ -22,7 +27,7 @@ import java.sql.SQLException;
  * Time: 2:18 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PutUserProfilePictureRequest extends BasePutRequest
+public class PutUserProfilePictureRequest extends BaseGetRequest
 {
     String filePath;
     Boolean isPicture;
@@ -34,14 +39,7 @@ public class PutUserProfilePictureRequest extends BasePutRequest
         this.isPicture = isPicture;
     }
 
-    @Override
-    String getContentType()
-    {
-        return "image/png";
-    }
-
-    @Override
-    protected byte[] getPutData() throws PermanentException, TransientException
+    protected byte[] getImageFileBytes()
     {
         if(isPicture)
         {
@@ -51,7 +49,7 @@ public class PutUserProfilePictureRequest extends BasePutRequest
             }
             catch (IOException e)
             {
-                throw new PermanentException(e);
+                throw new RuntimeException(e);
             }
         }
         else
@@ -80,11 +78,11 @@ public class PutUserProfilePictureRequest extends BasePutRequest
             }
             catch (FileNotFoundException e)
             {
-                throw new PermanentException(e);
+                throw new RuntimeException(e);
             }
             catch (IOException e)
             {
-                throw new TransientException(e);
+                throw new RuntimeException(e);
             }
 
             return toReturn;
@@ -94,15 +92,52 @@ public class PutUserProfilePictureRequest extends BasePutRequest
     @Override
     protected String getResourceURL()
     {
-        return "users/" + AppPrefs.getInstance(context).getUserId() + "/picture";
+        return "users/" + AppPrefs.getInstance(context).getUserId() + "/pictureUploadURL";
     }
 
     @Override
-    protected void parseResponse(HttpResponse response) throws JSONException, SQLException
+    protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException
+    {
+        String sasUrl = new JSONObject(response.getBodyAsString()).getString("sasUrl");
+
+        try
+        {
+            URL url = new URL(sasUrl);
+            HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestProperty("x-ms-blob-type", "BlockBlob");
+            urlConnection.setRequestMethod("PUT");
+
+            urlConnection.getOutputStream().write(getImageFileBytes());
+            urlConnection.getOutputStream().close();
+
+            //Returns 201
+            Log.d("############", "PUT resp code: " + urlConnection.getResponseCode());
+        }
+        catch (MalformedURLException e)
+        {
+            throw new TransientException(e);
+        }
+        catch (IOException e)
+        {
+            throw new TransientException(e);
+        }
+    }
+
+    @Override
+    protected boolean hasDbOperation()
+    {
+        return true;
+    }
+
+    @Override
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
         if(!isPicture)
         {
             new File(filePath).delete();
         }
+
+        return null;
     }
 }
