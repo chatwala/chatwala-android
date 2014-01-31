@@ -59,7 +59,7 @@ public abstract class BaseHttpRequest<T>
 
     public static String getApiPath()
     {
-        return API_PATH_DEV_EAST;
+        return API_PATH_SANDBOX;
     }
 
     public static String getApiPathString()
@@ -223,7 +223,7 @@ public abstract class BaseHttpRequest<T>
 
     protected abstract HttpResponse makeRequest(BusHttpClient client) throws PermanentException, TransientException;
 
-    protected abstract void parseResponse(HttpResponse response) throws JSONException, SQLException;
+    protected abstract void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException;
 
     protected abstract boolean hasDbOperation();
 
