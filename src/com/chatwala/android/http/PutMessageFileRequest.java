@@ -25,7 +25,7 @@ import java.sql.SQLException;
  * Time: 3:33 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PutMessageFileRequest extends BaseGetRequest
+public class PutMessageFileRequest extends BaseSasPutRequest
 {
     String localMessageUrl;
     String messageId, originalMessageId;
@@ -46,7 +46,8 @@ public class PutMessageFileRequest extends BaseGetRequest
         return "messages/" + messageId + "/uploadURL";
     }
 
-    private byte[] getMessageFileBytes()
+    @Override
+    protected byte[] getBytesToPut()
     {
         Log.d("############ Putting local message", localMessageUrl);
         File walaFile = new File(localMessageUrl);
@@ -78,42 +79,7 @@ public class PutMessageFileRequest extends BaseGetRequest
     }
 
     @Override
-    protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException
-    {
-        String sasUrl = new JSONObject(response.getBodyAsString()).getString("sasUrl");
-
-        try
-        {
-            URL url = new URL(sasUrl);
-            HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
-            urlConnection.setDoOutput(true);
-            urlConnection.setRequestProperty("x-ms-blob-type", "BlockBlob");
-            urlConnection.setRequestMethod("PUT");
-
-            urlConnection.getOutputStream().write(getMessageFileBytes());
-            urlConnection.getOutputStream().close();
-
-            //Returns 201
-            Log.d("############", "PUT resp code: " + urlConnection.getResponseCode());
-        }
-        catch (MalformedURLException e)
-        {
-            throw new TransientException(e);
-        }
-        catch (IOException e)
-        {
-            throw new TransientException(e);
-        }
-    }
-
-    @Override
-    protected boolean hasDbOperation()
-    {
-        return true;
-    }
-
-    @Override
-    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    protected void onPutSuccess(DatabaseHelper databaseHelper) throws SQLException
     {
         File walaFile = new File(localMessageUrl);
         File walaDir = walaFile.getParentFile();
@@ -130,8 +96,6 @@ public class PutMessageFileRequest extends BaseGetRequest
 
             BroadcastSender.makeNewMessagesBroadcast(context);
         }
-
-        return null;
     }
 
     @Override
