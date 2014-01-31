@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">chatwala</string>
     <string name="app_name_dev">chatwala_dev</string>
+    <string name="app_name_sandbox">chatwala_sandbox</string>
     <string name="now_record_reply">Now reply!</string>
     <string name="play_message_record_reaction">Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!</string>
     <string name="basic_instructions">Tap to record and send a message. Your friend\'s reaction will appear here when they reply.</string>

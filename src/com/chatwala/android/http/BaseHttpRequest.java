@@ -47,6 +47,9 @@ public abstract class BaseHttpRequest<T>
     private static final String API_PATH_DEV_EAST   = "http://chatwala-deveast.azurewebsites.net/";
     private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 
+    private static final String API_PATH_DEVEAST_13 = "http://chatwala-deveast-13.azurewebsites.net/";
+    private static final String API_PATH_SANDBOX_13 = "http://chatwala-sandbox-13.azurewebsites.net/";
+
     protected Context context;
 
     private String clientId = "58041de0bc854d9eb514d2f22d50ad4c";
@@ -59,12 +62,20 @@ public abstract class BaseHttpRequest<T>
 
     public static String getApiPath()
     {
-        return API_PATH_SANDBOX;
+        return API_PATH_SANDBOX_13;
     }
 
     public static String getApiPathString()
     {
-        if(getApiPath().equals(API_PATH_PROD_EAST))
+        if(getApiPath().equals(API_PATH_DEVEAST_13))
+        {
+            return "deveast_13";
+        }
+        else if(getApiPath().equals(API_PATH_SANDBOX_13))
+        {
+            return "sandbox_13";
+        }
+        else if(getApiPath().equals(API_PATH_PROD_EAST))
         {
             return "prodeast";
         }
