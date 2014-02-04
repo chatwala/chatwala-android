@@ -2,11 +2,8 @@ package com.chatwala.android;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
@@ -18,24 +15,20 @@ import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.activity.KillswitchActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.http.PostRegisterGCMRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
-import com.chatwala.android.superbus.GetRegisterUserCommand;
-import com.chatwala.android.superbus.PostRegisterGCMCommand;
+import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.GCMUtils;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -53,8 +46,6 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     public Typeface fontMd;
     public Typeface fontDemi;
-
-    private boolean splashRan;
 
     private GsonSqlitePersistenceProvider persistenceProvider;
 
@@ -85,6 +76,13 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         fontMd = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_MD);
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
 
+        AppPrefs prefs = AppPrefs.getInstance(ChatwalaApplication.this);
+        if(prefs.getUserId() == null)
+        {
+            prefs.setUserId(UUID.randomUUID().toString());
+            Log.d("###USERID###", prefs.getUserId());
+        }
+
         isKillswitchShowing = new AtomicBoolean(false);
         isKillswitchActive(ChatwalaApplication.this);
 
@@ -95,29 +93,14 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             {
                 BusHelper.submitCommandSync(ChatwalaApplication.this, new CheckKillswitchCommand());
 
-                if(AppPrefs.getInstance(ChatwalaApplication.this).getUserId() == null)
-                {
-                    BusHelper.submitCommandSync(ChatwalaApplication.this, new GetRegisterUserCommand());
-                }
-
                 if(GCMUtils.shouldRegisterForGcm(ChatwalaApplication.this))
                 {
-                    BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterGCMCommand());
+                    BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterPushTokenCommand());
                 }
             }
         });
 
         FetchMessagesService.init(ChatwalaApplication.this, AppPrefs.getInstance(ChatwalaApplication.this).getPrefMessageLoadInterval());
-    }
-
-    public boolean isSplashRan()
-    {
-        return splashRan;
-    }
-
-    public void setSplashRan(boolean splashRan)
-    {
-        this.splashRan = splashRan;
     }
 
     @Override

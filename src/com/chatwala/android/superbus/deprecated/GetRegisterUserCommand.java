@@ -1,11 +1,11 @@
-package com.chatwala.android.superbus;
+package com.chatwala.android.superbus.deprecated;
 
 import android.content.Context;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
-import com.chatwala.android.http.GetRegisterUserRequest;
+import com.chatwala.android.http.deprecated.GetRegisterUserRequest;
 
 /**
  * Created with IntelliJ IDEA.

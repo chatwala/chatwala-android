@@ -1,4 +1,4 @@
-package com.chatwala.android.ui;
+package com.chatwala.android.ui.deprecated;
 
 import android.app.Activity;
 import android.content.Context;

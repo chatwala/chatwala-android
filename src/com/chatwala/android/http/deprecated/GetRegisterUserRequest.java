@@ -1,8 +1,9 @@
-package com.chatwala.android.http;
+package com.chatwala.android.http.deprecated;
 
 import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.http.BaseGetRequest;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
