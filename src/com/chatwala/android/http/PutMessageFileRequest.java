@@ -32,7 +32,7 @@ import java.sql.SQLException;
 public class PutMessageFileRequest extends BaseSasPutRequest
 {
     private String localMessageUrl;
-    private String messageId, originalMessageId, recipientId;
+    private String messageId, originalMessageId, recipientId, sasUrl;
 
     ChatwalaMessage message;
 
@@ -54,33 +54,7 @@ public class PutMessageFileRequest extends BaseSasPutRequest
     @Override
     protected byte[] getBytesToPut()
     {
-        Log.d("############ Putting local message", localMessageUrl);
-        File walaFile = new File(localMessageUrl);
-
-        FileInputStream fileInputStream;
-
-        byte[] bFile = new byte[(int) walaFile.length()];
-
-        try {
-            //convert file into array of bytes
-            fileInputStream = new FileInputStream(walaFile);
-            fileInputStream.read(bFile);
-            fileInputStream.close();
-
-            for (int i = 0; i < bFile.length; i++) {
-                System.out.print((char)bFile[i]);
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        return bFile;
+        return convertMessageToBytes(localMessageUrl);
     }
 
     @Override

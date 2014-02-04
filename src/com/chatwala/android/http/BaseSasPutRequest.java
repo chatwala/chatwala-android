@@ -8,6 +8,9 @@ import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -28,7 +31,27 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException
     {
         String sasUrl = new JSONObject(response.getBodyAsString()).getString("sasUrl");
+        putFileToUrl(sasUrl, getBytesToPut());
+    }
 
+    @Override
+    protected boolean hasDbOperation()
+    {
+        return true;
+    }
+
+    @Override
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    {
+        onPutSuccess(databaseHelper);
+        return null;
+    }
+
+    protected abstract byte[] getBytesToPut();
+    protected abstract void onPutSuccess(DatabaseHelper databaseHelper) throws SQLException;
+
+    public static void putFileToUrl(String sasUrl, byte[] bytesToPut) throws TransientException
+    {
         try
         {
             URL url = new URL(sasUrl);
@@ -37,7 +60,7 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
             urlConnection.setRequestProperty("x-ms-blob-type", "BlockBlob");
             urlConnection.setRequestMethod("PUT");
 
-            urlConnection.getOutputStream().write(getBytesToPut());
+            urlConnection.getOutputStream().write(bytesToPut);
             urlConnection.getOutputStream().close();
 
             //Returns 201
@@ -58,19 +81,34 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
         }
     }
 
-    @Override
-    protected boolean hasDbOperation()
+    public static byte[] convertMessageToBytes(String localMessageFileUrl)
     {
-        return true;
-    }
+        Log.d("############ Putting local message", localMessageFileUrl);
+        File walaFile = new File(localMessageFileUrl);
 
-    @Override
-    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
-    {
-        onPutSuccess(databaseHelper);
-        return null;
-    }
+        FileInputStream fileInputStream;
 
-    protected abstract byte[] getBytesToPut();
-    protected abstract void onPutSuccess(DatabaseHelper databaseHelper) throws SQLException;
+        byte[] bFile = new byte[(int) walaFile.length()];
+
+        try {
+            //convert file into array of bytes
+            fileInputStream = new FileInputStream(walaFile);
+            fileInputStream.read(bFile);
+            fileInputStream.close();
+
+            for (int i = 0; i < bFile.length; i++) {
+                System.out.print((char)bFile[i]);
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return bFile;
+    }
 }

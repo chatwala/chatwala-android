@@ -9,6 +9,7 @@ import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.superbus.PutMessageFileCommand;
+import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
 import com.chatwala.android.util.VideoUtils;
 import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,6 +33,8 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     String recipientId, originalMessageId, messagePath;
     VideoUtils.VideoMetadata videoMetadata;
 
+    String generatedMessageId;
+
     public PostSubmitMessageRequest(Context context, String videoPath, String recipientId, String originalMessageId, VideoUtils.VideoMetadata videoMetadata)
     {
         super(context);
@@ -38,6 +42,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
         this.recipientId = recipientId;
         this.originalMessageId = originalMessageId;
         this.videoMetadata = videoMetadata;
+        generatedMessageId = UUID.randomUUID().toString();
     }
 
     @Override
@@ -52,7 +57,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     @Override
     protected String getResourceURL()
     {
-        return "messages";
+        return "messages/" + generatedMessageId;
     }
 
     @Override
@@ -62,8 +67,8 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
 
         ChatwalaMessage chatwalaMessage = new ChatwalaMessage();
 
-        chatwalaMessage.setMessageId(bodyAsJson.getString("message_id"));
-        chatwalaMessage.setUrl(bodyAsJson.getString("url"));
+        chatwalaMessage.setMessageId(generatedMessageId);
+        chatwalaMessage.setUrl(bodyAsJson.getString("sasUrl"));
         chatwalaMessage.setSortId(null);
 
         //Set at end, in case things got weird parsing
@@ -91,7 +96,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
         if(videoMetadata != null)
         {
             File outFile = ZipUtil.buildZipToSend(context, new File(messagePath), originalMessage, videoMetadata, messageMetadata.getMessageId());
-            BusHelper.submitCommandSync(context, new PutMessageFileCommand(outFile.getPath(), messageMetadata.getMessageId(), originalMessageId, recipientId));
+            BusHelper.submitCommandSync(context, new PutMessageFileWithSasCommand(outFile.getPath(), messageMetadata.getMessageId(), messageMetadata.getUrl(), originalMessageId, recipientId));
         }
     }
 

@@ -32,6 +32,7 @@ import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
+import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
 import com.chatwala.android.ui.CameraPreviewView;
 import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.ui.DynamicTextureVideoView;
@@ -497,6 +498,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                         if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
                             final String messageId = messageToSendDirectly.getMessageId();
+                            final String messageSasUrl = messageToSendDirectly.getUrl();
                             messageToSendDirectly = null;
 
                             final File outFile = ZipUtil.buildZipToSend(NewCameraActivity.this, recordPreviewFile, incomingMessage, chatMessageVideoMetadata, messageId);
@@ -506,7 +508,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileCommand(outFile.getAbsolutePath(), messageId, null, "unknown_recipient"));
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileWithSasCommand(outFile.getAbsolutePath(), messageId, messageSasUrl, null, "unknown_recipient"));
                                 }
                             });
 
