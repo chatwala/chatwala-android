@@ -104,4 +104,10 @@ public class PutUserProfilePictureRequest extends BaseSasPutRequest
             new File(filePath).delete();
         }
     }
+
+    @Override
+    protected boolean isPngImage()
+    {
+        return true;
+    }
 }

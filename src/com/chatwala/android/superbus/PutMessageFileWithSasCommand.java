@@ -51,7 +51,7 @@ public class PutMessageFileWithSasCommand extends SqliteCommand
     {
         try
         {
-            BaseSasPutRequest.putFileToUrl(sasUrl, BaseSasPutRequest.convertMessageToBytes(messageLocalUrl));
+            BaseSasPutRequest.putFileToUrl(sasUrl, BaseSasPutRequest.convertMessageToBytes(messageLocalUrl), false);
 
             File walaFile = new File(messageLocalUrl);
             File walaDir = walaFile.getParentFile();

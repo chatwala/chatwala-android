@@ -78,6 +78,12 @@ public class PutMessageFileRequest extends BaseSasPutRequest
     }
 
     @Override
+    protected boolean isPngImage()
+    {
+        return false;
+    }
+
+    @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
         DataProcessor.runProcess(new Runnable() {

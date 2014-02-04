@@ -31,7 +31,7 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException
     {
         String sasUrl = new JSONObject(response.getBodyAsString()).getString("sasUrl");
-        putFileToUrl(sasUrl, getBytesToPut());
+        putFileToUrl(sasUrl, getBytesToPut(), isPngImage());
     }
 
     @Override
@@ -49,8 +49,9 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
 
     protected abstract byte[] getBytesToPut();
     protected abstract void onPutSuccess(DatabaseHelper databaseHelper) throws SQLException;
+    protected abstract boolean isPngImage();
 
-    public static void putFileToUrl(String sasUrl, byte[] bytesToPut) throws TransientException
+    public static void putFileToUrl(String sasUrl, byte[] bytesToPut, boolean contentTypeImage) throws TransientException
     {
         try
         {
@@ -58,6 +59,10 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
             HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("x-ms-blob-type", "BlockBlob");
+            if(contentTypeImage)
+            {
+                urlConnection.setRequestProperty("content-type", "image/png");
+            }
             urlConnection.setRequestMethod("PUT");
 
             urlConnection.getOutputStream().write(bytesToPut);
