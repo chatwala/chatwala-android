@@ -91,20 +91,8 @@ public class DrawerMessagesAdapter extends BaseAdapter
         final DrawerMessageWrapper message = (DrawerMessageWrapper)getItem(position);
 
         ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
-        File thumbImage = MessageDataStore.findUserImageInLocalStore(message.getSenderId());
-
-        Bitmap thumbBitmap = BitmapFactory.decodeFile(thumbImage.getPath());
-        Log.d("######", "thumb width: " + thumbBitmap.getWidth() + "thumb height: " + thumbBitmap.getHeight());
-        if(thumbBitmap.getWidth() < thumbBitmap.getHeight())
-        {
-            imageLoader.load(thumbImage).resize(150,70).centerCrop().noFade().into(thumbView);
-        }
-        else
-        {
-            imageLoader.load(thumbImage).resize(70,150).centerCrop().noFade().into(thumbView);
-        }
-        thumbBitmap.recycle();
-        thumbBitmap = null;
+        File thumbImage = MessageDataStore.findUserImageThumbInLocalStore(message.getSenderId());
+        imageLoader.load(thumbImage).fit().into(thumbView);//resize(150,70).centerCrop().noFade().into(thumbView);
 
         if(message.getTimestamp() != null)
         {

@@ -81,7 +81,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
             profilePicImage.setVisibility(View.VISIBLE);
             noImageText.setVisibility(View.GONE);
 
-            newThumbImage = MessageDataStore.makeUserFile(userId);
+            newThumbImage = MessageDataStore.findUserImageInLocalStore(userId);
             if(newThumbImage.exists())
             {
                 newThumbImage.delete();

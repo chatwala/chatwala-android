@@ -1,13 +1,14 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 import co.touchlab.android.superbus.PermanentException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.util.CWLog;
-import com.chatwala.android.util.MessageDataStore;
-import com.chatwala.android.util.ShareUtils;
-import com.chatwala.android.util.ZipUtil;
+import com.chatwala.android.util.*;
+import com.squareup.picasso.Picasso;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -42,12 +43,13 @@ public class GetUserProfilePictureRequest extends BaseGetRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
+        File imageFile = MessageDataStore.findUserImageInLocalStore(userId);
+
         try
         {
             //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
             InputStream is = new ByteArrayInputStream(response.getBody());
-            File file = MessageDataStore.makeUserFile(userId);
-            FileOutputStream os = new FileOutputStream(file);
+            FileOutputStream os = new FileOutputStream(imageFile);
 
             IOUtils.copy(is, os);
 
@@ -62,6 +64,8 @@ public class GetUserProfilePictureRequest extends BaseGetRequest
         {
             throw new RuntimeException(e);
         }
+
+        ThumbUtils.createThumbForUserImage(context, userId);
     }
 
     @Override

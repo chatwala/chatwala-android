@@ -4,6 +4,7 @@ import android.content.Context;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.ThumbUtils;
 import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
@@ -45,6 +46,11 @@ public class MessagesLoader extends BaseAsyncLoader<List<ChatwalaMessage>>
                 if(!MessageDataStore.findUserImageInLocalStore(current.getSenderId()).exists())
                 {
                     iterator.remove();
+                }
+                else if(!MessageDataStore.findUserImageThumbInLocalStore(current.getSenderId()).exists())
+                {
+                    //Should almost never get here, it's for compatibility with images downloaded before we were making thumbs.
+                    ThumbUtils.createThumbForUserImage(getContext(), current.getSenderId());
                 }
             }
             return messages;

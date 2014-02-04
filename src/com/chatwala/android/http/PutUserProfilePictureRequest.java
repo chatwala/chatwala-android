@@ -8,6 +8,7 @@ import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.ThumbUtils;
 import com.chatwala.android.util.VideoUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.FileUtils;
@@ -68,7 +69,7 @@ public class PutUserProfilePictureRequest extends BaseSasPutRequest
             byte[] toReturn = stream.toByteArray();
 
             InputStream is = new ByteArrayInputStream(stream.toByteArray());
-            File file = MessageDataStore.makeUserFile(AppPrefs.getInstance(context).getUserId());
+            File file = MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId());
             try
             {
                 FileOutputStream os = new FileOutputStream(file);
@@ -103,6 +104,8 @@ public class PutUserProfilePictureRequest extends BaseSasPutRequest
         {
             new File(filePath).delete();
         }
+
+        ThumbUtils.createThumbForUserImage(context, AppPrefs.getInstance(context).getUserId());
     }
 
     @Override

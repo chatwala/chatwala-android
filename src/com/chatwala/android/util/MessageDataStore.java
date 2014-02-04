@@ -33,6 +33,7 @@ public class MessageDataStore
     private static final String WALA_FILE_PREFIX = "vid_";
     private static final String CHAT_DIR_PREFIX = "chat_";
     private static final String SHARE_DIR_PREFIX = "sharefile_";
+    private static final String THUMB_FILE_PREFIX = "thumb_";
     private static final String WALA_FILE_EXTENSION = ".wala";
     private static final String MP4_FILE_EXTENSION = ".mp4";
     private static final String PNG_FILE_EXTENSION = ".png";
@@ -164,6 +165,11 @@ public class MessageDataStore
         return new File(usersDir, id + PNG_FILE_EXTENSION);
     }
 
+    public static File findUserImageThumbInLocalStore(String id)
+    {
+        return new File(usersDir, THUMB_FILE_PREFIX + id + PNG_FILE_EXTENSION);
+    }
+
     private static long megsUsed(File dirToCheck)
     {
 //        long total = 0;
@@ -251,11 +257,6 @@ public class MessageDataStore
     public static File makePlistFile()
     {
         return new File(plistDir, PLIST_FILE);
-    }
-
-    public static File makeUserFile(String userId)
-    {
-        return new File(usersDir, userId + PNG_FILE_EXTENSION);
     }
 
     public static File makeTempUserFile(String userId)
