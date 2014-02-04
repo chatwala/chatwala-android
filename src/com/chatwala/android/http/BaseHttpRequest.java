@@ -62,7 +62,7 @@ public abstract class BaseHttpRequest<T>
 
     public static String getApiPath()
     {
-        return API_PATH_SANDBOX_13;
+        return API_PATH_DEVEAST_13;
     }
 
     public static String getApiPathString()

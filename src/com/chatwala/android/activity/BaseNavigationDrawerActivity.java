@@ -258,28 +258,37 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
 
     private List<DrawerMessageWrapper> makeWrappersFromLoaderData(List<ChatwalaMessage> messageList)
     {
-        HashMap<String, ArrayList<ChatwalaMessage>> messageListMap = new HashMap<String, ArrayList<ChatwalaMessage>>();
+        ArrayList<DrawerMessageWrapper> messageWrapperList = new ArrayList<DrawerMessageWrapper>();
 
-        for(ChatwalaMessage message : messageList)
+        for(ChatwalaMessage message :messageList)
         {
-            if(messageListMap.containsKey(message.getSenderId()))
-            {
-                messageListMap.get(message.getSenderId()).add(message);
-            }
-            else
-            {
-                ArrayList<ChatwalaMessage> newList = new ArrayList<ChatwalaMessage>();
-                newList.add(message);
-                messageListMap.put(message.getSenderId(), newList);
-            }
+            messageWrapperList.add(new DrawerMessageWrapper(message));
         }
 
-        ArrayList<DrawerMessageWrapper> drawerMessageWrapperList = new ArrayList<DrawerMessageWrapper>();
-        for(ArrayList<ChatwalaMessage> messageListFromMap : messageListMap.values())
-        {
-            drawerMessageWrapperList.add(new DrawerMessageWrapper(messageListFromMap));
-        }
+        return messageWrapperList;
 
-        return drawerMessageWrapperList;
+//        HashMap<String, ArrayList<ChatwalaMessage>> messageListMap = new HashMap<String, ArrayList<ChatwalaMessage>>();
+//
+//        for(ChatwalaMessage message : messageList)
+//        {
+//            if(messageListMap.containsKey(message.getSenderId()))
+//            {
+//                messageListMap.get(message.getSenderId()).add(message);
+//            }
+//            else
+//            {
+//                ArrayList<ChatwalaMessage> newList = new ArrayList<ChatwalaMessage>();
+//                newList.add(message);
+//                messageListMap.put(message.getSenderId(), newList);
+//            }
+//        }
+//
+//        ArrayList<DrawerMessageWrapper> drawerMessageWrapperList = new ArrayList<DrawerMessageWrapper>();
+//        for(ArrayList<ChatwalaMessage> messageListFromMap : messageListMap.values())
+//        {
+//            drawerMessageWrapperList.add(new DrawerMessageWrapper(messageListFromMap));
+//        }
+//
+//        return drawerMessageWrapperList;
     }
 }
