@@ -6,6 +6,7 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.http.BaseHttpRequest;
 import com.chatwala.android.util.MessageDataStore;
 
 import java.io.*;
@@ -35,7 +36,7 @@ public class CheckKillswitchCommand extends SqliteCommand
     {
         try
         {
-            URL url = new URL("https://s3.amazonaws.com/chatwala.groundcontrol/defaults.plist");
+            URL url = new URL(BaseHttpRequest.getApiInfo().getPlistPath());
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
             InputStream is = new BufferedInputStream(urlConnection.getInputStream());

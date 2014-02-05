@@ -40,19 +40,6 @@ public abstract class BaseHttpRequest<T>
     private static final int    STATUS_SERVER_ERROR        = 500;
     private static final int    STATUS_SERVICE_UNAVAILABLE = 503;
 
-    private static final String API_PATH_PRODEAST_13 = "https://chatwala-prodeast-13.azurewebsites.net/";
-    private static final String API_PATH_QA_13       = "https://chatwala-qa-13.azurewebsites.net/";
-    private static final String API_PATH_DEVEAST_13  = "https://chatwala-deveast-13.azurewebsites.net/";
-    private static final String API_PATH_SANDBOX_13  = "https://chatwala-sandbox-13.azurewebsites.net/";
-
-    //DEPRECATED, but we're not supposed to get rid of them yet.
-    private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
-    private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
-    private static final String API_PATH_SANDBOX    = "http://chatwala-sandbox.azurewebsites.net/";
-    private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
-    private static final String API_PATH_DEV_EAST   = "http://chatwala-deveast.azurewebsites.net/";
-    private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
-
     protected Context context;
 
     private String clientId = "58041de0bc854d9eb514d2f22d50ad4c";
@@ -63,62 +50,14 @@ public abstract class BaseHttpRequest<T>
         this.context = context;
     }
 
-    public static String getApiPath()
+    public static ApiInfo getApiInfo()
     {
-        return API_PATH_DEVEAST_13;
-    }
-
-    public static String getApiPathString()
-    {
-        if(getApiPath().equals(API_PATH_PRODEAST_13))
-        {
-            return "prodeast_13";
-        }
-        else if(getApiPath().equals(API_PATH_QA_13))
-        {
-            return "qa_13";
-        }
-        else if(getApiPath().equals(API_PATH_DEVEAST_13))
-        {
-            return "deveast_13";
-        }
-        else if(getApiPath().equals(API_PATH_SANDBOX_13))
-        {
-            return "sandbox_13";
-        }
-        else if(getApiPath().equals(API_PATH_PROD_EAST))
-        {
-            return "prodeast";
-        }
-        else if(getApiPath().equals(API_PATH_DEV_EAST))
-        {
-            return "deveast";
-        }
-        else if(getApiPath().equals(API_PATH_SANDBOX))
-        {
-            return "sandbox";
-        }
-        else if(getApiPath().equals(API_PATH_PROD))
-        {
-            return "prod";
-        }
-        else if(getApiPath().equals(API_PATH_DEV))
-        {
-            return "dev";
-        }
-        else if(getApiPath().equals(API_PATH_DUMMY))
-        {
-            return "test";
-        }
-        else
-        {
-            return "unknown";
-        }
+        return ApiInfo.DEVEAST13;
     }
 
     public T execute() throws TransientException, PermanentException
     {
-        ChatwalaHttpClient client = new ChatwalaHttpClient(getApiPath());
+        ChatwalaHttpClient client = new ChatwalaHttpClient(getApiInfo().getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
         //Quiet the logs, some versions of intellij don't play nice with outputting bytes to the console.
@@ -264,4 +203,49 @@ public abstract class BaseHttpRequest<T>
     {
 
     }
+
+    public static enum ApiInfo
+    {
+        PRODEAST13("https://chatwala-prodeast-13.azurewebsites.net/", "prodeast_13", "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_3.plist"),
+        QA13("https://chatwala-qa-13.azurewebsites.net/", "qa_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
+        DEVEAST13("https://chatwala-deveast-13.azurewebsites.net/", "deveast_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
+        SANDBOX13("https://chatwala-sandbox-13.azurewebsites.net/", "sandbox_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist");
+
+        private String apiPath, displayString, plistPath;
+
+        ApiInfo(String apiPath, String displayString, String plistPath)
+        {
+            this.apiPath = apiPath;
+            this.displayString = displayString;
+            this.plistPath = plistPath;
+        }
+
+        public String getApiPath()
+        {
+            return apiPath;
+        }
+
+        public String getDisplayString()
+        {
+            return displayString;
+        }
+
+        public String getPlistPath()
+        {
+            return plistPath;
+        }
+    }
+
+    private static final String API_PATH_PRODEAST_13 = "https://chatwala-prodeast-13.azurewebsites.net/";
+    private static final String API_PATH_QA_13       = "https://chatwala-qa-13.azurewebsites.net/";
+    private static final String API_PATH_DEVEAST_13  = "https://chatwala-deveast-13.azurewebsites.net/";
+    private static final String API_PATH_SANDBOX_13  = "https://chatwala-sandbox-13.azurewebsites.net/";
+
+    //DEPRECATED, but we're not supposed to get rid of them yet.
+    private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
+    private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
+    private static final String API_PATH_SANDBOX    = "http://chatwala-sandbox.azurewebsites.net/";
+    private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
+    private static final String API_PATH_DEV_EAST   = "http://chatwala-deveast.azurewebsites.net/";
+    private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 }
