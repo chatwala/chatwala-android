@@ -40,15 +40,18 @@ public abstract class BaseHttpRequest<T>
     private static final int    STATUS_SERVER_ERROR        = 500;
     private static final int    STATUS_SERVICE_UNAVAILABLE = 503;
 
+    private static final String API_PATH_PRODEAST_13 = "https://chatwala-prodeast-13.azurewebsites.net/";
+    private static final String API_PATH_QA_13       = "https://chatwala-qa-13.azurewebsites.net/";
+    private static final String API_PATH_DEVEAST_13  = "https://chatwala-deveast-13.azurewebsites.net/";
+    private static final String API_PATH_SANDBOX_13  = "https://chatwala-sandbox-13.azurewebsites.net/";
+
+    //DEPRECATED, but we're not supposed to get rid of them yet.
     private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
     private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
     private static final String API_PATH_SANDBOX    = "http://chatwala-sandbox.azurewebsites.net/";
     private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
     private static final String API_PATH_DEV_EAST   = "http://chatwala-deveast.azurewebsites.net/";
     private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
-
-    private static final String API_PATH_DEVEAST_13 = "http://chatwala-deveast-13.azurewebsites.net/";
-    private static final String API_PATH_SANDBOX_13 = "http://chatwala-sandbox-13.azurewebsites.net/";
 
     protected Context context;
 
@@ -62,12 +65,20 @@ public abstract class BaseHttpRequest<T>
 
     public static String getApiPath()
     {
-        return API_PATH_DEVEAST_13;
+        return API_PATH_QA_13;
     }
 
     public static String getApiPathString()
     {
-        if(getApiPath().equals(API_PATH_DEVEAST_13))
+        if(getApiPath().equals(API_PATH_PRODEAST_13))
+        {
+            return "prodeast_13";
+        }
+        else if(getApiPath().equals(API_PATH_QA_13))
+        {
+            return "qa_13";
+        }
+        else if(getApiPath().equals(API_PATH_DEVEAST_13))
         {
             return "deveast_13";
         }

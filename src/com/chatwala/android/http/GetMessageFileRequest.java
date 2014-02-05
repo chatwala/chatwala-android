@@ -130,7 +130,7 @@ public class GetMessageFileRequest extends BaseGetRequest
 
             try
             {
-                chatwalaMessage.initMetadata(metadataJson);
+                chatwalaMessage.initMetadata(context, metadataJson);
             }
             catch (JSONException e)
             {

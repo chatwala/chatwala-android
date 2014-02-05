@@ -1,5 +1,7 @@
 package com.chatwala.android.database;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.json.JSONException;
@@ -33,7 +35,7 @@ public class MessageMetadata
     public String senderId;
 
     @DatabaseField
-    public String versionId = "1.0";
+    public String versionId;
 
     @DatabaseField
     public String recipientId;
@@ -44,9 +46,20 @@ public class MessageMetadata
     @DatabaseField
     public double startRecording;
 
-    public MessageMetadata()
+    public MessageMetadata() {}
+
+    public MessageMetadata(Context context)
     {
-        timestamp = Long.toString(System.currentTimeMillis());
+        try
+        {
+            versionId = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            versionId = "unknown";
+        }
+
+        timestamp = Long.toString(System.currentTimeMillis()/1000);
     }
 
     public void init(JSONObject json) throws JSONException
@@ -108,9 +121,9 @@ public class MessageMetadata
         }
     }
 
-    public MessageMetadata makeNew()
+    public MessageMetadata makeNew(Context context)
     {
-        MessageMetadata dup = new MessageMetadata();
+        MessageMetadata dup = new MessageMetadata(context);
         dup.threadIndex = threadIndex;
         dup.threadId = threadId;
         return dup;

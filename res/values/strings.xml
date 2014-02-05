@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">chatwala</string>
+    <string name="app_name_qa">chatwala_qa</string>
     <string name="app_name_dev">chatwala_dev</string>
     <string name="app_name_sandbox">chatwala_sandbox</string>
     <string name="now_record_reply">Now reply!</string>

@@ -1,5 +1,6 @@
 package com.chatwala.android.database;
 
+import android.content.Context;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.json.JSONException;
@@ -111,9 +112,9 @@ public class ChatwalaMessage
         this.thumbnailUrl = thumbnailUrl;
     }
 
-    public void initMetadata(JSONObject metadataJson) throws JSONException
+    public void initMetadata(Context context, JSONObject metadataJson) throws JSONException
     {
-        messageMetadata = new MessageMetadata();
+        messageMetadata = new MessageMetadata(context);
         messageMetadata.init(metadataJson);
     }
 
@@ -127,9 +128,9 @@ public class ChatwalaMessage
         return messageMetadata != null ? messageMetadata.startRecording : 0;
     }
 
-    public MessageMetadata makeNewMetadata()
+    public MessageMetadata makeNewMetadata(Context context)
     {
-        return messageMetadata != null ? messageMetadata.makeNew() : new MessageMetadata();
+        return messageMetadata != null ? messageMetadata.makeNew(context) : new MessageMetadata(context);
     }
 
     public File getMessageFile()

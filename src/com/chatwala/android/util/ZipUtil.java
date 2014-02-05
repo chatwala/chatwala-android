@@ -88,7 +88,7 @@ public class ZipUtil
 
             File metadataFile = MessageDataStore.makeMetadataFile(buildDir);
 
-            MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.makeNewMetadata() : new MessageMetadata();
+            MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.makeNewMetadata(context) : new MessageMetadata(context);
             sendMessageMetadata.incrementForNewMessage();
             sendMessageMetadata.messageId = newMessageId;
 
