@@ -52,7 +52,7 @@ public abstract class BaseHttpRequest<T>
 
     public static ApiInfo getApiInfo()
     {
-        return ApiInfo.DEVEAST13;
+        return ApiInfo.QA13;
     }
 
     public T execute() throws TransientException, PermanentException
