@@ -92,7 +92,7 @@ public class DrawerMessagesAdapter extends BaseAdapter
 
         ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
         File thumbImage = MessageDataStore.findUserImageThumbInLocalStore(message.getSenderId());
-        imageLoader.load(thumbImage).fit().into(thumbView);//resize(150,70).centerCrop().noFade().into(thumbView);
+        imageLoader.load(thumbImage).fit().into(thumbView);
 
         if(message.getTimestamp() != null)
         {
