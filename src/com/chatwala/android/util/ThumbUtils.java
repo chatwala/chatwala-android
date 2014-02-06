@@ -23,23 +23,31 @@ public class ThumbUtils
         File thumbImageFile = MessageDataStore.findUserImageThumbInLocalStore(userId);
 
         Bitmap thumbBitmap = BitmapFactory.decodeFile(MessageDataStore.findUserImageInLocalStore(userId).getPath());
-        Log.d("######", "thumb width: " + thumbBitmap.getWidth() + "thumb height: " + thumbBitmap.getHeight());
 
-        thumbBitmap = rotateBitmap(userId, thumbBitmap);
-
-        float thumbWidth = context.getResources().getDimension(R.dimen.thumb_width);
-        float thumbHeight = context.getResources().getDimension(R.dimen.thumb_height);
-        float idealRatio = thumbHeight/thumbWidth;
-        int idealY = (int)((float)thumbBitmap.getWidth() * idealRatio);
-        if(thumbBitmap.getHeight() < idealY)
+        if(thumbBitmap == null)
         {
-            idealY = thumbBitmap.getHeight();
+            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.appicon);
         }
+        else
+        {
+            Log.d("######", "thumb width: " + thumbBitmap.getWidth() + "thumb height: " + thumbBitmap.getHeight());
 
-        Log.d("######", "ratio: " + idealRatio + " idealHeight: " + idealY);
+            thumbBitmap = rotateBitmap(userId, thumbBitmap);
 
-        int yMid = thumbBitmap.getHeight()/2;
-        thumbBitmap = thumbBitmap.createBitmap(thumbBitmap, 0, yMid - (idealY/2), thumbBitmap.getWidth(), idealY);
+            float thumbWidth = context.getResources().getDimension(R.dimen.thumb_width);
+            float thumbHeight = context.getResources().getDimension(R.dimen.thumb_height);
+            float idealRatio = thumbHeight/thumbWidth;
+            int idealY = (int)((float)thumbBitmap.getWidth() * idealRatio);
+            if(thumbBitmap.getHeight() < idealY)
+            {
+                idealY = thumbBitmap.getHeight();
+            }
+
+            Log.d("######", "ratio: " + idealRatio + " idealHeight: " + idealY);
+
+            int yMid = thumbBitmap.getHeight()/2;
+            thumbBitmap = thumbBitmap.createBitmap(thumbBitmap, 0, yMid - (idealY/2), thumbBitmap.getWidth(), idealY);
+        }
 
         try
         {
