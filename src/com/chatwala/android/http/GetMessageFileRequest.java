@@ -42,6 +42,8 @@ public class GetMessageFileRequest extends BaseGetRequest
     private File messageFile;
     private JSONObject metadataJson;
 
+    private boolean successfulDownload = true;
+
     public GetMessageFileRequest(Context context, ChatwalaMessage messageMetadata)
     {
         super(context);
@@ -58,11 +60,12 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
+        File file = null;
         try
         {
             //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
             InputStream is = new ByteArrayInputStream(response.getBody());
-            File file = MessageDataStore.makeMessageWalaFile();
+            file = MessageDataStore.makeMessageWalaFile();
             FileOutputStream os = new FileOutputStream(file);
 
             IOUtils.copy(is, os);
@@ -85,14 +88,15 @@ public class GetMessageFileRequest extends BaseGetRequest
 
             file.delete();
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            CWLog.b(ShareUtils.class, chatwalaMessage.getMessageId());
-            CWLog.softExceptionLog(ShareUtils.class, "Couldn't read file", e);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
+            if(file != null)
+            {
+                file.delete();
+            }
+
+            chatwalaMessage = null;
+            successfulDownload = false;
         }
     }
 
@@ -115,7 +119,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected boolean hasDbOperation()
     {
-        return true;
+        return successfulDownload;
     }
 
     @Override
