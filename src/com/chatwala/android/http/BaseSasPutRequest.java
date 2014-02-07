@@ -59,10 +59,8 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
             HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("x-ms-blob-type", "BlockBlob");
-            if(contentTypeImage)
-            {
-                urlConnection.setRequestProperty("content-type", "image/png");
-            }
+            urlConnection.setRequestProperty("content-type", contentTypeImage ? "image/png" : "application/octect-stream");
+            urlConnection.setRequestProperty("content-length", Integer.toString(bytesToPut.length));
             urlConnection.setRequestMethod("PUT");
 
             urlConnection.getOutputStream().write(bytesToPut);
