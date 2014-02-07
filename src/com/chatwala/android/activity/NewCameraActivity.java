@@ -1082,6 +1082,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     playbackMessage = new ChatwalaMessage();
                     playbackMessage.setMessageId(playbackMessageId);
                     playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
+
+                    if(playbackMessage == null)
+                        throw new IOException();
                 }
                 chatMessageVideoMetadata = VideoUtils.findMetadata(playbackMessage.getMessageFile());
 
