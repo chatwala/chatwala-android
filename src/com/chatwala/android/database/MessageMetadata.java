@@ -66,6 +66,11 @@ public class MessageMetadata
     {
         threadIndex = json.optInt("thread_index");
         threadId = json.optString("thread_id");
+
+        if (threadId.equals("null")) {
+            threadId = UUID.randomUUID().toString();
+        }
+
         messageId = json.optString("message_id");
         senderId = json.optString("sender_id");
         versionId = json.optString("version_id");
