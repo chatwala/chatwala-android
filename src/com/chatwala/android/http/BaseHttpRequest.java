@@ -1,6 +1,7 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Log;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
@@ -52,13 +53,22 @@ public abstract class BaseHttpRequest<T>
 
     public static ApiInfo getApiInfo()
     {
-        return ApiInfo.QA13;
+        return ApiInfo.DEVEAST13;
     }
 
     public T execute() throws TransientException, PermanentException
     {
         ChatwalaHttpClient client = new ChatwalaHttpClient(getApiInfo().getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
+
+        //get version
+        try {
+            String version = this.context.getPackageManager().getPackageInfo(this.context.getPackageName(), 0).versionName;
+            client.addHeader("x-chatwala-appversion", version);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
 
         //Quiet the logs, some versions of intellij don't play nice with outputting bytes to the console.
 //        AbstractRequestLogger logger = new AbstractRequestLogger()
