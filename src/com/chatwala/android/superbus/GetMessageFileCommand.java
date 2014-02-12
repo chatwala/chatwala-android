@@ -57,11 +57,11 @@ public class GetMessageFileCommand extends SqliteCommand
     @Override
     public void onSuccess(Context context)
     {
-        if(MessageDataStore.findUserImageInLocalStore(messageMetadata.getSenderId()).exists())
-        {
-            BroadcastSender.makeNewMessagesBroadcast(context);
-            ChatwalaNotificationManager.makeNewMessagesNotification(context);
-        }
+        //if(MessageDataStore.findUserImageInLocalStore(messageMetadata.getSenderId()).exists())
+        //{
+        BroadcastSender.makeNewMessagesBroadcast(context);
+        ChatwalaNotificationManager.makeNewMessagesNotification(context);
+        //}
     }
 
     public String getMessageId()
