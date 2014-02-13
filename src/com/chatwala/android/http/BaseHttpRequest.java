@@ -53,7 +53,7 @@ public abstract class BaseHttpRequest<T>
 
     public static ApiInfo getApiInfo()
     {
-        return ApiInfo.DEVEAST14;
+        return ApiInfo.DEVEAST13;
     }
 
     public T execute() throws TransientException, PermanentException
@@ -217,42 +217,44 @@ public abstract class BaseHttpRequest<T>
     public static enum ApiInfo
     {
 
-        PRODEAST13("https://chatwala-prodeast-13.azurewebsites.net/", "prodeast_13", "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_3.plist"),
-        QA13("https://chatwala-qa-13.azurewebsites.net/", "qa_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
-        DEVEAST13("https://chatwala-deveast-13.azurewebsites.net/", "deveast_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
-        SANDBOX13("https://chatwala-sandbox-13.azurewebsites.net/", "sandbox_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
-
-        PRODEAST14(
+        PRODEAST13(
                 "https://chatwala-prodeast-13.azurewebsites.net/",
-                "prodeast_14",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist"
+                "prodeast_13",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
+                "http://chatwala.com/?"
         ),
-
-        QA14(
+        QA13(
                 "https://chatwala-qa-13.azurewebsites.net/",
-                "qa_14",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist"
+                "qa_13",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
+                "http://chatwala.com/qa/?"
         ),
 
-        DEVEAST14(
+        DEVEAST13(
                 "https://chatwala-deveast-13.azurewebsites.net/",
-                "deveast_14",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist"
+                "deveast_13",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
+                "http://chatwala.com/dev/?"
         ),
-        SANDBOX14(
+
+        SANDBOX13(
                 "https://chatwala-sandbox-13.azurewebsites.net/",
-                "sandbox_14",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist"
+                "sandbox_13",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
+                "http://chatwala.com/?"
         );
 
 
-        private String apiPath, displayString, plistPath;
 
-        ApiInfo(String apiPath, String displayString, String plistPath)
+
+        private String apiPath, displayString, plistPath, webPath;
+
+        ApiInfo(String apiPath, String displayString, String plistPath, String webPath)
         {
             this.apiPath = apiPath;
             this.displayString = displayString;
             this.plistPath = plistPath;
+            this.webPath = webPath;
         }
 
         public String getApiPath()
@@ -268,6 +270,12 @@ public abstract class BaseHttpRequest<T>
         public String getPlistPath()
         {
             return plistPath;
+        }
+
+
+        public String getWebPath()
+        {
+            return webPath;
         }
     }
 }

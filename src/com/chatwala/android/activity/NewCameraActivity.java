@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.chatwala.android.http.BaseHttpRequest;
+
 /**
  * Created with IntelliJ IDEA.
  * User: matthewdavis
@@ -1177,7 +1179,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         Uri mailtoUri = Uri.parse(uriText);
         //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
-        String messageLink = "http://chatwala.com/?" + messageId;
+        String messageLink = BaseHttpRequest.getApiInfo().getWebPath() + messageId;
 
         boolean gmailOk = false;
 
@@ -1214,7 +1216,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void sendSms(final String messageId)
     {
-        String messageLink = "http://chatwala.com/?" + messageId;
+        String messageLink = BaseHttpRequest.getApiInfo().getWebPath() + messageId;
         String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
