@@ -53,7 +53,7 @@ public abstract class BaseHttpRequest<T>
 
     public static ApiInfo getApiInfo()
     {
-        return ApiInfo.DEVEAST13;
+        return ApiInfo.DEVEAST14;
     }
 
     public T execute() throws TransientException, PermanentException
@@ -216,10 +216,35 @@ public abstract class BaseHttpRequest<T>
 
     public static enum ApiInfo
     {
+
         PRODEAST13("https://chatwala-prodeast-13.azurewebsites.net/", "prodeast_13", "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_3.plist"),
         QA13("https://chatwala-qa-13.azurewebsites.net/", "qa_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
         DEVEAST13("https://chatwala-deveast-13.azurewebsites.net/", "deveast_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
-        SANDBOX13("https://chatwala-sandbox-13.azurewebsites.net/", "sandbox_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist");
+        SANDBOX13("https://chatwala-sandbox-13.azurewebsites.net/", "sandbox_13", "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_3.plist"),
+
+        PRODEAST14(
+                "https://chatwala-prodeast-13.azurewebsites.net/",
+                "prodeast_14",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist"
+        ),
+
+        QA14(
+                "https://chatwala-qa-13.azurewebsites.net/",
+                "qa_14",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist"
+        ),
+
+        DEVEAST14(
+                "https://chatwala-deveast-13.azurewebsites.net/",
+                "deveast_14",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist"
+        ),
+        SANDBOX14(
+                "https://chatwala-sandbox-13.azurewebsites.net/",
+                "sandbox_14",
+                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist"
+        );
+
 
         private String apiPath, displayString, plistPath;
 
@@ -245,17 +270,4 @@ public abstract class BaseHttpRequest<T>
             return plistPath;
         }
     }
-
-    private static final String API_PATH_PRODEAST_13 = "https://chatwala-prodeast-13.azurewebsites.net/";
-    private static final String API_PATH_QA_13       = "https://chatwala-qa-13.azurewebsites.net/";
-    private static final String API_PATH_DEVEAST_13  = "https://chatwala-deveast-13.azurewebsites.net/";
-    private static final String API_PATH_SANDBOX_13  = "https://chatwala-sandbox-13.azurewebsites.net/";
-
-    //DEPRECATED, but we're not supposed to get rid of them yet.
-    private static final String API_PATH_PROD       = "http://chatwala-prod.azurewebsites.net/";
-    private static final String API_PATH_PROD_EAST  = "http://chatwala-prodeast.azurewebsites.net/";
-    private static final String API_PATH_SANDBOX    = "http://chatwala-sandbox.azurewebsites.net/";
-    private static final String API_PATH_DEV        = "http://chatwala-dev.azurewebsites.net/";
-    private static final String API_PATH_DEV_EAST   = "http://chatwala-deveast.azurewebsites.net/";
-    private static final String API_PATH_DUMMY      = "http://private-3a2b6-chatwalaapiversion11.apiary.io/";
 }
