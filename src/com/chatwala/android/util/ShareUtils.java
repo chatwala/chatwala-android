@@ -26,6 +26,8 @@ public class ShareUtils
     public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
     public static final String WEB_STRING = "http://www.chatwala.com/?";
     public static final String ALT_WEB_STRING = "http://chatwala.com/?";
+    public static final String DEV_WEB_STRING = "http://chatwala.com/dev/?";
+    public static final String QA_WEB_STRING = "http://chatwala.com/qa/?";
     public static final String HASH_STRING = "http://www.chatwala.com/#";
     public static final String ALT_HASH_STRING = "http://chatwala.com/#";
     public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
@@ -114,6 +116,10 @@ public class ShareUtils
             return uri.replace(WEB_STRING, "");
         else if(uri.startsWith(ALT_WEB_STRING))
             return uri.replace(ALT_WEB_STRING, "");
+        else if(uri.startsWith(DEV_WEB_STRING))
+            return uri.replace(DEV_WEB_STRING, "");
+        else if(uri.startsWith(QA_WEB_STRING))
+            return uri.replace(QA_WEB_STRING, "");
         else if(uri.startsWith(REDIRECT_STRING))
             return uri.replace(REDIRECT_STRING, "");
         else if(uri.startsWith(MARKET_STRING))
