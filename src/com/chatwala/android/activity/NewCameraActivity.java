@@ -215,7 +215,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        CWAnalytics.initAnalytics(NewCameraActivity.this, !replyMessageAvailable());
         CWLog.b(NewCameraActivity.class, "onCreate start");
 
         buttonDelayHandler = new Handler();
@@ -324,7 +323,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     protected void onResume()
     {
         super.onResume();
+
         CWLog.b(NewCameraActivity.class, "onResume");
+        CWAnalytics.setStarterMessage(!replyMessageAvailable());
 
         activityActive = true;
         setAppState(AppState.Transition);
@@ -361,6 +362,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     @Override
     protected void performAddButtonAction()
     {
+        CWAnalytics.resetRedos();
         if(replyMessageAvailable())
         {
             NewCameraActivity.startMe(NewCameraActivity.this);

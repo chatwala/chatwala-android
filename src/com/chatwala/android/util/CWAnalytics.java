@@ -3,8 +3,11 @@ package com.chatwala.android.util;
 import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.http.BaseHttpRequest;
 import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.Tracker;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +23,7 @@ public class CWAnalytics
     private static String CATEGORY_CONVERSATION_REPLIER = "CONVERSATION_REPLIER";
 
     private static String ACTION_APP_OPEN = "APP_OPEN";
+    private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
     private static String ACTION_START_RECORDING = "START_RECORDING";
     private static String ACTION_COMPLETE_RECORDING = "COMPLETE_RECORDING";
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
@@ -37,25 +41,58 @@ public class CWAnalytics
 
     private static String LABEL_TAB_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
+    private static String LABEL_NO_TAP = "NO_TAP";
 
-    private static Boolean isStarterMessage;
-    private static String categoryString;
-    private static EasyTracker easyTracker = null;
+    private static Boolean isStarterMessage= false;
+    private static String categoryString = null;
+    //private static EasyTracker easyTracker = null;
+    private static Tracker tracker = null;
 
-    public static void initAnalytics(Context context, boolean isStarter)
+    private static Context context;
+    private static Boolean isFirstOpen=false;
+
+    private static int numRedos =0;
+
+    public static void initAnalytics(Context ctx)
     {
-        if(easyTracker == null)
-        {
-            easyTracker = EasyTracker.getInstance(context);
-            isStarterMessage = isStarter;
-            categoryString = (AppPrefs.getInstance(context).isFirstOpen() ? CATEGORY_FIRST_OPEN : (isStarter ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
-            sendAppOpenEvent();
+        context = ctx;
+        isFirstOpen = AppPrefs.getInstance(context).isFirstOpen();
+        if(tracker == null) {
+            tracker = GoogleAnalytics.getInstance(context).getTracker(BaseHttpRequest.getApiInfo().getGoogleAnalyticsID());
         }
+        calculateCategory();
     }
 
-    private static void sendAppOpenEvent()
+    public static void setStarterMessage(Boolean isStarter) {
+
+       isStarterMessage = isStarter;
+
+       //reset redos
+       if(!isStarter) {
+           Log.d("ANALYTICS #############","Reset redos");
+           resetRedos();
+       }
+       calculateCategory();
+    }
+
+    public static void resetRedos() {
+        numRedos=0;
+    }
+
+    public static void calculateCategory() {
+        categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+    }
+
+    public static void sendAppOpenEvent()
     {
         sendEvent(ACTION_APP_OPEN, null, null);
+    }
+
+    public static void sendAppBackgroundEvent()
+    {
+        isFirstOpen = false;
+        sendEvent(ACTION_APP_BACKGROUND, null, null);
+        calculateCategory();
     }
 
     public static void sendStartReviewEvent()
@@ -90,22 +127,24 @@ public class CWAnalytics
 
     public static void sendRecordingStartEvent(boolean buttonTapped)
     {
-        sendEvent(isStarterMessage ? ACTION_START_RECORDING : ACTION_START_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_TAP_SCREEN, null);
+        sendEvent(isStarterMessage ? ACTION_START_RECORDING : ACTION_START_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, null);
     }
 
     public static void sendRecordingEndEvent(boolean buttonTapped, Long duration)
     {
-        sendEvent(isStarterMessage ? ACTION_COMPLETE_RECORDING : ACTION_COMPLETE_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_TAP_SCREEN, duration);
+        sendEvent(isStarterMessage ? ACTION_COMPLETE_RECORDING : ACTION_COMPLETE_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, duration);
     }
 
     public static void sendSendMessageEvent(Long previewNum)
     {
-        sendEvent(ACTION_SEND_MESSAGE, null, previewNum);
+        sendEvent(ACTION_SEND_MESSAGE, null, new Long(numRedos));
+        resetRedos();
     }
 
     public static void sendRedoMessageEvent(Long previewNum)
     {
-        sendEvent(ACTION_REDO_MESSAGE, null, previewNum);
+        numRedos++;
+        sendEvent(ACTION_REDO_MESSAGE, null, new Long(numRedos));
     }
 
     private static void sendEvent(String action, String label, Long value)
@@ -113,6 +152,6 @@ public class CWAnalytics
         String labelString = label != null ? label : "none";
         String valueString = value != null ? value.toString() : "none";
         Log.d("ANALYTICS #############", "CATEGORY: " + categoryString + " ACTION: " + action + " LABEL: " + labelString + " VALUE: " + valueString);
-        easyTracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
+        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
     }
 }
