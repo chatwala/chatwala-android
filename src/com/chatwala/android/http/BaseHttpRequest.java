@@ -221,40 +221,45 @@ public abstract class BaseHttpRequest<T>
                 "https://chatwala-prodeast-13.azurewebsites.net/",
                 "prodeast_13",
                 "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
-                "http://chatwala.com/?"
+                "http://chatwala.com/?",
+                "UA-46207837-1"
         ),
         QA13(
                 "https://chatwala-qa-13.azurewebsites.net/",
                 "qa_13",
                 "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
-                "http://chatwala.com/qa/?"
+                "http://chatwala.com/qa/?",
+                "UA-46207837-4"
         ),
 
         DEVEAST13(
                 "https://chatwala-deveast-13.azurewebsites.net/",
                 "deveast_13",
                 "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
-                "http://chatwala.com/dev/?"
+                "http://chatwala.com/dev/?",
+                "UA-46207837-3"
         ),
 
         SANDBOX13(
                 "https://chatwala-sandbox-13.azurewebsites.net/",
                 "sandbox_13",
                 "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
-                "http://chatwala.com/?"
+                "http://chatwala.com/?",
+                "UA-46207837-3"
         );
 
 
 
 
-        private String apiPath, displayString, plistPath, webPath;
+        private String apiPath, displayString, plistPath, webPath, googleAnalyticsID;
 
-        ApiInfo(String apiPath, String displayString, String plistPath, String webPath)
+        ApiInfo(String apiPath, String displayString, String plistPath, String webPath, String googleAnalyticsID)
         {
             this.apiPath = apiPath;
             this.displayString = displayString;
             this.plistPath = plistPath;
             this.webPath = webPath;
+            this.googleAnalyticsID = googleAnalyticsID;
         }
 
         public String getApiPath()
@@ -276,6 +281,11 @@ public abstract class BaseHttpRequest<T>
         public String getWebPath()
         {
             return webPath;
+        }
+
+        public String getGoogleAnalyticsID()
+        {
+            return googleAnalyticsID;
         }
     }
 }

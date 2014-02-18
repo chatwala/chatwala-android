@@ -1,9 +1,11 @@
 package com.chatwala.android;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
@@ -18,6 +20,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
+import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.GCMUtils;
 import com.chatwala.android.util.MessageDataStore;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Time: 4:52 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ChatwalaApplication extends Application implements PersistedApplication
+public class ChatwalaApplication extends Application implements PersistedApplication, Application.ActivityLifecycleCallbacks
 {
     static final String FONT_DIR = "fonts/";
     private static final String ITCAG_DEMI = "ITCAvantGardeStd-Demi.otf",
@@ -50,6 +54,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     private GsonSqlitePersistenceProvider persistenceProvider;
 
     public static AtomicBoolean isKillswitchShowing;
+    public static int numActivities=0;
 
     @Override
     public void onCreate()
@@ -57,6 +62,10 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         super.onCreate();
 
         Crashlytics.start(this);
+
+        CWAnalytics.initAnalytics(this);
+
+        this.registerActivityLifecycleCallbacks(this);
 
         if(!MessageDataStore.init(ChatwalaApplication.this))
         {
@@ -143,6 +152,47 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     public ForegroundNotificationManager getForegroundNotificationManager()
     {
         return null;
+    }
+
+    @Override
+    public void onActivityCreated(Activity activity, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+        numActivities++;
+        if(numActivities==1) {
+            CWAnalytics.sendAppOpenEvent();
+        }
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+        numActivities--;
+        if(numActivities==0) {
+            CWAnalytics.sendAppBackgroundEvent();
+        }
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+
     }
 
     private final class MyDatabaseFactory implements SQLiteDatabaseFactory
