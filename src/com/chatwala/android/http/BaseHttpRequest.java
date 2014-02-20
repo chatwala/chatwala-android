@@ -2,22 +2,21 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.util.Log;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
-import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.CWLog;
-import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
-import com.turbomanage.httpclient.AbstractRequestLogger;
-import com.turbomanage.httpclient.ConsoleRequestLogger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,14 +50,9 @@ public abstract class BaseHttpRequest<T>
         this.context = context;
     }
 
-    public static ApiInfo getApiInfo()
-    {
-        return ApiInfo.DEVEAST13;
-    }
-
     public T execute() throws TransientException, PermanentException
     {
-        ChatwalaHttpClient client = new ChatwalaHttpClient(getApiInfo().getApiPath());
+        ChatwalaHttpClient client = new ChatwalaHttpClient(EnvironmentVariables.get().getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
         //get version
@@ -212,80 +206,5 @@ public abstract class BaseHttpRequest<T>
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
 
-    }
-
-    public static enum ApiInfo
-    {
-
-        PRODEAST13(
-                "https://chatwala-prodeast-13.azurewebsites.net/",
-                "prodeast_13",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
-                "http://chatwala.com/?",
-                "UA-46207837-1"
-        ),
-        QA13(
-                "https://chatwala-qa-13.azurewebsites.net/",
-                "qa_13",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
-                "http://chatwala.com/qa/?",
-                "UA-46207837-4"
-        ),
-
-        DEVEAST13(
-                "https://chatwala-deveast-13.azurewebsites.net/",
-                "deveast_13",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
-                "http://chatwala.com/dev/?",
-                "UA-46207837-3"
-        ),
-
-        SANDBOX13(
-                "https://chatwala-sandbox-13.azurewebsites.net/",
-                "sandbox_13",
-                "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
-                "http://chatwala.com/?",
-                "UA-46207837-3"
-        );
-
-
-
-
-        private String apiPath, displayString, plistPath, webPath, googleAnalyticsID;
-
-        ApiInfo(String apiPath, String displayString, String plistPath, String webPath, String googleAnalyticsID)
-        {
-            this.apiPath = apiPath;
-            this.displayString = displayString;
-            this.plistPath = plistPath;
-            this.webPath = webPath;
-            this.googleAnalyticsID = googleAnalyticsID;
-        }
-
-        public String getApiPath()
-        {
-            return apiPath;
-        }
-
-        public String getDisplayString()
-        {
-            return displayString;
-        }
-
-        public String getPlistPath()
-        {
-            return plistPath;
-        }
-
-
-        public String getWebPath()
-        {
-            return webPath;
-        }
-
-        public String getGoogleAnalyticsID()
-        {
-            return googleAnalyticsID;
-        }
     }
 }
