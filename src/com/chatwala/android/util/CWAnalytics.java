@@ -3,6 +3,7 @@ package com.chatwala.android.util;
 import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.http.BaseHttpRequest;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.GoogleAnalytics;
@@ -58,7 +59,7 @@ public class CWAnalytics
         context = ctx;
         isFirstOpen = AppPrefs.getInstance(context).isFirstOpen();
         if(tracker == null) {
-            tracker = GoogleAnalytics.getInstance(context).getTracker(BaseHttpRequest.getApiInfo().getGoogleAnalyticsID());
+            tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
         }
         calculateCategory();
     }

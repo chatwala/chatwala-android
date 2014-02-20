@@ -158,7 +158,7 @@ public class SettingsActivity extends BaseChatWalaActivity
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
                 builder.setTitle(R.string.version_information);
-                StringBuilder message = new StringBuilder("Version: ").append(appVersion).append("\nServer: ").append(BaseHttpRequest.getApiInfo().getDisplayString());
+                StringBuilder message = new StringBuilder("Version: ").append(appVersion).append("\nServer: ").append(EnvironmentVariables.get().getDisplayString());
                 builder.setMessage(message);
                 builder.show();
             }
