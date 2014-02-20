@@ -17,6 +17,7 @@ import com.chatwala.android.database.DrawerMessageWrapper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
+import com.chatwala.android.util.CWAnalytics;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -81,6 +82,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             public void onDrawerOpened(View drawerView)
             {
                 super.onDrawerOpened(drawerView);
+                CWAnalytics.sendDrawerOpened();
                 drawerToggleButton.setVisibility(View.VISIBLE);
                 drawerToggleButton.setImageResource(R.drawable.drawer_open);
                 Resources r = getResources();
@@ -104,6 +106,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
             public void onDrawerClosed(View drawerView)
             {
                 super.onDrawerClosed(drawerView);
+                CWAnalytics.sendDrawerClosed();
                 drawerToggleButton.setVisibility(View.VISIBLE);
                 drawerToggleButton.setImageResource(R.drawable.drawer_closed);
                 Resources r = getResources();

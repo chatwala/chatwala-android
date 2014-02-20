@@ -25,6 +25,8 @@ public class CWAnalytics
 
     private static String ACTION_APP_OPEN = "APP_OPEN";
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
+    private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
+    private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
     private static String ACTION_START_RECORDING = "START_RECORDING";
     private static String ACTION_COMPLETE_RECORDING = "COMPLETE_RECORDING";
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
@@ -94,6 +96,14 @@ public class CWAnalytics
         isFirstOpen = false;
         sendEvent(ACTION_APP_BACKGROUND, null, null);
         calculateCategory();
+    }
+
+    public static void sendDrawerOpened() {
+        sendEvent(ACTION_DRAWER_OPENED, null, null);
+    }
+
+    public static void sendDrawerClosed() {
+        sendEvent(ACTION_DRAWER_CLOSED, null, null);
     }
 
     public static void sendStartReviewEvent()
