@@ -42,6 +42,11 @@ public class SettingsActivity extends BaseChatWalaActivity
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
             {
+                //catching crash: https://www.crashlytics.com/chatwala2/android/apps/com.chatwala.chatwala/issues/53050910fabb27481bfb58e8
+                if(view==null) {
+                    return;
+                }
+
                 DeliveryOptions selected = (DeliveryOptions) view.getTag();
                 switch (selected)
                 {
