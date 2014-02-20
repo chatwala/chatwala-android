@@ -6,7 +6,8 @@
     <string name="app_name_sandbox">chatwala_sandbox</string>
     <string name="now_record_reply">Now reply!</string>
     <string name="play_message_record_reaction">Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!</string>
-    <string name="basic_instructions">Tap to record and send a message. Your friend\'s reaction will appear here when they reply.</string>
+    <string name="basic_instructions_old">Tap to record and send a message. Your friend\'s reaction will appear here when they reply.</string>
+    <string name="basic_instructions"></string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="sure">Sure!</string>
