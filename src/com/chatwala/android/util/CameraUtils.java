@@ -19,6 +19,8 @@ import java.util.List;
  */
 public class CameraUtils
 {
+    public static final int NO_BACK_CAMERA = -1;
+
     public static int getFrontCameraId() throws Exception
     {
         int numberOfCameras = Camera.getNumberOfCameras();
@@ -33,6 +35,22 @@ public class CameraUtils
         }
 
         return 0;
+    }
+
+    public static int getBackCameraId() throws Exception
+    {
+        int numberOfCameras = Camera.getNumberOfCameras();
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++)
+        {
+            Camera.getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
+            {
+                return i;
+            }
+        }
+
+        return NO_BACK_CAMERA;
     }
 
     public static Camera.Size getVideoSize(int containerHeight, Camera.Parameters parameters)
