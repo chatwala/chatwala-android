@@ -974,7 +974,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 findViewById(R.id.recordPreviewClick).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        cameraPreviewView.switchCamera();
+                        if(appState == AppState.ReadyStopped) {
+                            cameraPreviewView.switchCamera();
+                        }
                     }
                 });
                 previewSurfaceReady();
