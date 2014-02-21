@@ -36,6 +36,7 @@ public class AppPrefs
     public static final String PREF_DISK_SPACE_MAX = "PREF_DISK_SPACE_MAX";
     public static final String PREF_FEEDBACK_SHOWN = "PREF_FEEDBACK_SHOWN";
     public static final String PREF_FEEDBACK_MESSAGE_COUNT = "PREF_FEEDBACK_MESSAGE_COUNT";
+    public static final String PREF_ACTION_INCREMENT = "PREF_ACTION_INCREMENT";
 
     public static synchronized AppPrefs getInstance(Context context)
     {
@@ -58,6 +59,16 @@ public class AppPrefs
     {
         return mSp;
     }*/
+
+    public int getActionIncrement() {
+        int actionIncrement = mSp.getInt(PREF_ACTION_INCREMENT, 0);
+        mSp.edit().putInt(PREF_ACTION_INCREMENT, 0).apply();
+        return actionIncrement;
+    }
+
+    public void setActionIncrement(int actionIncrement) {
+        mSp.edit().putInt(PREF_ACTION_INCREMENT, actionIncrement).apply();
+    }
 
     public Boolean isFirstOpen()
     {
