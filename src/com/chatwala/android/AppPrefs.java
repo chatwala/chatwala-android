@@ -73,12 +73,15 @@ public class AppPrefs
     public Boolean isFirstOpen()
     {
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
+        if(firstOpen) {
+            mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, false).apply();
+        }
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
     }
 
     public boolean wasFirstButtonPressed() {
-        return mSp.getBoolean(PREF_FIRST_BUTTON_PRESS, false);
+        return mSp.getBoolean(PREF_FIRST_BUTTON_PRESS, true);
     }
 
     public void setFirstButtonPressed() {
