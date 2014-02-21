@@ -22,6 +22,7 @@ public class AppPrefs
     private Application application;
 
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
+    public static final String PREF_FIRST_BUTTON_PRESS = "FIRST_BUTTON_PRESS";
     public static final String PREF_USER_ID = "USER_ID";
     public static final String PREF_GCM_TOKEN = "GCM_TOKEN";
     public static final String PREF_GCM_APP_VERSION = "GCM_APP_VERSION";
@@ -35,6 +36,7 @@ public class AppPrefs
     public static final String PREF_DISK_SPACE_MAX = "PREF_DISK_SPACE_MAX";
     public static final String PREF_FEEDBACK_SHOWN = "PREF_FEEDBACK_SHOWN";
     public static final String PREF_FEEDBACK_MESSAGE_COUNT = "PREF_FEEDBACK_MESSAGE_COUNT";
+    public static final String PREF_ACTION_INCREMENT = "PREF_ACTION_INCREMENT";
 
     public static synchronized AppPrefs getInstance(Context context)
     {
@@ -58,11 +60,29 @@ public class AppPrefs
         return mSp;
     }*/
 
+    public int getActionIncrement() {
+        int actionIncrement = mSp.getInt(PREF_ACTION_INCREMENT, 0);
+        mSp.edit().putInt(PREF_ACTION_INCREMENT, 0).apply();
+        return actionIncrement;
+    }
+
+    public void setActionIncrement(int actionIncrement) {
+        mSp.edit().putInt(PREF_ACTION_INCREMENT, actionIncrement).apply();
+    }
+
     public Boolean isFirstOpen()
     {
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
+    }
+
+    public boolean wasFirstButtonPressed() {
+        return mSp.getBoolean(PREF_FIRST_BUTTON_PRESS, false);
+    }
+
+    public void setFirstButtonPressed() {
+        mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, true).apply();
     }
 
     public void setUserId(String userId)

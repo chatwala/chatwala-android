@@ -61,6 +61,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     public static final int RECORDING_TIME = 10000;
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
     public static final String HANGOUTS_PACKAGE_NAME = "com.google.android.talk";
+    private boolean wasFirstButtonPressed;
     private int openingVolume;
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
@@ -134,7 +135,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         analyticsStateEnd(appState, buttonPress);
 
         this.appState = appState;
-        toggleDrawerEnabled(this.appState.shouldEnableDrawer());
+        toggleDrawerEnabled(wasFirstButtonPressed && this.appState.shouldEnableDrawer());
 
         delayButtonPress();
 
@@ -324,6 +325,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     {
         super.onResume();
 
+        wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
+
         CWLog.b(NewCameraActivity.class, "onResume");
         CWAnalytics.setStarterMessage(!replyMessageAvailable());
 
@@ -436,6 +439,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     {
         AppState state = getAppState();
         CWLog.userAction(NewCameraActivity.class, "Timer button pressed in state: " + state.name());
+
+        if(!wasFirstButtonPressed) {
+            wasFirstButtonPressed = true;
+            AppPrefs.getInstance(this).setFirstButtonPressed();
+        }
 
         //Don't do anything.  These should be very short states.
         if (state == AppState.Off || state == AppState.Transition || state == AppState.LoadingFileCamera || state == AppState.RecordingLimbo || state == AppState.PreviewLoading || state == AppState.Sharing)
