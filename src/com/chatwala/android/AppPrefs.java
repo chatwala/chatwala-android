@@ -22,6 +22,7 @@ public class AppPrefs
     private Application application;
 
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
+    public static final String PREF_FIRST_BUTTON_PRESS = "FIRST_BUTTON_PRESS";
     public static final String PREF_USER_ID = "USER_ID";
     public static final String PREF_GCM_TOKEN = "GCM_TOKEN";
     public static final String PREF_GCM_APP_VERSION = "GCM_APP_VERSION";
@@ -63,6 +64,14 @@ public class AppPrefs
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
+    }
+
+    public boolean wasFirstButtonPressed() {
+        return mSp.getBoolean(PREF_FIRST_BUTTON_PRESS, false);
+    }
+
+    public void setFirstButtonPressed() {
+        mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, true).apply();
     }
 
     public void setUserId(String userId)
