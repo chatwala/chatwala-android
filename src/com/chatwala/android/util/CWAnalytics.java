@@ -3,6 +3,7 @@ package com.chatwala.android.util;
 import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.http.BaseHttpRequest;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.GoogleAnalytics;
@@ -24,6 +25,8 @@ public class CWAnalytics
 
     private static String ACTION_APP_OPEN = "APP_OPEN";
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
+    private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
+    private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
     private static String ACTION_START_RECORDING = "START_RECORDING";
     private static String ACTION_COMPLETE_RECORDING = "COMPLETE_RECORDING";
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
@@ -58,7 +61,7 @@ public class CWAnalytics
         context = ctx;
         isFirstOpen = AppPrefs.getInstance(context).isFirstOpen();
         if(tracker == null) {
-            tracker = GoogleAnalytics.getInstance(context).getTracker(BaseHttpRequest.getApiInfo().getGoogleAnalyticsID());
+            tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
         }
         calculateCategory();
     }
@@ -93,6 +96,14 @@ public class CWAnalytics
         isFirstOpen = false;
         sendEvent(ACTION_APP_BACKGROUND, null, null);
         calculateCategory();
+    }
+
+    public static void sendDrawerOpened() {
+        sendEvent(ACTION_DRAWER_OPENED, null, null);
+    }
+
+    public static void sendDrawerClosed() {
+        sendEvent(ACTION_DRAWER_CLOSED, null, null);
     }
 
     public static void sendStartReviewEvent()

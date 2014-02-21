@@ -1181,7 +1181,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         Uri mailtoUri = Uri.parse(uriText);
         //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
-        String messageLink = BaseHttpRequest.getApiInfo().getWebPath() + messageId;
+        String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
 
         boolean gmailOk = false;
 
@@ -1218,7 +1218,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void sendSms(final String messageId)
     {
-        String messageLink = BaseHttpRequest.getApiInfo().getWebPath() + messageId;
+        String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
         String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);

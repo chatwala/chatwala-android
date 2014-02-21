@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
+import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.database.ChatwalaMessage;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -20,16 +21,8 @@ import java.io.*;
  */
 public class ShareUtils
 {
-
     public static final String EMAIL_CONTENT_PREFIX = "content://gmail-ls/";
     public static final String MARKET_STRING = "market://details?id=com.chatwala.chatwala&message=";
-    public static final String WEB_STRING = "http://www.chatwala.com/?";
-    public static final String ALT_WEB_STRING = "http://chatwala.com/?";
-    public static final String DEV_WEB_STRING = "http://chatwala.com/dev/?";
-    public static final String QA_WEB_STRING = "http://chatwala.com/qa/?";
-    public static final String HASH_STRING = "http://www.chatwala.com/#";
-    public static final String ALT_HASH_STRING = "http://chatwala.com/#";
-    public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
     public static ChatwalaMessage extractFileAttachment(Activity activity, String walaFileUrl)
     {
@@ -111,22 +104,22 @@ public class ShareUtils
     {
         String uri = callingIntent.getDataString();
         CWLog.logShareLink(uri);
-        if(uri.startsWith(WEB_STRING))
-            return uri.replace(WEB_STRING, "");
-        else if(uri.startsWith(ALT_WEB_STRING))
-            return uri.replace(ALT_WEB_STRING, "");
-        else if(uri.startsWith(DEV_WEB_STRING))
-            return uri.replace(DEV_WEB_STRING, "");
-        else if(uri.startsWith(QA_WEB_STRING))
-            return uri.replace(QA_WEB_STRING, "");
-        else if(uri.startsWith(REDIRECT_STRING))
-            return uri.replace(REDIRECT_STRING, "");
+        if(uri.startsWith(EnvironmentVariables.WEB_STRING))
+            return uri.replace(EnvironmentVariables.WEB_STRING, "");
+        else if(uri.startsWith(EnvironmentVariables.ALT_WEB_STRING))
+            return uri.replace(EnvironmentVariables.ALT_WEB_STRING, "");
+        else if(uri.startsWith(EnvironmentVariables.DEV_WEB_STRING))
+            return uri.replace(EnvironmentVariables.DEV_WEB_STRING, "");
+        else if(uri.startsWith(EnvironmentVariables.QA_WEB_STRING))
+            return uri.replace(EnvironmentVariables.QA_WEB_STRING, "");
+        else if(uri.startsWith(EnvironmentVariables.REDIRECT_STRING))
+            return uri.replace(EnvironmentVariables.REDIRECT_STRING, "");
         else if(uri.startsWith(MARKET_STRING))
             return uri.replace(MARKET_STRING, "");
-        else if(uri.startsWith(HASH_STRING))
-            return uri.replace(HASH_STRING, "");
-        else if(uri.startsWith(ALT_HASH_STRING))
-            return uri.replace(ALT_HASH_STRING, "");
+        else if(uri.startsWith(EnvironmentVariables.HASH_STRING))
+            return uri.replace(EnvironmentVariables.HASH_STRING, "");
+        else if(uri.startsWith(EnvironmentVariables.ALT_HASH_STRING))
+            return uri.replace(EnvironmentVariables.ALT_HASH_STRING, "");
         else
             throw new RuntimeException("Invalid message id from intent");
     }
