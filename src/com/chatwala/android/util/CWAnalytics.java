@@ -56,10 +56,14 @@ public class CWAnalytics
 
     private static int numRedos =0;
 
+    private static int actionIncrement=0;
+
     public static void initAnalytics(Context ctx)
     {
         context = ctx;
         isFirstOpen = AppPrefs.getInstance(context).isFirstOpen();
+        actionIncrement = AppPrefs.getInstance(context).getActionIncrement();
+
         if(tracker == null) {
             tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
         }
@@ -70,12 +74,22 @@ public class CWAnalytics
 
        isStarterMessage = isStarter;
 
-       //reset redos
+       //reset redos & action increment
        if(!isStarter) {
-           Log.d("ANALYTICS #############","Reset redos");
            resetRedos();
+           resetActionIncrement();
        }
        calculateCategory();
+    }
+
+    private static void incrementAction() {
+        actionIncrement++;
+        AppPrefs.getInstance(context).setActionIncrement(actionIncrement);
+    }
+
+    private static void resetActionIncrement() {
+        actionIncrement =0;
+        AppPrefs.getInstance(context).setActionIncrement(0);
     }
 
     public static void resetRedos() {
@@ -83,7 +97,12 @@ public class CWAnalytics
     }
 
     public static void calculateCategory() {
+        String oldCategoryString = new String(categoryString==null?"":categoryString);
         categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+
+        if(!categoryString.equals(oldCategoryString)) {
+            resetActionIncrement();
+        }
     }
 
     public static void sendAppOpenEvent()
@@ -94,12 +113,14 @@ public class CWAnalytics
     public static void sendAppBackgroundEvent()
     {
         isFirstOpen = false;
-        sendEvent(ACTION_APP_BACKGROUND, null, null);
+        sendEvent(ACTION_APP_BACKGROUND, null, new Long(actionIncrement));
         calculateCategory();
+        incrementAction();
     }
 
     public static void sendDrawerOpened() {
-        sendEvent(ACTION_DRAWER_OPENED, null, null);
+        sendEvent(ACTION_DRAWER_OPENED, null, new Long(actionIncrement));
+        incrementAction();
     }
 
     public static void sendDrawerClosed() {
@@ -138,7 +159,8 @@ public class CWAnalytics
 
     public static void sendRecordingStartEvent(boolean buttonTapped)
     {
-        sendEvent(isStarterMessage ? ACTION_START_RECORDING : ACTION_START_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, null);
+        sendEvent(isStarterMessage ? ACTION_START_RECORDING : ACTION_START_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, new Long(actionIncrement));
+        incrementAction();
     }
 
     public static void sendRecordingEndEvent(boolean buttonTapped, Long duration)
@@ -160,6 +182,7 @@ public class CWAnalytics
 
     private static void sendEvent(String action, String label, Long value)
     {
+        Log.d("ANALYTICS #############", "trackingId=" + EnvironmentVariables.get().getGoogleAnalyticsID());
         String labelString = label != null ? label : "none";
         String valueString = value != null ? value.toString() : "none";
         Log.d("ANALYTICS #############", "CATEGORY: " + categoryString + " ACTION: " + action + " LABEL: " + labelString + " VALUE: " + valueString);
