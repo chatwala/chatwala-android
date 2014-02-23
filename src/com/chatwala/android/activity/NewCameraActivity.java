@@ -166,6 +166,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case PreviewReady:
                 timerKnob.setVisibility(View.VISIBLE);
                 timerKnob.setImageResource(R.drawable.ic_action_send_ios);
+                showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
                 break;
             case Sharing:
                 closeRecordPreviewView.setVisibility(View.GONE);
@@ -234,7 +235,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction();
+                triggerButtonAction(false);
+            }
+        });
+        videoViewContainer.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                triggerButtonAction(false);
             }
         });
 
@@ -435,10 +443,15 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void triggerButtonAction()
+    private void triggerButtonAction(boolean handleOnlyStartAndPreviewState)
     {
         AppState state = getAppState();
         CWLog.userAction(NewCameraActivity.class, "Timer button pressed in state: " + state.name());
+
+        //only handle two clickable state from bottom screen
+        if(handleOnlyStartAndPreviewState && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
+            return;
+        }
 
         if(!wasFirstButtonPressed) {
             wasFirstButtonPressed = true;
