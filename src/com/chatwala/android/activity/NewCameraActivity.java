@@ -235,7 +235,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction(true);
+                triggerButtonAction(false);
             }
         });
         videoViewContainer.setOnClickListener(new View.OnClickListener(){
