@@ -61,22 +61,18 @@ public class SmsActivity extends Activity {
 
                 if(uri != null) {
                     Cursor c = null;
-                    String givenNameCol = ContactsContract.Contacts.DISPLAY_NAME;
-                    String familyNameCol = ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME;
+                    String nameCol = ContactsContract.Contacts.DISPLAY_NAME;
                     String numberCol = ContactsContract.CommonDataKinds.Phone.NUMBER;
                     try {
-                        c = getContentResolver().query(uri, new String[] {givenNameCol, familyNameCol, numberCol},
+                        c = getContentResolver().query(uri, new String[] {nameCol, numberCol},
                                 null, null, null);
                         if(c != null && c.moveToFirst()) {
-                            int givenNameIndex = c.getColumnIndex(givenNameCol);
-                            int familyNameIndex = c.getColumnIndex(familyNameCol);
+                            int nameIndex = c.getColumnIndex(nameCol);
                             int numberIndex = c.getColumnIndex(numberCol);
                             if(numberIndex != -1) {
-                                String givenName =  null;;
-                                String familyName = null;
+                                String name =  null;
                                 try {
-                                    givenName = c.getString(givenNameIndex);
-                                    familyName = c.getString(familyNameIndex);
+                                    name = c.getString(nameIndex);
                                 }
                                 catch(Exception ignore) {}
                                 String number = c.getString(numberIndex);
@@ -85,18 +81,8 @@ public class SmsActivity extends Activity {
                                     contactsBox.append("; ");
                                 }
 
-                                if(givenName != null || familyName != null) {
-                                    contactsBox.append("<");
-                                    if(givenName != null) {
-                                        contactsBox.append(givenName);
-                                    }
-                                    if(givenName != null && familyName != null) {
-                                        contactsBox.append(" ");
-                                    }
-                                    if(familyName != null) {
-                                        contactsBox.append(familyName);
-                                    }
-                                    contactsBox.append("> ");
+                                if(name != null) {
+                                    contactsBox.append("<" + name + ">");
                                 }
 
                                 contactsBox.append(number);
