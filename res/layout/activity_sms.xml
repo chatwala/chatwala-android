@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add"
+            android:id="@+id/add_contact_button"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"/>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:id="@+id/add_contacts_box"
+            android:hint="Add Contacts"
+            android:layout_alignBottom="@+id/add_contact_button"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/add_contact_button"
+            android:inputType="text"/>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/message_text"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/send_sms_button"/>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send"
+            android:id="@+id/send_sms_button"
+            android:layout_alignBottom="@+id/message_text"
+            android:layout_alignParentRight="true"/>
+
+</RelativeLayout>
