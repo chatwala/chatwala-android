@@ -10,7 +10,8 @@ public enum EnvironmentVariables {
             "prodeast_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
             "http://chatwala.com/?",
-            "UA-46207837-1"
+            "UA-46207837-1",
+            "213176338890949"
     ),
 
     QA(
@@ -18,7 +19,8 @@ public enum EnvironmentVariables {
             "qa_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
             "http://chatwala.com/qa/?",
-            "UA-46207837-4"
+            "UA-46207837-4",
+            "639218822814074"
     ),
 
     DEV(
@@ -26,7 +28,8 @@ public enum EnvironmentVariables {
             "deveast_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/dev/?",
-            "UA-46207837-3"
+            "UA-46207837-3",
+            "1472279299660540"
     ),
 
     SANDBOX(
@@ -34,7 +37,8 @@ public enum EnvironmentVariables {
             "sandbox_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/?",
-            "UA-46207837-3"
+            "UA-46207837-3",
+            "1472279299660540"
     );
 
     public static EnvironmentVariables get()
@@ -51,15 +55,16 @@ public enum EnvironmentVariables {
     public static final String ALT_HASH_STRING = "http://chatwala.com/#";
     public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
-    private String apiPath, displayString, plistPath, webPath, googleAnalyticsID;
+    private String apiPath, displayString, plistPath, webPath, googleAnalyticsID, facebookAppId;
 
-    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String googleAnalyticsID)
+    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String googleAnalyticsID, String facebookAppId)
     {
         this.apiPath = apiPath;
         this.displayString = displayString;
         this.plistPath = plistPath;
         this.webPath = webPath;
         this.googleAnalyticsID = googleAnalyticsID;
+        this.facebookAppId = facebookAppId;
     }
 
     public String getApiPath()
@@ -87,4 +92,6 @@ public enum EnvironmentVariables {
     {
         return googleAnalyticsID;
     }
+
+    public String getFacebookAppId() { return facebookAppId; }
 }
