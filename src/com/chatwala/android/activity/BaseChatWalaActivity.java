@@ -1,6 +1,7 @@
 package com.chatwala.android.activity;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -42,8 +43,19 @@ public abstract class BaseChatWalaActivity extends Activity
     {
         super.onResume();
 
-        Log.e("FACEBOOK", "About to send facebook activateApp event");
-        com.facebook.AppEventsLogger.activateApp(this, EnvironmentVariables.get().getFacebookAppId());
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... v) {
+                if(BaseChatWalaActivity.this != null) {
+                    Log.e("FACEBOOK", "About to send facebook activateApp event");
+                    com.facebook.AppEventsLogger.activateApp(BaseChatWalaActivity.this, EnvironmentVariables.get().getFacebookAppId());
+                }
+                else {
+                    Log.e("FACEBOOK", "Couldn't send Facebook activateApp event because Activity was null");
+                }
+                return null;
+            }
+        }.execute();
 
         DataProcessor.runProcess(new Runnable()
         {
