@@ -20,7 +20,7 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
             "http://chatwala.com/qa/?",
             "UA-46207837-4",
-            "639218822814074"
+            "213176338890949"
     ),
 
     DEV(
@@ -29,7 +29,7 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/dev/?",
             "UA-46207837-3",
-            "1472279299660540"
+            "213176338890949"
     ),
 
     SANDBOX(
@@ -38,7 +38,7 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/?",
             "UA-46207837-3",
-            "1472279299660540"
+            "213176338890949"
     );
 
     public static EnvironmentVariables get()
