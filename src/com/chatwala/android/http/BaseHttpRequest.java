@@ -7,7 +7,7 @@ import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.Logger;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
 import com.turbomanage.httpclient.HttpResponse;
@@ -60,7 +60,7 @@ public abstract class BaseHttpRequest<T>
             String version = this.context.getPackageManager().getPackageInfo(this.context.getPackageName(), 0).versionName;
             client.addHeader("x-chatwala-appversion", version);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Logger.e("Couldn't get app version", e);
         }
 
 
@@ -79,7 +79,7 @@ public abstract class BaseHttpRequest<T>
 
         if(httpResponse.getStatus() == STATUS_REDIRECT)
         {
-            CWLog.i(BaseHttpRequest.class, "Call redirected");
+            Logger.i("Call redirected");
             try
             {
                 URL url = new URL(httpResponse.getUrl());
@@ -109,7 +109,7 @@ public abstract class BaseHttpRequest<T>
             }
         }
 
-        CWLog.i(BaseHttpRequest.class, "Request response code: " + httpResponse.getStatus());
+        Logger.i("Request response code: " + httpResponse.getStatus());
 
         if (httpResponse.getStatus() == STATUS_OK)
         {

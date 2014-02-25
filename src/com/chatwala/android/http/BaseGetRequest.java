@@ -2,6 +2,7 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import co.touchlab.android.superbus.http.BusHttpClient;
+import com.chatwala.android.util.Logger;
 import com.crashlytics.android.Crashlytics;
 import com.turbomanage.httpclient.HttpResponse;
 
@@ -22,7 +23,7 @@ public abstract class BaseGetRequest<T> extends BaseHttpRequest<T>
     @Override
     protected HttpResponse makeRequest(BusHttpClient client)
     {
-        Crashlytics.log("makeRequest " + this.getClass().getName());
+        Logger.crashlytics("makeRequest " + this.getClass().getName());
         return client.get(getResourceURL(), null);
     }
 }

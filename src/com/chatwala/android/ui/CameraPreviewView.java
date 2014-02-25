@@ -6,12 +6,11 @@ import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.*;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.activity.NewCameraActivity;
-import com.chatwala.android.util.CWLog;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 
 import java.io.File;
@@ -73,7 +72,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureAvailable: " + surface);
+        Logger.i(surface.toString() + " is now available");
         surfaceTexture = surface;
 
         new Handler().postDelayed(new Runnable()
@@ -124,13 +123,13 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureSizeChanged");
+        Logger.i();
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "onSurfaceTextureDestroyed");
+        Logger.i();
         return false;
     }
 
@@ -161,7 +160,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
                 @Override
                 public void onError(int error, Camera camera)
                 {
-                    Log.w(CameraPreviewView.class.getSimpleName(), "onError: " + error + "/Camera: " + camera);
+                    Logger.e("Got a camera error (" + error + ") for camera " + camera);
                 }
             });
         }
@@ -188,7 +187,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         mediaRecorder = new MediaRecorder();
 
-        CWLog.mediaRecorder(CameraPreviewView.class, "Before set params");
+        Logger.logMediaRecorderState("Before set params");
 
         // Step 1: Attach camera to media recorder
         mediaRecorder.setCamera(camera);
@@ -234,23 +233,23 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 //            mediaRecorder.setPreviewDisplay(new Surface(this.getSurfaceTexture()));
 //        mediaRecorder.setPreviewDisplay(getHolder().getSurface());
 
-        CWLog.mediaRecorder(CameraPreviewView.class, "After set params");
+        Logger.logMediaRecorderState("After set params");
 
         try
         {
             mediaRecorder.prepare();
-            CWLog.mediaRecorder(CameraPreviewView.class, "Prepared");
+            Logger.logMediaRecorderState("Prepared");
         }
         catch (IllegalStateException e)
         {
             releaseMediaRecorder();
-            CWLog.softExceptionLog(CameraPreviewView.class, "", e);
+            Logger.e("Got an error while preparing the media recorder", e);
             return false;
         }
         catch (IOException e)
         {
             releaseMediaRecorder();
-            CWLog.softExceptionLog(CameraPreviewView.class, "", e);
+            Logger.e("Got an error while preparing the media recorder", e);
             return false;
         }
 
@@ -260,29 +259,29 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     public void startRecording()
     {
         camera.unlock();
-        Log.i(CameraPreviewCallback.class.getSimpleName(), "startRecording: " + System.currentTimeMillis());
+        Logger.i("Started recording at " + System.currentTimeMillis());
         mediaRecorder.start();
-        CWLog.mediaRecorder(CameraPreviewView.class, "Started");
+        Logger.logMediaRecorderState("Started");
         recordStarting.set(true);
     }
 
     public void stopRecording()
     {
         mediaRecorder.stop();
-        CWLog.mediaRecorder(CameraPreviewView.class, "Stopped");
+        Logger.logMediaRecorderState("Stopped");
         callback.recordingDone(recordingFile);
     }
 
     public void abortRecording()
     {
         mediaRecorder.stop();
-        CWLog.mediaRecorder(CameraPreviewView.class, "Stopped");
+        Logger.logMediaRecorderState("Stopped");
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        Log.w(CameraPreviewView.class.getSimpleName(), "widthMeasureSpec: " + widthMeasureSpec + "/heightMeasureSpec: " + heightMeasureSpec);
+        Logger.i("CameraPreviewView measurements:\n\twidthMeasureSpec:\t" + widthMeasureSpec + "\n\theightMeasureSpec:\t" + heightMeasureSpec);
         if (((ViewGroup) getParent()).getHeight() != 0)
         {
             if(cameraPreviewSize == null)
@@ -297,7 +296,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
             double newPreviewHeight = (double) previewHeight * ratio;
             double newPreviewWidth = (double) previewWidth * ratio;
 
-            Log.w(CameraPreviewView.class.getSimpleName(), "newPreviewHeight: " + newPreviewHeight + "/newPreviewWidth: " + newPreviewWidth);
+            Logger.i("CameraPreviewView new measurements:\n\tnewPreviewWidth:\t" + newPreviewWidth + "\n\tnewPreviewHeight:\t" + newPreviewHeight);
             //Preview is rotated 90 degrees, so swap width/height
             setMeasuredDimension((int) newPreviewWidth, (int) newPreviewHeight);
         }
@@ -317,10 +316,10 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         cameraVideoSize = CameraUtils.findCameraVideoSize(viewWidth, params);
         cameraFrameRate = CameraUtils.findCameraFrameRate(getContext(), params);
 
-        CWLog.i(CameraPreviewView.class, "Frame rate: " + cameraFrameRate);
-        CWLog.logFramerate(cameraFrameRate);
-        CWLog.logPreviewDimensions(cameraPreviewSize.width, cameraPreviewSize.height);
-        CWLog.logVideoDimensions(cameraVideoSize.width, cameraVideoSize.height);
+        Logger.i("Camera frame rate is " + cameraFrameRate);
+        Logger.logFramerate(cameraFrameRate);
+        Logger.logPreviewDimensions(cameraVideoSize.width, cameraVideoSize.height);
+        Logger.logVideoDimensions(cameraVideoSize.width, cameraVideoSize.height);
 
         params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
 
@@ -346,9 +345,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         if (mediaRecorder != null)
         {
             mediaRecorder.reset();
-            CWLog.mediaRecorder(CameraPreviewView.class, "Reset");
+            Logger.logMediaRecorderState("Reset");
             mediaRecorder.release();
-            CWLog.mediaRecorder(CameraPreviewView.class, "Released");
+            Logger.logMediaRecorderState("Released");
             mediaRecorder = null;
         }
     }

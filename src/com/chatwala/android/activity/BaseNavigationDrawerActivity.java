@@ -6,8 +6,14 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
-import android.view.*;
-import android.widget.*;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.R;
@@ -21,7 +27,6 @@ import com.chatwala.android.util.CWAnalytics;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**

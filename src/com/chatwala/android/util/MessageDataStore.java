@@ -55,7 +55,7 @@ public class MessageDataStore
         }
         catch (Exception e)
         {
-            CWLog.softExceptionLog(MessageDataStore.class, "Problem initializing DataStore", e);
+            Logger.e("Problem initializing DataStore", e);
             return false;
         }
     }
@@ -63,8 +63,7 @@ public class MessageDataStore
     public static boolean isEnoughSpace()
     {
         long megAvailable = megsAvailable();
-        CWLog.i(MessageDataStore.class, "Mb Available on device: " + megAvailable);
-        Log.d("########", "Mb Available on device: " + megAvailable);
+        Logger.i("There are " + megAvailable + " Mb(s) available on the device");
         return megAvailable > MIN_SPACE_MEGS;
     }
 
@@ -78,11 +77,8 @@ public class MessageDataStore
         long spaceUsed = megsUsed(messageDir);
         long spaceLeft = AppPrefs.getInstance(context).getPrefDiskSpaceMax() - spaceUsed;
 
-        CWLog.i(MessageDataStore.class, "Mb Used: " + spaceUsed);
-        CWLog.i(MessageDataStore.class, "Mb Left: " + spaceLeft);
-
-        Log.d("########", "Message Mb Used: " + spaceUsed);
-        Log.d("########", "Message Mb Left: " + spaceLeft);
+        Logger.i(spaceUsed + " Mb(s) used on device");
+        Logger.i(spaceLeft + " Mb(s) left on device");
 
 //        Log.d("########", "Message Folder Size: " + getFileLengthRecursive(messageDir));
 //        Log.d("########", "Outbox Folder Size: " + getFileLengthRecursive(outboxDir));
@@ -102,16 +98,14 @@ public class MessageDataStore
 
     public static void dumpMessageStore()
     {
-        CWLog.i(MessageDataStore.class, "Dumping message store");
-        Log.d("########", "Dumping message store");
+        Logger.i("Dumping message store");
         deleteRecursive(messageDir);
         messageDir.mkdir();
     }
 
     public static void dumpTempStore()
     {
-        CWLog.i(MessageDataStore.class, "Dumping temp store");
-        Log.d("########", "Dumping temp store");
+        Logger.i("Dumping temp store");
         deleteRecursive(tempDir);
         tempDir.mkdir();
     }
@@ -152,7 +146,7 @@ public class MessageDataStore
         {
             allFiles.append(file.getName() + " " + file.length() + " | ");
         }
-        Log.d("########", "All Files: " + allFiles.toString());
+        Logger.d("All files in directory " + directory.getAbsolutePath() + ":\n\t" + allFiles.toString());
     }
 
     public static File findMessageInLocalStore(String id)
@@ -183,8 +177,7 @@ public class MessageDataStore
         return getFileLengthRecursive(dirToCheck) / BYTES_IN_MEG;
     }
 
-    private static void trimOld(long spaceLeft)
-    {
+    private static void trimOld(long spaceLeft) {
         File videoDir = messageDir;
         File[] files = videoDir.listFiles();
         Arrays.sort(files, new Comparator<File>()
@@ -198,15 +191,10 @@ public class MessageDataStore
 
         long bytesUnderCap = spaceLeft * BYTES_IN_MEG;
 
-        for(int i=0; bytesUnderCap < 0; i++)
-        {
-            CWLog.i(MessageDataStore.class, "Deleting the oldest message: " + i);
-            Log.d("#########", "Deleting the oldest message: " + i);
-
-            if(files[i].isDirectory())
-            {
-                for(File file : files[i].listFiles())
-                {
+        int i;
+        for(i = 0; bytesUnderCap < 0; i++) {
+            if(files[i].isDirectory()) {
+                for(File file : files[i].listFiles()) {
                     bytesUnderCap += file.length();
                     file.delete();
                 }
@@ -215,6 +203,7 @@ public class MessageDataStore
             bytesUnderCap += files[i].length();
             files[i].delete();
         }
+        Logger.i("Deleted the " + i + " oldest message");
     }
 
     private static long megsAvailable()
