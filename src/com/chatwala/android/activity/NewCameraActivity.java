@@ -15,6 +15,7 @@ import android.provider.Telephony;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -143,6 +144,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         switch (this.appState)
         {
             case ReadyStopped:
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 timerKnob.setVisibility(View.VISIBLE);
                 if (incomingMessage != null)
                     timerKnob.setImageResource(R.drawable.ic_action_playback_play);
@@ -150,21 +152,25 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     timerKnob.setImageResource(R.drawable.record_circle);
                 break;
             case PlaybackOnly:
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
                 CWAnalytics.sendStartReviewEvent();
                 setTimerKnobForRecording();
                 break;
             case PlaybackRecording:
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
                 CWAnalytics.sendStartReactionEvent();
                 setTimerKnobForRecording();
                 break;
             case Recording:
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
                 CWAnalytics.sendRecordingStartEvent(true);
                 setTimerKnobForRecording();
                 break;
             case PreviewReady:
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 if(shouldShowPreview) {
                     timerKnob.setVisibility(View.VISIBLE);
                     timerKnob.setImageResource(R.drawable.ic_action_send_ios);
@@ -175,9 +181,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 }
                 break;
             case Sharing:
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 closeRecordPreviewView.setVisibility(View.GONE);
                 break;
             default:
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 timerKnob.setVisibility(View.INVISIBLE);
         }
     }
