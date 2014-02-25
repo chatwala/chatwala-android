@@ -271,6 +271,22 @@ public class Logger {
         log(message, t, Log.WARN, logToAndroid);
     }
 
+    public static void crashlytics(String message) {
+        log(message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT);
+    }
+
+    public static void crashlytics(String message, boolean logToAndroid) {
+        log(message, null, Log.INFO, logToAndroid);
+    }
+
+    public static void crashlytics(String message, Throwable t) {
+        log(message, t, Log.ERROR, LOG_TO_ANDROID_DEFAULT);
+    }
+
+    public static void crashlytics(String message, Throwable t, boolean logToAndroid) {
+        log(message, t, Log.ERROR, logToAndroid);
+    }
+
     public static void logUserAction(String message) {
         log(message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
         Crashlytics.log(Log.DEBUG, CL_USER_ACTION, message);
