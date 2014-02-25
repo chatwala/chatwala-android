@@ -20,10 +20,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
-import com.chatwala.android.util.CWAnalytics;
-import com.chatwala.android.util.CWLog;
-import com.chatwala.android.util.GCMUtils;
-import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.*;
 import com.crashlytics.android.Crashlytics;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
@@ -44,6 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ChatwalaApplication extends Application implements PersistedApplication, Application.ActivityLifecycleCallbacks
 {
+    public static final String LOG_TAG = "Chatwala";
+
     static final String FONT_DIR = "fonts/";
     private static final String ITCAG_DEMI = "ITCAvantGardeStd-Demi.otf",
                 ITCAG_MD = "ITCAvantGardeStd-Md.otf";
@@ -64,6 +63,8 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         Crashlytics.start(this);
 
         CWAnalytics.initAnalytics(this);
+
+        Logger.init((ChatwalaApplication) getApplicationContext(), LOG_TAG, true);
 
         this.registerActivityLifecycleCallbacks(this);
 
