@@ -62,6 +62,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
     public static final String HANGOUTS_PACKAGE_NAME = "com.google.android.talk";
     private boolean wasFirstButtonPressed;
+    private boolean shouldShowPreview;
     private int openingVolume;
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
@@ -164,9 +165,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 setTimerKnobForRecording();
                 break;
             case PreviewReady:
-                timerKnob.setVisibility(View.VISIBLE);
-                timerKnob.setImageResource(R.drawable.ic_action_send_ios);
-                showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+                if(shouldShowPreview) {
+                    timerKnob.setVisibility(View.VISIBLE);
+                    timerKnob.setImageResource(R.drawable.ic_action_send_ios);
+                    showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+                }
+                else {
+                    triggerButtonAction(false);
+                }
                 break;
             case Sharing:
                 closeRecordPreviewView.setVisibility(View.GONE);
@@ -334,6 +340,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         super.onResume();
 
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
+        shouldShowPreview = AppPrefs.getInstance(this).getPrefShowPreview();
 
         CWLog.b(NewCameraActivity.class, "onResume");
         CWAnalytics.setStarterMessage(!replyMessageAvailable());
@@ -948,12 +955,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         protected void onPostExecute(VideoUtils.VideoMetadata videoInfo)
         {
             recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation, null, false);
-
-            cameraPreviewContainer.addView(recordPreviewVideoView);
-            closeRecordPreviewView.setVisibility(View.VISIBLE);
-            recordPreviewVideoView.start();
             recordPreviewCompletionListener = new ReplayCountingCompletionListener();
-            recordPreviewVideoView.setOnCompletionListener(recordPreviewCompletionListener);
+
+            if(shouldShowPreview) {
+                cameraPreviewContainer.addView(recordPreviewVideoView);
+                closeRecordPreviewView.setVisibility(View.VISIBLE);
+                recordPreviewVideoView.start();
+                recordPreviewVideoView.setOnCompletionListener(recordPreviewCompletionListener);
+            }
 
             setAppState(AppState.PreviewReady);
         }
