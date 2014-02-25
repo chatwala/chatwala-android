@@ -18,6 +18,7 @@
     <string name="loading_message_text">Loading your friend\'s message!</string>
 
     <string name="settings">Settings</string>
+    <string name="message_preview">Message Preview: </string>
     <string name="delivery_method">Delivery method: </string>
     <string name="refresh_interval">Refresh Interval: </string>
     <string name="max_disk_usage">Max Disk Usage: </string>

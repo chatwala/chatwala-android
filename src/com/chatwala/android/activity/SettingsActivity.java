@@ -25,7 +25,7 @@ import com.chatwala.android.util.CWLog;
  */
 public class SettingsActivity extends BaseChatWalaActivity
 {
-    Spinner deliveryMethodSpinner, refreshIntervalSpinner, diskSpaceSpinner;
+    Spinner messagePreviewSpinner, deliveryMethodSpinner, refreshIntervalSpinner, diskSpaceSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -34,6 +34,35 @@ public class SettingsActivity extends BaseChatWalaActivity
         setContentView(R.layout.activity_settings);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        messagePreviewSpinner = (Spinner)findViewById(R.id.message_preview_spinner);
+        messagePreviewSpinner.setAdapter(new PreviewMessageAdapter());
+        messagePreviewSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //catching crash: https://www.crashlytics.com/chatwala2/android/apps/com.chatwala.chatwala/issues/53050910fabb27481bfb58e8
+                if(view==null) {
+                    return;
+                }
+
+                PreviewMessageOptions selected = (PreviewMessageOptions) view.getTag();
+                switch (selected) {
+                    case ON:
+                        AppPrefs.getInstance(SettingsActivity.this).setPrefShowPreview(true);
+                        //TODO previewMessge Analytics? CWLog.logUsingSms(true);
+                        break;
+                    case OFF:
+                        AppPrefs.getInstance(SettingsActivity.this).setPrefShowPreview(false);
+                        //TODO previewMessge Analytics? CWLog.logUsingSms(false);
+                        break;
+                    default:
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+        messagePreviewSpinner.setSelection(AppPrefs.getInstance(SettingsActivity.this).getPrefShowPreview() ? 0 : 1);
 
         deliveryMethodSpinner = (Spinner)findViewById(R.id.delivery_spinner);
         deliveryMethodSpinner.setAdapter(new DeliveryMethodAdapter());
@@ -188,6 +217,42 @@ public class SettingsActivity extends BaseChatWalaActivity
         context.startActivity(new Intent(context, SettingsActivity.class));
     }
 
+    class PreviewMessageAdapter extends BaseAdapter {
+        @Override
+        public int getCount()
+        {
+            return PreviewMessageOptions.values().length;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return PreviewMessageOptions.values()[position];
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if(convertView == null) {
+                convertView = new TextView(SettingsActivity.this);
+                int viewHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics());
+                ListView.LayoutParams params = new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, viewHeight);
+                convertView.setLayoutParams(params);
+                ((TextView)convertView).setGravity(Gravity.CENTER_VERTICAL);
+                ((TextView)convertView).setTextColor(getResources().getColor(R.color.text_white));
+                convertView.setBackgroundColor(getResources().getColor(R.color.settings_button_background));
+            }
+
+            convertView.setTag(getItem(position));
+            ((TextView)convertView).setText(getItem(position).toString());
+
+            return convertView;
+        }
+    }
+
     class DeliveryMethodAdapter extends BaseAdapter
     {
         @Override
@@ -309,6 +374,11 @@ public class SettingsActivity extends BaseChatWalaActivity
 
             return convertView;
         }
+    }
+
+    enum PreviewMessageOptions {
+        ON,
+        OFF
     }
 
     enum DeliveryOptions
