@@ -166,9 +166,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         }
         catch (Exception e)
         {
-            if (camera != null)
-                camera.release();
-            throw new RuntimeException(e);
+            this.releaseResources();
         }
     }
 
@@ -258,24 +256,42 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 
     public void startRecording()
     {
-        camera.unlock();
-        Logger.i("Started recording at " + System.currentTimeMillis());
-        mediaRecorder.start();
-        Logger.logMediaRecorderState("Started");
-        recordStarting.set(true);
+        try {
+            camera.unlock();
+            Logger.i("Started recording at " + System.currentTimeMillis());
+            mediaRecorder.start();
+            Logger.logMediaRecorderState("Started");
+            recordStarting.set(true);
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't start recording", e);
+            releaseResources();
+        }
     }
 
     public void stopRecording()
     {
-        mediaRecorder.stop();
-        Logger.logMediaRecorderState("Stopped");
-        callback.recordingDone(recordingFile);
+        try {
+            mediaRecorder.stop();
+            Logger.logMediaRecorderState("Stopped");
+            callback.recordingDone(recordingFile);
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't stop recording", e);
+            releaseResources();
+        }
     }
 
     public void abortRecording()
     {
-        mediaRecorder.stop();
-        Logger.logMediaRecorderState("Stopped");
+        try {
+            mediaRecorder.stop();
+            Logger.logMediaRecorderState("Stopped");
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't abort recording", e);
+            releaseResources();
+        }
     }
 
     @Override
