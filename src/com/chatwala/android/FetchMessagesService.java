@@ -12,6 +12,7 @@ import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
+import com.chatwala.android.util.Logger;
 
 import java.util.Date;
 import java.util.Timer;
@@ -36,7 +37,7 @@ public class FetchMessagesService extends IntentService
     @Override
     protected void onHandleIntent(Intent intent)
     {
-        Log.d("########", "FetchMessagesService got Intent");
+        Logger.i("Got new intent");
         DataProcessor.runProcess(new Runnable()
         {
             @Override

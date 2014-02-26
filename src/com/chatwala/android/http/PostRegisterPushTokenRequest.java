@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.util.GCMUtils;
+import com.chatwala.android.util.Logger;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
@@ -54,7 +55,7 @@ public class PostRegisterPushTokenRequest extends BasePostRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        Log.d("############ GCM Response: ", response.getBodyAsString());
+        Logger.i("GCM response is " + response.getBodyAsString());
 
         AppPrefs prefs = AppPrefs.getInstance(context);
         prefs.setGcmToken(regid);

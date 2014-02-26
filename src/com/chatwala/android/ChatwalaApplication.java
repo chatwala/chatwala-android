@@ -20,10 +20,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
-import com.chatwala.android.util.CWAnalytics;
-import com.chatwala.android.util.CWLog;
-import com.chatwala.android.util.GCMUtils;
-import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.*;
 import com.crashlytics.android.Crashlytics;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
@@ -44,6 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ChatwalaApplication extends Application implements PersistedApplication, Application.ActivityLifecycleCallbacks
 {
+    public static final String LOG_TAG = "Chatwala";
+
     static final String FONT_DIR = "fonts/";
     private static final String ITCAG_DEMI = "ITCAvantGardeStd-Demi.otf",
                 ITCAG_MD = "ITCAvantGardeStd-Md.otf";
@@ -65,11 +64,13 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         CWAnalytics.initAnalytics(this);
 
+        Logger.init((ChatwalaApplication) getApplicationContext(), LOG_TAG, true);
+
         this.registerActivityLifecycleCallbacks(this);
 
         if(!MessageDataStore.init(ChatwalaApplication.this))
         {
-            CWLog.b(ChatwalaApplication.class, "There might not be enough space");
+            Logger.w("There might not be enough space");
         }
 
         try
@@ -78,7 +79,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         }
         catch (StorageException e)
         {
-            Crashlytics.logException(e);
+            Logger.e("Couldn't start the persistence provider");
             throw new RuntimeException(e);
         }
 
@@ -88,8 +89,9 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         AppPrefs prefs = AppPrefs.getInstance(ChatwalaApplication.this);
         if(prefs.getUserId() == null)
         {
-            prefs.setUserId(UUID.randomUUID().toString());
-            Log.d("###USERID###", prefs.getUserId());
+            String userId = UUID.randomUUID().toString();
+            prefs.setUserId(userId);
+            Logger.i("User id is " + userId);
         }
 
         isKillswitchShowing = new AtomicBoolean(false);
@@ -213,8 +215,8 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             if(killswitchFile.exists())
             {
                 Map<String, Object> properties = Plist.load(killswitchFile);
-                Log.d("####KILLSWITCH####", Boolean.toString((Boolean) properties.get("APP_DISABLED")));
-                Log.d("####KILLSWITCH####", (String) properties.get("APP_DISABLED_TEXT"));
+                Logger.d("Killswitch enabled is " + properties.get("APP_DISABLED"));
+                Logger.d("Killswitch text is " + properties.get("AAPP_DISABLED_TEXT"));
 
                 if((Boolean)properties.get("APP_DISABLED"))
                 {
@@ -231,11 +233,11 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         }
         catch (XmlParseException e)
         {
-            CWLog.softExceptionLog(ChatwalaApplication.class, "Unable to parse killswitch plist file", e);
+            Logger.e("Unable to parse killswitch plist file", e);
         }
         catch (IOException e)
         {
-            CWLog.softExceptionLog(ChatwalaApplication.class, "IO Exception with killswitch plist file", e);
+            Logger.e("IO Exception with killswitch plist file", e);
         }
 
         return false;

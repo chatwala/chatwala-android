@@ -19,7 +19,7 @@ public class VideoUtils
 {
     public static synchronized Bitmap createVideoFrame(String filePath, long ms)
     {
-        CWLog.i(VideoUtils.class, "filePath: " + filePath + "/ms: " + ms);
+        Logger.i("Filepath is " + filePath + " at ms " + ms);
 
         Bitmap bitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
@@ -37,7 +37,7 @@ public class VideoUtils
                 sourceRotation = 0;
             }
 
-            CWLog.b(VideoUtils.class, "sourceRotation: "+ sourceRotation);
+            Logger.i("The sourceRotation is " + sourceRotation);
 
             bitmap = retriever.getFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
 
@@ -60,11 +60,11 @@ public class VideoUtils
         }
         catch (IllegalArgumentException ex)
         {
-            CWLog.i(VideoUtils.class, "", ex);
+            Logger.e("Got an error creating a video frame", ex);
         }
         catch (RuntimeException ex)
         {
-            CWLog.i(VideoUtils.class, "", ex);
+            Logger.e("Got an error creating a video frame", ex);
         }
         finally
         {
@@ -74,7 +74,7 @@ public class VideoUtils
             }
             catch (RuntimeException ex)
             {
-                CWLog.i(VideoUtils.class, "", ex);
+                Logger.e("Got an error releasing the metadata retriever while creating a video frame", ex);
             }
         }
 
@@ -101,9 +101,9 @@ public class VideoUtils
         String height = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
         String width = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
         String rotation = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
-
-        CWLog.i(VideoUtils.class, "rotation: "+ rotation);
         inp.close();
+        Logger.i("The video file's rotation is " + rotation);
+
         VideoMetadata metadata = new VideoMetadata();
 
         metadata.videoFile = videoFile;
