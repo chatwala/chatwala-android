@@ -64,12 +64,12 @@ public class Logger {
         LOG_MAX_SIZE = maxLogFileSizeInBytes;
     }
 
-    private static final class LogTask implements Runnable {
-        private String message;
-        private Throwable t;
-        private int level;
-        private StackTraceElement ste;
-        private boolean logToAndroid;
+    private static class LogTask implements Runnable {
+        protected String message;
+        protected Throwable t;
+        protected int level;
+        protected StackTraceElement ste;
+        protected boolean logToAndroid;
 
         public LogTask(String message, Throwable t, int level, StackTraceElement ste, boolean logToAndroid) {
             this.message = message;
@@ -85,7 +85,12 @@ public class Logger {
                 logToAndroid(createAndroidMessage(message), t, level);
             }
 
-            String message = createMessage();
+            if(t != null) {
+                Crashlytics.logException(t);
+            }
+
+            //we're not gonna log to file for now
+            /*String message = createMessage();
             if(message == null) {
                 return;
             }
@@ -114,10 +119,10 @@ public class Logger {
             }
             else {
                 Log.e(TAG, "Couldn't get a context in LogTask");
-            }
+            }*/
         }
 
-        private String createMessage() {
+        /*protected String createMessage() {
             String[] classNames = ste.getClassName().split("\\.");
             String sourceMethod = (classNames.length > 0 ? classNames[classNames.length - 1] : ste.getClassName()) + "." +
                     ste.getMethodName() + "()";
@@ -128,7 +133,6 @@ public class Logger {
                 t.printStackTrace(pw);
                 message += "\n" + sw.toString();
                 pw.close();
-                Crashlytics.logException(t);
             }
 
             try {
@@ -146,21 +150,51 @@ public class Logger {
                 Log.e(TAG, "Could not build the message in Logger.onHandleIntent()", e);
                 return null;
             }
-        }
+        }*/
 
-        private String createAndroidMessage(String message) {
+        protected String createAndroidMessage(String message) {
             String[] classNames = ste.getClassName().split("\\.");
-            return ste.getFileName() + ":" +
+            if(message != null && !message.trim().isEmpty()) {
+                message = "--" + message.replace("\n", "\n--");
+            }
+            return "-\n" +
+                    ste.getFileName() + ":" +
                     ste.getLineNumber() + " - " +
                     (classNames.length > 0 ? classNames[classNames.length - 1] : ste.getClassName()) + "." +
-                    ste.getMethodName() + "() - " +
-                    message;
+                    ste.getMethodName() + "()" +
+                    "\n" + message;
+        }
+    }
+
+    private static final class CrashlyticsLogTask extends LogTask {
+        private String crashlyticsTag;
+
+        public CrashlyticsLogTask(String crashlyticsTag, String message, Throwable t, int level,
+                                  StackTraceElement ste, boolean logToAndroid) {
+            super(message, t, level, ste, logToAndroid);
+            this.crashlyticsTag = crashlyticsTag;
+        }
+
+        @Override
+        public void run() {
+            if(crashlyticsTag == null) {
+                Crashlytics.log(message);
+            }
+            else {
+                Crashlytics.log(level, crashlyticsTag, message);
+            }
+            super.run();
         }
     }
 
     private static void log(String message, Throwable t, int level, boolean logToAndroid) {
         StackTraceElement ste = Thread.currentThread().getStackTrace()[4];
         executor.execute(new LogTask(message, t, level, ste, logToAndroid));
+    }
+
+    private static void log_crashlytics(String crashlyticsTag, String message, Throwable t, int level, boolean logToAndroid) {
+        StackTraceElement ste = Thread.currentThread().getStackTrace()[4];
+        executor.execute(new CrashlyticsLogTask(crashlyticsTag, message, t, level, ste, logToAndroid));
     }
 
     public static void setTag(String tag) {
@@ -271,66 +305,108 @@ public class Logger {
         log(message, t, Log.WARN, logToAndroid);
     }
 
+    public static void network(String message) {
+        crashlytics(message, LOG_TO_ANDROID_DEFAULT);
+    }
+
     public static void crashlytics(String message) {
-        log(message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT);
+        log_crashlytics(null, message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT);
     }
 
     public static void crashlytics(String message, boolean logToAndroid) {
-        log(message, null, Log.INFO, logToAndroid);
+        log_crashlytics(null, message, null, Log.INFO, logToAndroid);
     }
 
     public static void crashlytics(String message, Throwable t) {
-        log(message, t, Log.ERROR, LOG_TO_ANDROID_DEFAULT);
+        log_crashlytics(null, message, t, Log.ERROR, LOG_TO_ANDROID_DEFAULT);
     }
 
     public static void crashlytics(String message, Throwable t, boolean logToAndroid) {
-        log(message, t, Log.ERROR, logToAndroid);
+        log_crashlytics(null, message, t, Log.ERROR, logToAndroid);
     }
 
     public static void logUserAction(String message) {
-        log(message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
-        Crashlytics.log(Log.DEBUG, CL_USER_ACTION, message);
+        log_crashlytics(CL_USER_ACTION, message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
     }
 
     public static void logMediaRecorderState(String mediaRecorderState) {
-        log(mediaRecorderState, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
-        Crashlytics.log(Log.DEBUG, CL_MEDIA_RECORDER_STATE, mediaRecorderState);
+        log_crashlytics(CL_MEDIA_RECORDER_STATE, mediaRecorderState, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
     }
 
-    public static void setUserInfo(String userIdentifier, String userName, String userEmail) {
-        Crashlytics.setUserIdentifier(userIdentifier);
-        Crashlytics.setUserName(userName);
-        Crashlytics.setUserEmail(userEmail);
+    public static void setUserInfo(final String userIdentifier, final String userName, final String userEmail) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setUserIdentifier(userIdentifier);
+                Crashlytics.setUserName(userName);
+                Crashlytics.setUserEmail(userEmail);
+            }
+        });
     }
 
-    public static void logPreviewDimensions(int width, int height) {
-        Crashlytics.setInt(CL_PREVIEW_WIDTH, width);
-        Crashlytics.setInt(CL_PREVIEW_HEIGHT, height);
+    public static void logPreviewDimensions(final int width, final int height) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setInt(CL_PREVIEW_WIDTH, width);
+                Crashlytics.setInt(CL_PREVIEW_HEIGHT, height);
+            }
+        });
     }
 
-    public static void logVideoDimensions(int width, int height) {
-        Crashlytics.setInt(CL_VIDEO_WIDTH, width);
-        Crashlytics.setInt(CL_VIDEO_HEIGHT, height);
+    public static void logVideoDimensions(final int width, final int height) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setInt(CL_VIDEO_WIDTH, width);
+                Crashlytics.setInt(CL_VIDEO_HEIGHT, height);
+            }
+        });
     }
 
-    public static void logFramerate(int framerate) {
-        Crashlytics.setInt(CL_FRAMERATE, framerate);
+    public static void logFramerate(final int framerate) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setInt(CL_FRAMERATE, framerate);
+            }
+        });
     }
 
-    public static void logShareLink(String link) {
-        Crashlytics.setString(CL_SHARE_LINK, link);
+    public static void logShareLink(final String link) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setString(CL_SHARE_LINK, link);
+            }
+        });
     }
 
-    public static void logUsingSms(Boolean usingSms) {
-        Crashlytics.setBool(CL_USING_SMS, usingSms);
+    public static void logUsingSms(final Boolean usingSms) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setBool(CL_USING_SMS, usingSms);
+            }
+        });
     }
 
-    public static void logRefreshInterval(int refreshInterval) {
-        Crashlytics.setInt(CL_REFRESH_INTERVAL, refreshInterval);
+    public static void logRefreshInterval(final int refreshInterval) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setInt(CL_REFRESH_INTERVAL, refreshInterval);
+            }
+        });
     }
 
-    public static void logStorageLimit(int storageLimit) {
-        Crashlytics.setInt(CL_STORAGE_LIMIT, storageLimit);
+    public static void logStorageLimit(final int storageLimit) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Crashlytics.setInt(CL_STORAGE_LIMIT, storageLimit);
+            }
+        });
     }
 
     private static void logToAndroid(String message, Throwable t, int level) {
