@@ -1,7 +1,6 @@
 package com.chatwala.android.util;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -12,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -62,16 +62,17 @@ public class ShareUtils
             }
             catch (FileNotFoundException e)
             {
-                CWLog.b(ShareUtils.class, uri.toString());
-                CWLog.softExceptionLog(ShareUtils.class, "Couldn't read file", e);
+                Logger.e("Couldn't extract file attachment for " + (uri == null ? "none" : uri.toString()), e);
                 return null;
             }
             catch (IOException e)
             {
+                Logger.e("Couldn't extract file attachment for " + (uri == null ? "none" : uri.toString()), e);
                 throw new RuntimeException(e);
             }
             catch (JSONException e)
             {
+                Logger.e("Couldn't extract file attachment for " + (uri == null ? "none" : uri.toString()), e);
                 throw new RuntimeException(e);
             }
         }
@@ -95,7 +96,7 @@ public class ShareUtils
         catch (Exception e)
         {
             //This appears kind of lazy, but we have no idea what kind of weird patterns we'll be getting in the future. Log and forget.
-            CWLog.i(ShareUtils.class, "Failed extracting email from: "+ s, e);
+            Logger.e("Failed extracting email from: " + (s == null ? "none" : s), e);
         }
 
         return null;
@@ -104,7 +105,7 @@ public class ShareUtils
     public static String getIdFromIntent(Intent callingIntent)
     {
         String uri = callingIntent.getDataString();
-        CWLog.logShareLink(uri);
+        Logger.logShareLink(uri);
         if(uri.startsWith(EnvironmentVariables.WEB_STRING))
             return uri.replace(EnvironmentVariables.WEB_STRING, "");
         else if(uri.startsWith(EnvironmentVariables.ALT_WEB_STRING))

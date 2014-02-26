@@ -30,7 +30,7 @@ public class ThumbUtils
         }
         else
         {
-            Log.d("######", "thumb width: " + thumbBitmap.getWidth() + "thumb height: " + thumbBitmap.getHeight());
+            Logger.d("Thumb width: " + thumbBitmap.getWidth() + "; thumb height: " + thumbBitmap.getHeight());
 
             thumbBitmap = rotateBitmap(userId, thumbBitmap);
 
@@ -43,7 +43,7 @@ public class ThumbUtils
                 idealY = thumbBitmap.getHeight();
             }
 
-            Log.d("######", "ratio: " + idealRatio + " idealHeight: " + idealY);
+            Logger.d("Thumb ratio: " + idealRatio + "; thumb ideal height: " + idealY);
 
             int yMid = thumbBitmap.getHeight()/2;
             thumbBitmap = thumbBitmap.createBitmap(thumbBitmap, 0, yMid - (idealY/2), thumbBitmap.getWidth(), idealY);

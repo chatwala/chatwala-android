@@ -1,15 +1,12 @@
 package com.chatwala.android.superbus;
 
 import android.content.Context;
-import android.util.Log;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
-import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
-
-import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,13 +34,11 @@ public class ClearStoreCommand extends SqliteCommand
     {
         if(MessageDataStore.checkClearStore(context))
         {
-            CWLog.i(ClearStoreCommand.class, "Messages deleted");
-            Log.d("########", "Messages deleted");
+            Logger.i("Messages deleted");
         }
         else
         {
-            CWLog.i(ClearStoreCommand.class, "No messages deleted");
-            Log.d("########", "No messages deleted");
+            Logger.i("Messages were not deleted");
         }
     }
 }

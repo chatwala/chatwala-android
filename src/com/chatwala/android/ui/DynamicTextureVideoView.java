@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import com.chatwala.android.R;
 import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.util.AndroidUtils;
-import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.Logger;
 
 import java.io.File;
 
@@ -276,14 +276,8 @@ public class DynamicTextureVideoView extends TextureView implements TextureView.
     }
 
     @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface)
-    {
-//        CWLog.i(DynamicTextureVideoView.class, "onSurfaceTextureUpdated");
-    }
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
 
     @Override
-    public void onBufferingUpdate(MediaPlayer mp, int percent)
-    {
-        CWLog.i(DynamicTextureVideoView.class, "onBufferingUpdate");
-    }
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {}
 }
