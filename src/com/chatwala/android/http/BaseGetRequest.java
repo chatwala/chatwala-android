@@ -23,7 +23,6 @@ public abstract class BaseGetRequest<T> extends BaseHttpRequest<T>
     @Override
     protected HttpResponse makeRequest(BusHttpClient client)
     {
-        Logger.crashlytics("makeRequest " + this.getClass().getName());
         return client.get(getResourceURL(), null);
     }
 }

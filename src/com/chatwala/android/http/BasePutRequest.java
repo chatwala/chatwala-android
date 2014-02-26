@@ -28,7 +28,6 @@ public abstract class BasePutRequest<T> extends BaseHttpRequest<T>
     @Override
     protected HttpResponse makeRequest(BusHttpClient client) throws PermanentException, TransientException
     {
-        Logger.crashlytics("makeRequest " + this.getClass().getName());
         //return client.post(getResourceURL(), getContentType(), getPutData());
         return client.put(getResourceURL(), getContentType(), getPutData());
     }

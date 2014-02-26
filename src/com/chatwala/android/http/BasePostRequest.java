@@ -28,7 +28,6 @@ public abstract class BasePostRequest<T> extends BaseHttpRequest<T>
     @Override
     protected HttpResponse makeRequest(BusHttpClient client)
     {
-        Logger.crashlytics("makeRequest " + this.getClass().getName());
         return client.post(getResourceURL(), getContentType(), getPostData());
     }
 
