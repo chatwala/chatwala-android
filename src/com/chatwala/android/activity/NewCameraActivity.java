@@ -179,7 +179,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
                 }
                 else {
-                    triggerButtonAction(true, true);
+                    triggerButtonAction(true);
                 }
                 break;
             case Sharing:
@@ -251,14 +251,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction(true, true);
+                triggerButtonAction(true);
             }
         });
         videoViewContainer.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction(false, true);
+                triggerButtonAction(false);
             }
         });
 
@@ -462,14 +462,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void triggerButtonAction(boolean fromCenterButtonPress, boolean handleOnlyStartAndPreviewState)
+    private void triggerButtonAction(boolean fromCenterButtonPress)
     {
         AppState state = getAppState();
         Logger.logUserAction("Timer button pressed in state: " + state.name());
 
         //only handle two clickable state from bottom screen
-        if(!fromCenterButtonPress &&
-                handleOnlyStartAndPreviewState && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
+        if(!fromCenterButtonPress && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
             return;
         }
 
