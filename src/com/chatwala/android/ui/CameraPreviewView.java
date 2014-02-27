@@ -286,7 +286,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
     {
         try {
             mediaRecorder.stop();
-            Logger.logMediaRecorderState("Stopped");
+            Logger.logMediaRecorderState("Aborted");
         }
         catch(Exception e) {
             Logger.e("Couldn't abort recording", e);
