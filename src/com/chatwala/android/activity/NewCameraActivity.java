@@ -131,7 +131,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     public synchronized void setAppState(AppState appState, boolean buttonPress)
     {
-        CWLog.b(NewCameraActivity.class, "setAppState: " + appState + " (" + System.currentTimeMillis() + ")");
+        Logger.i("Set app state to " + appState + " at " + System.currentTimeMillis());
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
 
         analyticsStateEnd(appState, buttonPress);
@@ -177,7 +179,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
                 }
                 else {
-                    triggerButtonAction(false);
+                    triggerButtonAction(true);
                 }
                 break;
             case Sharing:
@@ -231,7 +233,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        CWLog.b(NewCameraActivity.class, "onCreate start");
+        Logger.i("Beginning of onCreate()");
 
         buttonDelayHandler = new Handler();
 
@@ -249,7 +251,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction(false);
+                triggerButtonAction(true);
             }
         });
         videoViewContainer.setOnClickListener(new View.OnClickListener(){
@@ -274,12 +276,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void onClick(View v)
             {
-                CWLog.userAction(NewCameraActivity.class, "Close record preview pressed in state: " + getAppState().name());
+                Logger.logUserAction("Close record preview pressed in state: " + getAppState().name());
                 CWAnalytics.sendRedoMessageEvent((long) recordPreviewCompletionListener.replays);
                 closeResultPreview();
             }
         });
-        CWLog.b(NewCameraActivity.class, "onCreate end");
 
         if(savedInstanceState != null && savedInstanceState.containsKey(PENDING_SEND_URL))
         {
@@ -291,10 +292,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             openDrawer();
         }
 //        captureOpeningVolume();
+
+        Logger.i("End of onCreate()");
     }
 
     private void runWaterSplash()
     {
+        Logger.i("Start of runWaterSplash()");
         if (splash != null)
         {
             final ViewGroup root = findViewRoot();
@@ -304,7 +308,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
         final ViewGroup root = findViewRoot();
         root.addView(splash);
-        CWLog.b(NewCameraActivity.class, "runWaterSplash end");
+        Logger.i("End of runWaterSplash()");
     }
 
     private void removeWaterSplash()
@@ -350,7 +354,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
         shouldShowPreview = AppPrefs.getInstance(this).getPrefShowPreview();
 
-        CWLog.b(NewCameraActivity.class, "onResume");
+        Logger.i();
         CWAnalytics.setStarterMessage(!replyMessageAvailable());
 
         activityActive = true;
@@ -458,13 +462,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void triggerButtonAction(boolean handleOnlyStartAndPreviewState)
+    private void triggerButtonAction(boolean fromCenterButtonPress)
     {
         AppState state = getAppState();
-        CWLog.userAction(NewCameraActivity.class, "Timer button pressed in state: " + state.name());
+        Logger.logUserAction("Timer button pressed in state: " + state.name());
 
         //only handle two clickable state from bottom screen
-        if(handleOnlyStartAndPreviewState && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
+        if(!fromCenterButtonPress && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
             return;
         }
 
@@ -521,7 +525,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                         }
                         catch (Exception e)
                         {
-                            CWLog.softExceptionLog(NewCameraActivity.class, "Error loading playback for share", e);
+                            Logger.e("Error loading playback for share", e);
                             //On any exception, just continue on without it.  We probably had a problem with the initial video load and the user started a new conversation
                             playbackMessage = null;
                         }
@@ -648,7 +652,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void abortRecording()
     {
-        CWLog.b(NewCameraActivity.class, "abortRecording");
+        Logger.i();
         cameraPreviewView.abortRecording();
         abortBeforeRecording();
     }
@@ -656,7 +660,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     @Override
     public void onBackPressed()
     {
-        CWLog.userAction(NewCameraActivity.class, "onBackPressed");
+        Logger.logUserAction("onBackPressed");
         AppState state = getAppState();
         if (state == AppState.PreviewReady)
             closeResultPreview();
@@ -666,7 +670,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void abortBeforeRecording()
     {
-        CWLog.b(NewCameraActivity.class, "abortBeforeRecording");
+        Logger.i();
         AndroidUtils.isMainThread();
         setAppState(AppState.Transition);
         heartbeatTimer.abort();
@@ -695,7 +699,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         public void abort()
         {
-            CWLog.b(NewCameraActivity.class, "HeartbeatTimer:abort");
+            Logger.i("HeartbeatTimer.abort");
             cancel.set(true);
         }
 
@@ -717,7 +721,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         public synchronized void endPause()
         {
-            CWLog.b(NewCameraActivity.class, "HeartbeatTimer:endPause");
+            Logger.i("HeartbeatTimer.endPause");
             if (pauseStart != null)
             {
                 long calcStartAdjust = startTime + (System.currentTimeMillis() - pauseStart);
@@ -767,7 +771,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                 if (!recordingStarted && now >= startRecordingTime)
                 {
-                    CWLog.b(NewCameraActivity.class, "HeartbeatTimer: inside start recording block");
+                    Logger.i("HeartbeatTimer.run#startRecordingBlock");
                     recordingStarted = true;
                     runOnUiThread(new Runnable()
                     {
@@ -782,7 +786,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                 if (now >= endRecordingTime)
                 {
-                    CWLog.b(NewCameraActivity.class, "stop HeartbeatTimer");
+                    Logger.i("Stop HeartbeatTimer");
                     runOnUiThread(new Runnable()
                     {
                         @Override
@@ -809,7 +813,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void startPlaybackRecording()
     {
-        CWLog.b(NewCameraActivity.class, "startPlaybackRecording");
+        Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
 
         int recordingStartMillis = incomingMessage == null ? 0 : (int) Math.round(incomingMessage.getStartRecording() * 1000);
@@ -839,11 +845,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void startRecording()
     {
-        CWLog.b(NewCameraActivity.class, "startRecording");
+        Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
 
-        if (incomingMessage == null)
-            hideMessage(bottomFrameMessage);
+        if(getAppState() == AppState.ReadyStopped) {
+            showRecordingCountdown(false);
+        }
 
         setAppState(AppState.RecordingLimbo);
         if (messageVideoView != null)
@@ -853,24 +862,34 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void stopRecording(boolean buttonPress)
     {
-        CWLog.b(NewCameraActivity.class, "stopRecording");
+        Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
-        setAppState(AppState.PreviewLoading, buttonPress);
+
         hideMessage(bottomFrameMessage);
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
-        cameraPreviewView.stopRecording();
+
+        if(buttonPress) {
+            setAppState(AppState.ReadyStopped, buttonPress);
+            abortRecording();
+        }
+        else {
+            setAppState(AppState.PreviewLoading, buttonPress);
+            cameraPreviewView.stopRecording();
+        }
     }
 
     private void previewSurfaceReady()
     {
-        CWLog.b(NewCameraActivity.class, "previewSurfaceReady");
+        Logger.i();
         initStartState();
     }
 
     private void initStartState()
     {
-        CWLog.b(NewCameraActivity.class, "initStartState");
+        Logger.i();
         incomingMessage = null;
         chatMessageVideoMetadata = null;
         recordPreviewFile = null;
@@ -887,7 +906,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void messageLoaded(ChatwalaMessage message)
     {
-        CWLog.b(NewCameraActivity.class, "messageLoaded");
+        Logger.i();
         incomingMessage = message;
 
         if (incomingMessage != null)
@@ -907,7 +926,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 public void onCompletion(MediaPlayer mp)
                 {
                     setAppState(AppState.Recording);
-                    showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.now_record_reply);
+                    //showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.now_record_reply);
+                    showRecordingCountdown(true);
                 }
             });
             showMessage(topFrameMessage, topFrameMessageText, R.color.message_background_alpha, R.string.play_message_record_reaction);
@@ -923,14 +943,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void liveForRecording()
     {
-        CWLog.b(NewCameraActivity.class, "liveForRecording");
+        Logger.i();
         runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
                 AppState appStateTest = getAppState();
-                CWLog.i(NewCameraActivity.class, "appState: " + appStateTest);
+                Logger.i("AppState = "  + appStateTest);
                 if (appStateTest == AppState.LoadingFileCamera)
                 {
                     setAppState(AppState.ReadyStopped);
@@ -988,6 +1008,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void createSurface()
     {
+        Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
 
         if (replyMessageAvailable())
@@ -999,11 +1022,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             prepManualSend();
         }
 
-        CWLog.b(NewCameraActivity.class, "createSurface");
         setAppState(AppState.LoadingFileCamera);
         hideMessage(topFrameMessage);
         hideMessage(bottomFrameMessage);
-        CWLog.i(NewCameraActivity.class, "createSurface started");
+        Logger.i("Starting createSurface work");
         cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
         {
             @Override
@@ -1049,13 +1071,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             }
         });
         cameraPreviewContainer.addView(cameraPreviewView);
-        CWLog.i(NewCameraActivity.class, "createSurface view added");
+        Logger.i("cameraPreviewView added to our layout");
     }
 
     private void showResultPreview(File videoFile)
     {
-        CWLog.b(NewCameraActivity.class, "showResultPreview");
+        Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
+
         this.recordPreviewFile = videoFile;
         tearDownSurface();
         new LoadAndShowVideoMessageTask().execute(recordPreviewFile);
@@ -1063,8 +1088,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void closeResultPreview()
     {
-        CWLog.b(NewCameraActivity.class, "showResultPreview");
+        Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
+
         recordPreviewFile = null;
         recordPreviewVideoView.setOnCompletionListener(null);
         recordPreviewVideoView.pause();
@@ -1077,7 +1105,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void tearDownSurface()
     {
-        CWLog.b(NewCameraActivity.class, "tearDownSurface: start");
+        Logger.i("Start of tearDownSurface");
         AndroidUtils.isMainThread();
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
@@ -1095,7 +1123,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         videoViewContainer.removeAllViews();
         messageVideoView = null;
         findViewById(R.id.recordPreviewClick).setOnClickListener(null);
-        CWLog.b(NewCameraActivity.class, "tearDownSurface: end");
+        Logger.i("End of tearDownSurface");
     }
 
     class MessageLoaderTask extends AsyncTask<Void, Void, ChatwalaMessage>
@@ -1120,7 +1148,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
                 if(playbackMessage == null || playbackMessage.getMessageFile() == null)
                 {
-                    Log.d("##########", "Refetching message: " + playbackMessageId);
+                    Logger.i("Refreshing message " + playbackMessageId);
                     playbackMessage = new ChatwalaMessage();
                     playbackMessage.setMessageId(playbackMessageId);
                     playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
@@ -1199,11 +1227,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     }
                     catch (TransientException e)
                     {
-                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't get message id", e);
+                        Logger.e("Couldn't get message ID", e);
                     }
                     catch (PermanentException e)
                     {
-                        CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't get message id", e);
+                        Logger.e("Couldn't get message ID", e);
                     }
                     attempts++;
                 }
@@ -1214,7 +1242,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     @SuppressWarnings("unchecked")
     private void sendEmail(final String messageId)
     {
-        Log.d("######### SENDING MESSAGE ID: ", messageId);
+        Logger.i("Sending message ID " + messageId);
         String uriText = "mailto:";
 
         Uri mailtoUri = Uri.parse(uriText);
@@ -1238,7 +1266,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
         catch (ActivityNotFoundException ex)
         {
-            CWLog.softExceptionLog(NewCameraActivity.class, "Couldn't send gmail", ex);
+            Logger.e("Couldn't send GMail", ex);
         }
 
         if (!gmailOk)
@@ -1341,6 +1369,81 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         messageView.setVisibility(View.VISIBLE);
         messageViewText.setText(messageRes);
         messageViewText.setVisibility(View.VISIBLE);
+    }
+
+    private abstract class RecordCountdownRunnable implements Runnable {
+        private int countdownBegin;
+        private int countdownEnd;
+        private boolean isReply;
+        private boolean showFirstMessage = true;
+        private String displayMessage;
+
+        public RecordCountdownRunnable(int countdownBegin, int countdownEnd, boolean isReply) {
+            this.countdownBegin = countdownBegin;
+            this.countdownEnd = countdownEnd;
+            this.isReply = isReply;
+
+            displayMessage = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+        }
+
+        public boolean shouldShowFirst() {
+            return showFirstMessage;
+        }
+
+        public void setShowFirstMessage(boolean showFirstMessage) {
+            this.showFirstMessage = showFirstMessage;
+        }
+
+        public int tick() {
+            return --countdownBegin;
+        }
+
+        public boolean isCountdownValid() {
+            return countdownBegin > countdownEnd;
+        }
+
+        public String getDisplayMessage() {
+            if(!shouldShowPreview && isReply && countdownBegin == 5) {
+                displayMessage = getString(R.string.sending_reply_countdown);
+            }
+            return displayMessage;
+        }
+    }
+
+    private void showRecordingCountdown(final boolean isReply) {
+        int colorRes = (isReply ? R.color.message_background_alpha : R.color.message_background_clear);
+        bottomFrameMessage.setBackgroundColor(getResources().getColor(colorRes));
+        bottomFrameMessageText.setText("");
+        bottomFrameMessage.setVisibility(View.VISIBLE);
+        bottomFrameMessageText.setVisibility(View.VISIBLE);
+
+        final int delay = (isReply ? 850 : 1000);
+
+        bottomFrameMessageText.postDelayed(new RecordCountdownRunnable(10, 0, isReply) {
+            @Override
+            public void run() {
+                if (bottomFrameMessageText == null) { //if we lost the activity
+                    bottomFrameMessageText.removeCallbacks(this);
+                    return;
+                }
+
+                if (!isCountdownValid() ||
+                        (getAppState() != AppState.Recording && getAppState() != AppState.PlaybackRecording && getAppState() != AppState.RecordingLimbo)) {
+                    bottomFrameMessageText.removeCallbacks(this);
+                }
+                else {
+                    if (shouldShowFirst()) {
+                        String message = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+                        bottomFrameMessageText.setText(message.replace("%d", " "));
+                        setShowFirstMessage(false);
+                    }
+                    else {
+                        bottomFrameMessageText.setText(String.format(getDisplayMessage(), tick()));
+                    }
+                    bottomFrameMessageText.postDelayed(this, delay);
+                }
+            }
+        }, 100);
     }
 
     private void hideMessage(View messageView)

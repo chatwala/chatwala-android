@@ -82,16 +82,16 @@ public class CameraUtils
 
         assert best.width <= containerHeight;
 
-        CWLog.i(CameraUtils.class, "BEST: width: " + best.width + "/height: " + best.height);
+        Logger.i("Best width: " + best.width + "\n\tBest height: " + best.height);
 
         return best;
     }
 
     public static int findVideoFrameRate(Context context)
     {
-        CWLog.i(CameraUtils.class, "Build.MODEL: " + Build.MODEL);
-        CWLog.i(CameraUtils.class, "Build.DEVICE: " + Build.DEVICE);
-        CWLog.i(CameraUtils.class, "Build.PRODUCT: " + Build.PRODUCT);
+        Logger.i("Build.MODEL:\n\t" + Build.MODEL +
+                "\nBuild.DEVICE:\n\t" + Build.DEVICE +
+                "\nBuild.PRODUCT:\n\t" + Build.PRODUCT);
 
         //S4 can't handle 24 fps
         if (DeviceUtils.isDeviceS4())

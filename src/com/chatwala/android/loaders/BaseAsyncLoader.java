@@ -4,6 +4,7 @@ import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
+import com.chatwala.android.util.Logger;
 import com.crashlytics.android.Crashlytics;
 
 /**
@@ -46,7 +47,7 @@ public abstract class BaseAsyncLoader<D> extends AsyncTaskLoader<D>
     @Override
     public void deliverResult(D data)
     {
-        Crashlytics.log("deliverResult " + this.getClass().getName());
+        Logger.crashlytics("deliverResult " + this.getClass().getName());
         if (isReset())
         {
             if (data != null)
@@ -72,14 +73,14 @@ public abstract class BaseAsyncLoader<D> extends AsyncTaskLoader<D>
     @Override
     protected void onStopLoading()
     {
-        Crashlytics.log("onStopLoading " + this.getClass().getName());
+        Logger.crashlytics("onStopLoading " + this.getClass().getName());
         cancelLoad();
     }
 
     @Override
     protected void onReset()
     {
-        Crashlytics.log("onReset " + this.getClass().getName());
+        Logger.crashlytics("onReset " + this.getClass().getName());
         super.onReset();
 
         onStopLoading();
