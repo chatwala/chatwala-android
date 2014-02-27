@@ -3,6 +3,7 @@ package com.chatwala.android.http;
 import android.content.Context;
 import android.util.Log;
 import co.touchlab.android.superbus.TransientException;
+import com.chatwala.android.util.Logger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +43,7 @@ public class PostFinalizeMessageRequest extends BasePostRequest
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException
     {
-        Log.d("#########", response.getBodyAsString());
+        Logger.i("Message finalize resposne is - " + response.getBodyAsString());
     }
 
     @Override

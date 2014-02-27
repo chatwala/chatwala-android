@@ -7,9 +7,10 @@ import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.util.CWLog;
+import com.chatwala.android.util.Logger;
 import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.misc.TransactionManager;
+import com.turbomanage.httpclient.AbstractRequestLogger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 
@@ -21,6 +22,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -60,26 +63,28 @@ public abstract class BaseHttpRequest<T>
             String version = this.context.getPackageManager().getPackageInfo(this.context.getPackageName(), 0).versionName;
             client.addHeader("x-chatwala-appversion", version);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Logger.e("Couldn't get app version", e);
         }
 
 
-        //Quiet the logs, some versions of intellij don't play nice with outputting bytes to the console.
-//        AbstractRequestLogger logger = new AbstractRequestLogger()
-//        {
-//            @Override
-//            public void log(String msg)
-//            {
-//
-//            }
-//        };
-//        client.setRequestLogger(logger);
+        //Turn off teh fucking logs
+        client.setRequestLogger(new AbstractRequestLogger() {
+            @Override
+            public void log(String s) {}
+            @Override
+            public void logRequest(HttpURLConnection uc, Object content) throws IOException {}
+            @Override
+            public void logResponse(HttpResponse res) {}
+        });
+
+        //do our logs the normal way
+        logHttpRequest();
 
         HttpResponse httpResponse = makeRequest(client);
 
         if(httpResponse.getStatus() == STATUS_REDIRECT)
         {
-            CWLog.i(BaseHttpRequest.class, "Call redirected");
+            Logger.i("Call redirected");
             try
             {
                 URL url = new URL(httpResponse.getUrl());
@@ -109,7 +114,7 @@ public abstract class BaseHttpRequest<T>
             }
         }
 
-        CWLog.i(BaseHttpRequest.class, "Request response code: " + httpResponse.getStatus());
+        logHttpResponse(httpResponse);
 
         if (httpResponse.getStatus() == STATUS_OK)
         {
@@ -182,6 +187,20 @@ public abstract class BaseHttpRequest<T>
         }
 
         return getReturnValue();
+    }
+
+    private void logHttpRequest() {
+        Logger.i("==================HTTP REQUEST==================");
+        Logger.crashlytics("Request to: " + EnvironmentVariables.get().getApiPath() + getResourceURL());
+    }
+
+    private void logHttpResponse(HttpResponse response) {
+        try {
+            Logger.i("==================HTTP RESPONSE==================");
+            String responseLog = "Response from: " + response.getUrl();
+            responseLog += "\n" + response.getHeaders().toString().replaceAll("],", "]\n");
+            Logger.i(responseLog);
+        } catch(Exception e) {} //nothing to do about this now...probably a bug in their HTTP libraries
     }
 
     protected abstract String getResourceURL();
