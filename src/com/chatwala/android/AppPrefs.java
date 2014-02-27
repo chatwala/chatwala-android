@@ -76,7 +76,6 @@ public class AppPrefs
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         if(firstOpen) {
             mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, false).apply();
-            mSp.edit().putBoolean(PREF_SHOW_PREVIEW, false).apply();
         }
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
@@ -141,7 +140,7 @@ public class AppPrefs
     }
 
     public boolean getPrefShowPreview() {
-        return mSp.getBoolean(PREF_SHOW_PREVIEW, true);
+        return mSp.getBoolean(PREF_SHOW_PREVIEW, false);
     }
 
     public void setPrefShowPreview(boolean showPreview) {

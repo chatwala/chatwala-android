@@ -851,18 +851,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         AndroidUtils.isMainThread();
 
         if(getAppState() == AppState.ReadyStopped) {
-            if(shouldShowPreview) {
-                showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.recording_countdown, 10, 0, 1000);
-            }
-            else {
-                showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.recording_countdown, 10, 6, 1000);
-                bottomFrameMessageText.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.sending_countdown, 5, 0, 1000);
-                    }
-                }, 5000);
-            }
+            showRecordingCountdown(false);
         }
 
         setAppState(AppState.RecordingLimbo);
@@ -938,18 +927,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 {
                     setAppState(AppState.Recording);
                     //showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.now_record_reply);
-                    if(shouldShowPreview) {
-                        showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.recording_reply_countdown, 10, 0, 850);
-                    }
-                    else {
-                        showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.recording_reply_countdown, 10, 6, 850);
-                        bottomFrameMessageText.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.sending_reply_countdown, 5, 0, 850);
-                            }
-                        }, 4000);
-                    }
+                    showRecordingCountdown(true);
                 }
             });
             showMessage(topFrameMessage, topFrameMessageText, R.color.message_background_alpha, R.string.play_message_record_reaction);
@@ -1393,55 +1371,79 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         messageViewText.setVisibility(View.VISIBLE);
     }
 
-    private abstract class CountdownRunnable implements Runnable {
+    private abstract class RecordCountdownRunnable implements Runnable {
         private int countdownBegin;
         private int countdownEnd;
+        private boolean isReply;
+        private boolean showFirstMessage = true;
+        private String displayMessage;
 
-        public CountdownRunnable(int countdownBegin, int countdownEnd) {
+        public RecordCountdownRunnable(int countdownBegin, int countdownEnd, boolean isReply) {
             this.countdownBegin = countdownBegin;
             this.countdownEnd = countdownEnd;
+            this.isReply = isReply;
+
+            displayMessage = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+        }
+
+        public boolean shouldShowFirst() {
+            return showFirstMessage;
+        }
+
+        public void setShowFirstMessage(boolean showFirstMessage) {
+            this.showFirstMessage = showFirstMessage;
         }
 
         public int tick() {
-            return countdownBegin--;
+            return --countdownBegin;
         }
 
         public boolean isCountdownValid() {
-            return countdownBegin > countdownEnd - 1;
+            return countdownBegin > countdownEnd;
+        }
+
+        public String getDisplayMessage() {
+            if(!shouldShowPreview && isReply && countdownBegin == 5) {
+                displayMessage = getString(R.string.sending_reply_countdown);
+            }
+            return displayMessage;
         }
     }
 
-    private void
-    showMessageWithCountdown(View messageView, final TextView messageViewText, int colorRes,
-                             int messageRes, int countdownBegin, int countdownEnd, final int delay)
-    {
-        Animation animation = AnimationUtils.loadAnimation(this, R.anim.message_fade_in);
+    private void showRecordingCountdown(final boolean isReply) {
+        int colorRes = (isReply ? R.color.message_background_alpha : R.color.message_background_clear);
+        bottomFrameMessage.setBackgroundColor(getResources().getColor(colorRes));
+        bottomFrameMessageText.setText("");
+        bottomFrameMessage.setVisibility(View.VISIBLE);
+        bottomFrameMessageText.setVisibility(View.VISIBLE);
 
-        final String countdownMessage = getString(messageRes);
+        final int delay = (isReply ? 850 : 1000);
 
-        messageView.startAnimation(animation);
-        messageView.setBackgroundColor(getResources().getColor(colorRes));
-        messageView.setVisibility(View.VISIBLE);
-        messageViewText.setText(String.format(countdownMessage, countdownBegin--));
-        messageViewText.setVisibility(View.VISIBLE);
-
-        messageViewText.postDelayed(new CountdownRunnable(countdownBegin, countdownEnd) {
+        bottomFrameMessageText.postDelayed(new RecordCountdownRunnable(10, 0, isReply) {
             @Override
             public void run() {
-                if(messageViewText == null) { //if we lost the activity
+                if (bottomFrameMessageText == null) { //if we lost the activity
+                    bottomFrameMessageText.removeCallbacks(this);
                     return;
                 }
 
-                if(!isCountdownValid() ||
-                        (getAppState() != AppState.Recording && getAppState() != AppState.PlaybackRecording)) {
-                    messageViewText.removeCallbacks(this);
+                if (!isCountdownValid() ||
+                        (getAppState() != AppState.Recording && getAppState() != AppState.PlaybackRecording && getAppState() != AppState.RecordingLimbo)) {
+                    bottomFrameMessageText.removeCallbacks(this);
                 }
                 else {
-                    messageViewText.setText(String.format(countdownMessage, tick()));
-                    messageViewText.postDelayed(this, delay);
+                    if (shouldShowFirst()) {
+                        String message = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+                        bottomFrameMessageText.setText(message.replace("%d", " "));
+                        setShowFirstMessage(false);
+                    }
+                    else {
+                        bottomFrameMessageText.setText(String.format(getDisplayMessage(), tick()));
+                    }
+                    bottomFrameMessageText.postDelayed(this, delay);
                 }
             }
-        }, delay);
+        }, 100);
     }
 
     private void hideMessage(View messageView)
