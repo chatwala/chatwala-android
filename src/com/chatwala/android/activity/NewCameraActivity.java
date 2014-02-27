@@ -179,7 +179,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
                 }
                 else {
-                    triggerButtonAction(false);
+                    triggerButtonAction(true, true);
                 }
                 break;
             case Sharing:
@@ -251,14 +251,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction(false);
+                triggerButtonAction(true, true);
             }
         });
         videoViewContainer.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v)
             {
-                triggerButtonAction(false);
+                triggerButtonAction(false, true);
             }
         });
 
@@ -462,13 +462,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
-    private void triggerButtonAction(boolean handleOnlyStartAndPreviewState)
+    private void triggerButtonAction(boolean fromCenterButtonPress, boolean handleOnlyStartAndPreviewState)
     {
         AppState state = getAppState();
         Logger.logUserAction("Timer button pressed in state: " + state.name());
 
         //only handle two clickable state from bottom screen
-        if(handleOnlyStartAndPreviewState && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
+        if(!fromCenterButtonPress &&
+                handleOnlyStartAndPreviewState && (state != AppState.ReadyStopped && state!=AppState.PreviewReady)) {
             return;
         }
 
@@ -814,6 +815,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void startPlaybackRecording()
     {
         Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
 
         int recordingStartMillis = incomingMessage == null ? 0 : (int) Math.round(incomingMessage.getStartRecording() * 1000);
@@ -844,10 +847,24 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void startRecording()
     {
         Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
 
-        if (incomingMessage == null)
-            hideMessage(bottomFrameMessage);
+        if(getAppState() == AppState.ReadyStopped) {
+            if(shouldShowPreview) {
+                showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.recording_countdown, 10, 0, 1000);
+            }
+            else {
+                showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.recording_countdown, 10, 6, 1000);
+                bottomFrameMessageText.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.sending_countdown, 5, 0, 1000);
+                    }
+                }, 5000);
+            }
+        }
 
         setAppState(AppState.RecordingLimbo);
         if (messageVideoView != null)
@@ -858,12 +875,22 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void stopRecording(boolean buttonPress)
     {
         Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
-        setAppState(AppState.PreviewLoading, buttonPress);
+
         hideMessage(bottomFrameMessage);
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
-        cameraPreviewView.stopRecording();
+
+        if(buttonPress) {
+            setAppState(AppState.ReadyStopped, buttonPress);
+            abortRecording();
+        }
+        else {
+            setAppState(AppState.PreviewLoading, buttonPress);
+            cameraPreviewView.stopRecording();
+        }
     }
 
     private void previewSurfaceReady()
@@ -911,7 +938,19 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 public void onCompletion(MediaPlayer mp)
                 {
                     setAppState(AppState.Recording);
-                    showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.now_record_reply);
+                    //showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.now_record_reply);
+                    if(shouldShowPreview) {
+                        showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.recording_reply_countdown, 10, 0, 850);
+                    }
+                    else {
+                        showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.recording_reply_countdown, 10, 6, 850);
+                        bottomFrameMessageText.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                showMessageWithCountdown(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_alpha, R.string.sending_reply_countdown, 5, 0, 850);
+                            }
+                        }, 4000);
+                    }
                 }
             });
             showMessage(topFrameMessage, topFrameMessageText, R.color.message_background_alpha, R.string.play_message_record_reaction);
@@ -1061,7 +1100,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void showResultPreview(File videoFile)
     {
         Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
+
         this.recordPreviewFile = videoFile;
         tearDownSurface();
         new LoadAndShowVideoMessageTask().execute(recordPreviewFile);
@@ -1070,7 +1112,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void closeResultPreview()
     {
         Logger.i();
+
+        //TODO get rid of this
         AndroidUtils.isMainThread();
+
         recordPreviewFile = null;
         recordPreviewVideoView.setOnCompletionListener(null);
         recordPreviewVideoView.pause();
@@ -1347,6 +1392,57 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         messageView.setVisibility(View.VISIBLE);
         messageViewText.setText(messageRes);
         messageViewText.setVisibility(View.VISIBLE);
+    }
+
+    private abstract class CountdownRunnable implements Runnable {
+        private int countdownBegin;
+        private int countdownEnd;
+
+        public CountdownRunnable(int countdownBegin, int countdownEnd) {
+            this.countdownBegin = countdownBegin;
+            this.countdownEnd = countdownEnd;
+        }
+
+        public int tick() {
+            return countdownBegin--;
+        }
+
+        public boolean isCountdownValid() {
+            return countdownBegin > countdownEnd - 1;
+        }
+    }
+
+    private void
+    showMessageWithCountdown(View messageView, final TextView messageViewText, int colorRes,
+                             int messageRes, int countdownBegin, int countdownEnd, final int delay)
+    {
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.message_fade_in);
+
+        final String countdownMessage = getString(messageRes);
+
+        messageView.startAnimation(animation);
+        messageView.setBackgroundColor(getResources().getColor(colorRes));
+        messageView.setVisibility(View.VISIBLE);
+        messageViewText.setText(String.format(countdownMessage, countdownBegin--));
+        messageViewText.setVisibility(View.VISIBLE);
+
+        messageViewText.postDelayed(new CountdownRunnable(countdownBegin, countdownEnd) {
+            @Override
+            public void run() {
+                if(messageViewText == null) { //if we lost the activity
+                    return;
+                }
+
+                if(!isCountdownValid() ||
+                        (getAppState() != AppState.Recording && getAppState() != AppState.PlaybackRecording)) {
+                    messageViewText.removeCallbacks(this);
+                }
+                else {
+                    messageViewText.setText(String.format(countdownMessage, tick()));
+                    messageViewText.postDelayed(this, delay);
+                }
+            }
+        }, delay);
     }
 
     private void hideMessage(View messageView)
