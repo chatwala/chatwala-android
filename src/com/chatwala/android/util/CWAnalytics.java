@@ -28,21 +28,24 @@ public class CWAnalytics
     private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
     private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
     private static String ACTION_START_RECORDING = "START_RECORDING";
+    private static String ACTION_CANCEL_RECORDING = "CANCEL_RECORDING";
     private static String ACTION_COMPLETE_RECORDING = "COMPLETE_RECORDING";
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
+    private static String ACTION_START_PREVIEW = "START_PREVIEW";
     private static String ACTION_REDO_MESSAGE = "REDO_MESSAGE";
     private static String ACTION_SEND_EMAIL = "SEND_EMAIL";
     private static String ACTION_CANCEL_EMAIL = "CANCEL_EMAIL";
     private static String ACTION_START_REVIEW = "START_REVIEW";
-    private static String ACTION_STOP_REVIEW = "STOP_REVIEW";
+    private static String ACTION_CANCEL_REVIEW = "CANCEL_REVIEW";
     private static String ACTION_COMPLETE_REVIEW = "COMPLETE_REVIEW";
     private static String ACTION_START_REACTION = "START_REACTION";
-    private static String ACTION_STOP_REACTION = "STOP_REACTION";
+    private static String ACTION_CANCEL_REACTION = "CANCEL_REACTION";
     private static String ACTION_COMPLETE_REACTION = "COMPLETE_REACTION";
     private static String ACTION_START_REPLY = "START_REPLY";
+    private static String ACTION_CANCEL_REPLY = "CANCEL_REPLY";
     private static String ACTION_COMPLETE_REPLY = "COMPLETE_REPLY";
 
-    private static String LABEL_TAB_BUTTON = "TAP_BUTTON";
+    private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
     private static String LABEL_NO_TAP = "NO_TAP";
 
@@ -127,51 +130,79 @@ public class CWAnalytics
         sendEvent(ACTION_DRAWER_CLOSED, null, null);
     }
 
-    public static void sendStartReviewEvent()
+    public static void sendRecordingStartEvent(boolean buttonTapped)
     {
-        sendEvent(ACTION_START_REVIEW, null, null);
+        sendEvent(ACTION_START_RECORDING, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, new Long(actionIncrement));
+        incrementAction();
     }
 
-    public static void sendStopReviewEvent(Long duration)
-    {
-        sendEvent(ACTION_STOP_REVIEW, null, duration);
+    public static void sendRecordingCancelEvent(long duration) {
+        sendEvent(ACTION_CANCEL_RECORDING, LABEL_TAP_BUTTON, duration);
     }
 
-    public static void sendReviewCompleteEvent(Long duration)
+    public static void sendRecordingCompleteEvent(Long duration)
     {
-        sendEvent(ACTION_COMPLETE_REVIEW, null, duration);
+        sendEvent(ACTION_COMPLETE_RECORDING, LABEL_NO_TAP, duration);
     }
 
-    public static void sendStartReactionEvent()
+    public static void sendReactionStartEvent()
     {
-        sendEvent(ACTION_START_REACTION, null, null);
+        sendEvent(ACTION_START_REACTION, LABEL_NO_TAP, null);
     }
 
-    public static void sendStopReactionEvent(Long duration)
+    public static void sendReactionStartEvent(boolean buttonTapped)
     {
-        sendEvent(ACTION_STOP_REACTION, null, duration);
+        sendEvent(ACTION_START_REACTION, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendReactionCancelEvent(Long duration)
+    {
+        sendEvent(ACTION_CANCEL_REACTION, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendReactionCompleteEvent(Long duration)
     {
-        sendEvent(ACTION_COMPLETE_REACTION, null, duration);
+        sendEvent(ACTION_COMPLETE_REACTION, LABEL_NO_TAP, duration);
     }
 
-    public static void sendRecordingStartEvent(boolean buttonTapped)
+    public static void sendReplyStartEvent()
     {
-        sendEvent(isStarterMessage ? ACTION_START_RECORDING : ACTION_START_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, new Long(actionIncrement));
+        sendEvent(ACTION_START_REPLY, LABEL_NO_TAP, new Long(actionIncrement));
         incrementAction();
     }
 
-    public static void sendRecordingEndEvent(boolean buttonTapped, Long duration)
+    public static void sendReplyCancelEvent(long duration) {
+        sendEvent(ACTION_CANCEL_REPLY, LABEL_TAP_BUTTON, duration);
+    }
+
+    public static void sendReplyCompleteEvent(Long duration)
     {
-        sendEvent(isStarterMessage ? ACTION_COMPLETE_RECORDING : ACTION_COMPLETE_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, duration);
+        sendEvent(ACTION_COMPLETE_REPLY, LABEL_NO_TAP, duration);
+    }
+
+    public static void sendReviewStartEvent(boolean buttonTapped)
+    {
+        sendEvent(ACTION_START_REVIEW, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendReviewCancelEvent(Long duration)
+    {
+        sendEvent(ACTION_CANCEL_REVIEW, LABEL_TAP_BUTTON, duration);
+    }
+
+    public static void sendReviewCompleteEvent(Long duration)
+    {
+        sendEvent(ACTION_COMPLETE_REVIEW, LABEL_NO_TAP, duration);
     }
 
     public static void sendSendMessageEvent(Long previewNum)
     {
         sendEvent(ACTION_SEND_MESSAGE, null, new Long(numRedos));
         resetRedos();
+    }
+
+    public static void sendPreviewStartEvent() {
+        sendEvent(ACTION_START_PREVIEW, LABEL_NO_TAP, null);
     }
 
     public static void sendRedoMessageEvent(Long previewNum)
