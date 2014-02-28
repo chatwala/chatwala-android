@@ -10,6 +10,7 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.VideoUtils;
 import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
@@ -74,7 +75,7 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
         //Set at end, in case things got weird parsing
         messageMetadata = chatwalaMessage;
 
-        Log.d("###########", "POSTED MESSAGE HAS ID" + messageMetadata.getMessageId());
+        Logger.i("Posted message has ID " + messageMetadata.getMessageId());
     }
 
     @Override

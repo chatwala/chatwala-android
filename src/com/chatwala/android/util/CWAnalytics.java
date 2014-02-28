@@ -182,10 +182,13 @@ public class CWAnalytics
 
     private static void sendEvent(String action, String label, Long value)
     {
-        Log.d("ANALYTICS #############", "trackingId=" + EnvironmentVariables.get().getGoogleAnalyticsID());
         String labelString = label != null ? label : "none";
         String valueString = value != null ? value.toString() : "none";
-        Log.d("ANALYTICS #############", "CATEGORY: " + categoryString + " ACTION: " + action + " LABEL: " + labelString + " VALUE: " + valueString);
+        Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
+                "\n\tCATEGORY:\t" + categoryString +
+                "\n\tACTION:\t" + action +
+                "\n\tLABEL:\t" + labelString +
+                "\n\tVALUE:\t" + valueString);
         tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
     }
 }

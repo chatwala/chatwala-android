@@ -47,3 +47,6 @@ Thumbs.db
 
 # backup files
 *.bak
+
+# Craslytics
+res/values/com_crashlytics_export_strings.xml

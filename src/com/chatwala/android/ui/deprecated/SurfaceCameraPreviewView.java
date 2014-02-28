@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.*;
 import com.chatwala.android.R;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 
 import java.io.File;
@@ -70,7 +71,7 @@ public class SurfaceCameraPreviewView extends SurfaceView implements SurfaceHold
         }
         catch (Exception e)
         {
-            Log.d("##################", "Error opening camera: " + e.getMessage());
+            Logger.e("Error opening camera", e);
             camera.release();
         }
     }
