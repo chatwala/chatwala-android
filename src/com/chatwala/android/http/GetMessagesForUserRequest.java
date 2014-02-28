@@ -12,6 +12,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.chatwala.android.superbus.GetUserProfilePictureCommand;
+import com.chatwala.android.util.Logger;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
@@ -51,11 +52,11 @@ public class GetMessagesForUserRequest extends BaseGetRequest
 
         messageArray = new ArrayList<ChatwalaMessage>();
 
-        Log.d("#######", "Parsing messages, total: " + messagesJsonArray.length());
+        Logger.i("About to parse " + messagesJsonArray.length() + " message(s)");
         for(int i=0; i < messagesJsonArray.length(); i++)
         {
             JSONObject messageJson = messagesJsonArray.getJSONObject(i);
-            Log.d("#######", "Message:" + messageJson.toString());
+            Logger.i("Message: " + messageJson.toString());
             ChatwalaMessage currentMessage = new ChatwalaMessage();
             currentMessage.setMessageId(messageJson.getString("message_id"));
             currentMessage.setRecipientId(messageJson.getString("recipient_id"));

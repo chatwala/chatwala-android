@@ -28,6 +28,7 @@ public class AppPrefs
     public static final String PREF_GCM_APP_VERSION = "GCM_APP_VERSION";
     public static final String PREF_IMAGE_REVIEWED = "IMAGE_REVIEWED";
     public static final String PREF_SELECTED_EMAIL = "PREF_SELECTED_EMAIL";
+    public static final String PREF_SHOW_PREVIEW = "PREF_SHOW_PREVIEW";
     public static final String PREF_BIT_DEPTH = "PREF_BIT_DEPTH";
     public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
     public static final String PREF_SHARE_COUNT = "PREF_SHARE_COUNT";
@@ -136,6 +137,14 @@ public class AppPrefs
     public void setPrefSelectedEmail(String email)
     {
         mSp.edit().putString(PREF_SELECTED_EMAIL, email).apply();
+    }
+
+    public boolean getPrefShowPreview() {
+        return mSp.getBoolean(PREF_SHOW_PREVIEW, false);
+    }
+
+    public void setPrefShowPreview(boolean showPreview) {
+        mSp.edit().putBoolean(PREF_SHOW_PREVIEW, showPreview).apply();
     }
 
     public int getPrefBitDepth()

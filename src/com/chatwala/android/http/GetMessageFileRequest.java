@@ -15,10 +15,7 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.superbus.GetUserProfilePictureCommand;
-import com.chatwala.android.util.CWLog;
-import com.chatwala.android.util.MessageDataStore;
-import com.chatwala.android.util.ShareUtils;
-import com.chatwala.android.util.ZipUtil;
+import com.chatwala.android.util.*;
 import com.squareup.picasso.Picasso;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
@@ -141,7 +138,7 @@ public class GetMessageFileRequest extends BaseGetRequest
                 throw new RuntimeException(e);
             }
 
-            Log.d("###########", "New message metadata: " + metadataJson.toString());
+            Logger.i("New message metadata " + metadataJson.toString());
             chatwalaMessage.saveMetadata(databaseHelper);
         }
         else

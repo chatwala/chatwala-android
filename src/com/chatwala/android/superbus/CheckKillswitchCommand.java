@@ -8,6 +8,7 @@ import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.http.BaseHttpRequest;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 
 import java.io.*;
@@ -61,11 +62,11 @@ public class CheckKillswitchCommand extends SqliteCommand
         }
         catch (MalformedURLException e)
         {
-            e.printStackTrace();
+            Logger.e("Error getting killswitch command", e);
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Logger.e("Error getting killswitch command", e);
         }
     }
 

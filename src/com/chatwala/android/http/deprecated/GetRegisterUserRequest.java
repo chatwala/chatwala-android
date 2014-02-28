@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.http.BaseGetRequest;
+import com.chatwala.android.util.Logger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +40,7 @@ public class GetRegisterUserRequest extends BaseGetRequest
 //        JSONObject bodyAsJson = new JSONObject(response.getBodyAsString());
 //        String userId = bodyAsJson.getString("user_id");
 
-        Log.d("########### Register User Response: ", response.getBodyAsString());
-        Log.d("##### USERID", userId);
+        Logger.i("Register user (ID = " + userId + " ) response - " + response.getBodyAsString());
         AppPrefs.getInstance(context).setUserId(userId);
     }
 

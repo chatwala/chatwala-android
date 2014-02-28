@@ -7,6 +7,7 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
 import com.chatwala.android.util.VideoUtils;
@@ -62,7 +63,7 @@ public class PutUserProfilePictureRequest extends BaseSasPutRequest
         }
         else
         {
-            Log.d("#######", "Getting the put data for " + filePath);
+            Logger.i("Getting the PUT data for " + filePath);
             Bitmap frame = VideoUtils.createVideoFrame(filePath, 1);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             frame.compress(Bitmap.CompressFormat.PNG, 100, stream);

@@ -22,8 +22,7 @@
                 android:id="@+id/camera_preview"
                 android:layout_width="320dp"
                 android:layout_height="480dp"
-                android:layout_marginTop="-100dp"
-                android:keepScreenOn="true"/>
+                android:layout_marginTop="-100dp"/>
     </FrameLayout>
     <Button
             android:id="@+id/camera_button"

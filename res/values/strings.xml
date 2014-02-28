@@ -9,6 +9,11 @@
     <string name="basic_instructions_old">Tap to record and send a message. Your friend\'s reaction will appear here when they reply.</string>
     <string name="basic_instructions_141"></string>
     <string name="basic_instructions">Tap to record a message.\nSee your friends react here.</string>
+
+    <string name="recording_countdown">Recording...%d</string>
+    <string name="recording_reply_countdown">Recording your reply...%d</string>
+    <string name="sending_reply_countdown">Sending reply in...%d</string>
+
     <string name="send_instructions">Tap to send this message.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -19,6 +24,7 @@
 
     <string name="send_sms">Send SMS</string>
     <string name="settings">Settings</string>
+    <string name="message_preview">Message Preview: </string>
     <string name="delivery_method">Delivery method: </string>
     <string name="refresh_interval">Refresh Interval: </string>
     <string name="max_disk_usage">Max Disk Usage: </string>
@@ -40,4 +46,11 @@
     <string name="sorry_message_text">Sorry about that. We want to improve. Send us a message?</string>
 
     <string name="killswitch">KILLSWITCH</string>
+
+    <!--DEV-->
+   <!-- <string name="facebookAppId">1472279299660540</string>-->
+    <!--QA-->
+    <!--<string name="facebookAppId">639218822814074</string>-->
+    <!--PROD-->
+    <string name="facebookAppId">213176338890949</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.util.Logger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,8 +67,7 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
             urlConnection.getOutputStream().write(bytesToPut);
             urlConnection.getOutputStream().close();
 
-            //Returns 201
-            Log.d("############", "PUT resp code: " + urlConnection.getResponseCode());
+            Logger.i("PUT resp code: " + urlConnection.getResponseCode());
 
             if(urlConnection.getResponseCode() != 201)
             {
@@ -86,7 +86,7 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
 
     public static byte[] convertMessageToBytes(String localMessageFileUrl)
     {
-        Log.d("############ Putting local message", localMessageFileUrl);
+        Logger.i("Putting local message " + localMessageFileUrl);
         File walaFile = new File(localMessageFileUrl);
 
         FileInputStream fileInputStream;
@@ -98,10 +98,6 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
             fileInputStream = new FileInputStream(walaFile);
             fileInputStream.read(bFile);
             fileInputStream.close();
-
-            for (int i = 0; i < bFile.length; i++) {
-                System.out.print((char)bFile[i]);
-            }
         }
         catch (FileNotFoundException e)
         {

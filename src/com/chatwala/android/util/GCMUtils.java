@@ -24,14 +24,12 @@ public class GCMUtils
         {
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode))
             {
-                Log.d("############", "Play services is present but may be supported.");
-                CWLog.b(GCMUtils.class, "Play services is not present but may be supported.");
+                Logger.w("Play services is not present but may be supported");
                 //GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
             }
             else
             {
-                Log.d("############", "Play services is not supported.");
-                CWLog.b(GCMUtils.class, "Play services is not supported.");
+                Logger.e("Play services is not present");
             }
             return false;
         }
