@@ -119,6 +119,26 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private boolean closePreviewOnReturn = false;
 
+    private static enum MessageOrigin {
+        INITIATOR,
+        LINK,
+        INBOX
+    }
+
+    private MessageOrigin getCurrentMessageOrigin() {
+        if(incomingMessage != null) {
+            if("unknown_recipient".equals(incomingMessage.getRecipientId())) {
+                return MessageOrigin.LINK;
+            }
+            else {
+                return MessageOrigin.INBOX;
+            }
+        }
+        else {
+            return MessageOrigin.INITIATOR;
+        }
+    }
+
     public synchronized AppState getAppState()
     {
         return appState;
@@ -156,19 +176,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case PlaybackOnly:
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
-                CWAnalytics.sendStartReviewEvent();
                 setTimerKnobForRecording();
                 break;
             case PlaybackRecording:
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
-                CWAnalytics.sendStartReactionEvent();
                 setTimerKnobForRecording();
                 break;
             case Recording:
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
-                CWAnalytics.sendRecordingStartEvent(true);
                 setTimerKnobForRecording();
                 break;
             case PreviewReady:
@@ -177,6 +194,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                     timerKnob.setVisibility(View.VISIBLE);
                     timerKnob.setImageResource(R.drawable.ic_action_send_ios);
                     showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+                    CWAnalytics.sendPreviewStartEvent();
                 }
                 else {
                     triggerButtonAction(true);
@@ -197,24 +215,51 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         analyticsTimerStart = System.currentTimeMillis();
     }
 
-    private void analyticsStateEnd(AppState appState, boolean buttonPress)
+    private void analyticsStateEnd(AppState newAppState, boolean buttonPress)
     {
-        if (appState != AppState.Transition)
+        long duration = analyticsDuration();
+        MessageOrigin origin = getCurrentMessageOrigin();
+        switch (this.appState)
         {
-            long duration = analyticsDuration();
-            switch (this.appState)
-            {
-                case PlaybackOnly:
-                    CWAnalytics.sendReviewCompleteEvent(duration);
-                    break;
-                case PlaybackRecording:
+            case PlaybackOnly:
+                if(origin == MessageOrigin.INBOX) {
+                    if(newAppState == AppState.Transition) {
+                        CWAnalytics.sendReviewCancelEvent(duration);
+                    }
+                    else {
+                        CWAnalytics.sendReviewCompleteEvent(duration);
+                        CWAnalytics.sendReactionStartEvent();
+                    }
+                }
+                break;
+            case PlaybackRecording:
+                if(newAppState == AppState.Transition) {
+                    CWAnalytics.sendReactionCancelEvent(duration);
+                }
+                else {
                     CWAnalytics.sendReactionCompleteEvent(duration);
-                    break;
-                case Recording:
-                    CWAnalytics.sendRecordingEndEvent(buttonPress, duration);
-                    break;
+                    CWAnalytics.sendReplyStartEvent();
+                }
+                break;
+            case Recording:
+                if(origin == MessageOrigin.INITIATOR) {
+                    if(newAppState == AppState.ReadyStopped) {
+                        CWAnalytics.sendRecordingCancelEvent(duration);
+                    }
+                    else {
+                        CWAnalytics.sendRecordingCompleteEvent(duration);
+                    }
+                }
+                else {
+                    if(newAppState == AppState.ReadyStopped) {
+                        CWAnalytics.sendReplyCancelEvent(duration);
+                    }
+                    else {
+                        CWAnalytics.sendReplyCompleteEvent(duration);
+                    }
+                }
 
-            }
+                break;
         }
     }
 
@@ -483,20 +528,28 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         if (state == AppState.ReadyStopped)
         {
+            MessageOrigin origin = getCurrentMessageOrigin();
+            if(origin == MessageOrigin.INITIATOR) {
+                CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress);
+            }
+            else if(origin == MessageOrigin.LINK) {
+                CWAnalytics.sendReactionStartEvent(fromCenterButtonPress);
+            }
+            else if(origin == MessageOrigin.INBOX) {
+                CWAnalytics.sendReviewStartEvent(fromCenterButtonPress);
+            }
             startPlaybackRecording();
             return;
         }
 
         if (state == AppState.PlaybackOnly)
         {
-            CWAnalytics.sendStopReviewEvent(analyticsDuration());
             abortBeforeRecording();
             return;
         }
 
         if (state == AppState.PlaybackRecording)
         {
-            CWAnalytics.sendStopReactionEvent(analyticsDuration());
             abortRecording();
             return;
         }
