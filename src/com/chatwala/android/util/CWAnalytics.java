@@ -28,7 +28,7 @@ public class CWAnalytics
     private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
     private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
     private static String ACTION_START_RECORDING = "START_RECORDING";
-    private static String ACTION_CANCEL_RECORDING = "CANCEL_RECORDING";
+    private static String ACTION_STOP_RECORDING = "STOP_RECORDING";
     private static String ACTION_COMPLETE_RECORDING = "COMPLETE_RECORDING";
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
     private static String ACTION_START_PREVIEW = "START_PREVIEW";
@@ -36,13 +36,13 @@ public class CWAnalytics
     private static String ACTION_SEND_EMAIL = "SEND_EMAIL";
     private static String ACTION_CANCEL_EMAIL = "CANCEL_EMAIL";
     private static String ACTION_START_REVIEW = "START_REVIEW";
-    private static String ACTION_CANCEL_REVIEW = "CANCEL_REVIEW";
+    private static String ACTION_STOP_REVIEW = "STOP_REVIEW";
     private static String ACTION_COMPLETE_REVIEW = "COMPLETE_REVIEW";
     private static String ACTION_START_REACTION = "START_REACTION";
-    private static String ACTION_CANCEL_REACTION = "CANCEL_REACTION";
+    private static String ACTION_STOP_REACTION = "STOP_REACTION";
     private static String ACTION_COMPLETE_REACTION = "COMPLETE_REACTION";
     private static String ACTION_START_REPLY = "START_REPLY";
-    private static String ACTION_CANCEL_REPLY = "CANCEL_REPLY";
+    private static String ACTION_STOP_REPLY = "STOP_REPLY";
     private static String ACTION_COMPLETE_REPLY = "COMPLETE_REPLY";
 
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
@@ -137,7 +137,7 @@ public class CWAnalytics
     }
 
     public static void sendRecordingCancelEvent(long duration) {
-        sendEvent(ACTION_CANCEL_RECORDING, LABEL_TAP_BUTTON, duration);
+        sendEvent(ACTION_STOP_RECORDING, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendRecordingCompleteEvent(Long duration)
@@ -157,7 +157,7 @@ public class CWAnalytics
 
     public static void sendReactionCancelEvent(Long duration)
     {
-        sendEvent(ACTION_CANCEL_REACTION, LABEL_TAP_BUTTON, duration);
+        sendEvent(ACTION_STOP_REACTION, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendReactionCompleteEvent(Long duration)
@@ -172,7 +172,7 @@ public class CWAnalytics
     }
 
     public static void sendReplyCancelEvent(long duration) {
-        sendEvent(ACTION_CANCEL_REPLY, LABEL_TAP_BUTTON, duration);
+        sendEvent(ACTION_STOP_REPLY, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendReplyCompleteEvent(Long duration)
@@ -187,7 +187,7 @@ public class CWAnalytics
 
     public static void sendReviewCancelEvent(Long duration)
     {
-        sendEvent(ACTION_CANCEL_REVIEW, LABEL_TAP_BUTTON, duration);
+        sendEvent(ACTION_STOP_REVIEW, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendReviewCompleteEvent(Long duration)
