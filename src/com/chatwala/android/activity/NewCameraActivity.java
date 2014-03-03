@@ -224,7 +224,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case PlaybackOnly:
                 if(origin == MessageOrigin.INBOX) {
                     if(newAppState == AppState.Transition) {
-                        CWAnalytics.sendReviewCancelEvent(duration);
+                        CWAnalytics.sendReviewStopEvent(duration);
+                    }
+                    else if(newAppState == AppState.Off) {
+                        CWAnalytics.sendBackgroundWhileReviewEvent(duration);
                     }
                     else {
                         CWAnalytics.sendReviewCompleteEvent(duration);
@@ -234,7 +237,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 break;
             case PlaybackRecording:
                 if(newAppState == AppState.Transition) {
-                    CWAnalytics.sendReactionCancelEvent(duration);
+                    CWAnalytics.sendReactionStopEvent(duration);
+                }
+                else if(newAppState == AppState.Off) {
+                    CWAnalytics.sendBackgroundWhileReactionEvent(duration);
                 }
                 else {
                     CWAnalytics.sendReactionCompleteEvent(duration);
@@ -244,7 +250,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case Recording:
                 if(origin == MessageOrigin.INITIATOR) {
                     if(newAppState == AppState.ReadyStopped) {
-                        CWAnalytics.sendRecordingCancelEvent(duration);
+                        CWAnalytics.sendRecordingStopEvent(duration);
+                    }
+                    else if(newAppState == AppState.Off) {
+                        CWAnalytics.sendBackgroundWhileRecordingEvent(duration);
                     }
                     else {
                         CWAnalytics.sendRecordingCompleteEvent(duration);
@@ -252,7 +261,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 }
                 else {
                     if(newAppState == AppState.ReadyStopped) {
-                        CWAnalytics.sendReplyCancelEvent(duration);
+                        CWAnalytics.sendReplyStopEvent(duration);
+                    }
+                    else if(newAppState == AppState.Off) {
+                        CWAnalytics.sendBackgroundWhileRecordingEvent(duration);
                     }
                     else {
                         CWAnalytics.sendReplyCompleteEvent(duration);
