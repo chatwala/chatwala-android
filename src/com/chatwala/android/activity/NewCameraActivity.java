@@ -1,5 +1,6 @@
 package com.chatwala.android.activity;
 
+import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -191,10 +192,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case PreviewReady:
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 if(shouldShowPreview) {
-                    timerKnob.setVisibility(View.VISIBLE);
-                    timerKnob.setImageResource(R.drawable.ic_action_send_ios);
-                    showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
-                    CWAnalytics.sendPreviewStartEvent();
+                    startPreview();
                 }
                 else {
                     triggerButtonAction(true);
@@ -208,6 +206,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 timerKnob.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void startPreview() {
+        timerKnob.setVisibility(View.VISIBLE);
+        timerKnob.setImageResource(R.drawable.ic_action_send_ios);
+        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+        CWAnalytics.sendPreviewStartEvent();
     }
 
     private void analyticsTimerReset()
@@ -936,15 +941,36 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
 
-        if(buttonPress) {
-            setAppState(AppState.ReadyStopped, buttonPress);
-            abortRecording();
+        if(buttonPress && getCurrentMessageOrigin() != MessageOrigin.INITIATOR) {
+            cameraPreviewView.stopRecording();
+            showSendOrCancelAlert();
         }
         else {
             setAppState(AppState.PreviewLoading, buttonPress);
             cameraPreviewView.stopRecording();
         }
     }
+
+    private void showSendOrCancelAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.send_or_cancel_title)
+                .setCancelable(false)
+                .setPositiveButton(R.string.send_or_cancel_send, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        setAppState(AppState.PreviewLoading, true);
+                    }
+                })
+                .setNegativeButton(R.string.send_or_cancel_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        setAppState(AppState.ReadyStopped, true);
+                        tearDownSurface();
+                        createSurface();
+                    }
+                }).create().show();
+    }
+
 
     private void previewSurfaceReady()
     {
@@ -1035,6 +1061,19 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             try
             {
+                while(getAppState() != AppState.PreviewLoading) {
+                    try {
+                        Thread.sleep(500);
+                        if(getAppState() == AppState.ReadyStopped || getAppState() == AppState.LoadingFileCamera) {
+                            params[0].delete();
+                            cancel(true);
+                            return null;
+                        }
+                    }
+                    catch(Exception e) {
+                        return null;
+                    }
+                }
                 return VideoUtils.findMetadata(params[0]);
             }
             catch (IOException e)
