@@ -1,25 +1,53 @@
 package com.chatwala.android.activity;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.telephony.SmsManager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.view.ViewGroup;
+import android.widget.*;
 import com.chatwala.android.R;
 
-public class SmsActivity extends Activity {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+public class SmsActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String SMS_MESSAGE_EXTRA = "sms_message";
 
-    private static final int CONTACTS_REQUEST_CODE = 0;
+    private static final int CONTACTS_LOADER_CODE = 0;
 
-    private EditText smsMessageBox;
-    private EditText contactsBox;
+    private String smsMessage;
+
+    private EditText contactsFilter;
+    private ListView contactsListView;
+    private ListView recipientsListView;
+
+    private ContactEntryAdapter contactsAdapter;
+    private ContactEntryAdapter recipientsAdapter;
+
+    private String[] contactsProjection = new String[] {ContactsContract.CommonDataKinds.Phone._ID,
+                                                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                                                        ContactsContract.CommonDataKinds.Phone.NUMBER};
+
+    private Toast noContactsToast;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -31,90 +59,117 @@ public class SmsActivity extends Activity {
             return;
         }
 
-        String message = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
-        smsMessageBox = (EditText) findViewById(R.id.message_text);
-        smsMessageBox.setText(message);
+        smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
 
-        contactsBox = (EditText) findViewById(R.id.add_contacts_box);
-
-        findViewById(R.id.add_contact_button).setOnClickListener(new View.OnClickListener() {
+        contactsFilter = (EditText) findViewById(R.id.contacts_filter);
+        contactsFilter.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-                startActivityForResult(intent, CONTACTS_REQUEST_CODE);
+            public void afterTextChanged(final Editable s) {
+                contactsFilter.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        contactsAdapter.getFilter().filter(s.toString());
+                    }
+                }, 300);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
+        });
+
+        contactsListView = (ListView) findViewById(R.id.contacts_list);
+
+        recipientsListView = (ListView) findViewById(R.id.recipients_list);
+        recipientsListView.setEmptyView(findViewById(R.id.recipients_empty));
+
+        contactsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ContactEntry entry = contactsAdapter.getItem(i);
+                if(contactsAdapter.remove(entry)) {
+                    recipientsAdapter.add(entry);
+                }
+            }
+        });
+
+        recipientsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ContactEntry entry = recipientsAdapter.getItem(i);
+                if(recipientsAdapter.remove(entry)) {
+                    contactsAdapter.add(entry);
+                }
             }
         });
 
         findViewById(R.id.send_sms_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendSms();
+                if(recipientsAdapter.getCount() <= 0) {
+                    if(noContactsToast != null) {
+                        noContactsToast.cancel();
+                    }
+                    noContactsToast = Toast.makeText(SmsActivity.this, "You must enter recipients", Toast.LENGTH_SHORT);
+                    noContactsToast.show();
+                }
+                else {
+                    new SendSmsAsyncTask().execute(new Void[] {});
+                }
             }
         });
+
+        getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, this);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode == RESULT_OK) {
-            if(requestCode == CONTACTS_REQUEST_CODE) {
-                Uri uri = data.getData();
-
-                if(uri != null) {
-                    Cursor c = null;
-                    String nameCol = ContactsContract.Contacts.DISPLAY_NAME;
-                    String numberCol = ContactsContract.CommonDataKinds.Phone.NUMBER;
-                    try {
-                        c = getContentResolver().query(uri, new String[] {nameCol, numberCol},
-                                null, null, null);
-                        if(c != null && c.moveToFirst()) {
-                            int nameIndex = c.getColumnIndex(nameCol);
-                            int numberIndex = c.getColumnIndex(numberCol);
-                            if(numberIndex != -1) {
-                                String name =  null;
-                                try {
-                                    name = c.getString(nameIndex);
-                                }
-                                catch(Exception ignore) {}
-                                String number = c.getString(numberIndex);
-
-                                if(!contactsBox.getText().toString().trim().isEmpty()) {
-                                    contactsBox.append("; ");
-                                }
-
-                                if(name != null) {
-                                    contactsBox.append("<" + name + ">");
-                                }
-
-                                contactsBox.append(number);
-                            }
-                        }
-                    }
-                    finally {
-                        if(c != null && !c.isClosed()) {
-                            c.close();
-                        }
-                    }
-                }
-            }
+    public Loader<Cursor> onCreateLoader(int loaderCode, Bundle bundle) {
+        if(loaderCode == CONTACTS_LOADER_CODE) {
+            return new CursorLoader(SmsActivity.this,
+                                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                    contactsProjection,
+                                    null,
+                                    null,
+                                    ContactsContract.CommonDataKinds.Phone.SORT_KEY_PRIMARY);
+        }
+        else {
+            return null;
         }
     }
 
-    private void sendSms() {
-        String[] addresses = contactsBox.getText().toString().split(";");
-        new SendSmsAsyncTask().execute(addresses);
-    }
-
-    private int getIndexOfLastBracket(String s) {
-        int bracketIndex = 0;
-        for(int i = 0; i < s.length(); i++) {
-            if(s.charAt(i) == '>') {
-                bracketIndex = i;
-            }
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        if(!cursor.moveToFirst()) {
+            return;
         }
-        return bracketIndex;
+
+        List<ContactEntry> contacts = new ArrayList<ContactEntry>(cursor.getCount());
+
+        do {
+            try {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                contacts.add(new ContactEntry(name, value));
+            }
+            catch(Exception e) {
+                continue;
+            }
+        } while(cursor.moveToNext());
+
+        contactsAdapter = new ContactEntryAdapter(contacts, true);
+        contactsListView.setAdapter(contactsAdapter);
+
+        recipientsAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), false);
+        recipientsListView.setAdapter(recipientsAdapter);
     }
 
-    private class SendSmsAsyncTask extends AsyncTask<String, Void, Void> {
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        //do nothing
+    }
+
+    private class SendSmsAsyncTask extends AsyncTask<Void, Void, Void> {
         ProgressDialog pd;
 
         @Override
@@ -124,13 +179,9 @@ public class SmsActivity extends Activity {
         }
 
         @Override
-        protected Void doInBackground(String... addresses) {
-            for(String address : addresses) {
-                int lastBracketIndex = getIndexOfLastBracket(address);
-                if(lastBracketIndex > 0) {
-                    address = address.substring(getIndexOfLastBracket(address) + 1).trim();
-                }
-                SmsManager.getDefault().sendTextMessage(address, null, smsMessageBox.getText().toString(), null, null);
+        protected Void doInBackground(Void... v) {
+            for(int i = 0; i < recipientsAdapter.getCount(); i++) {
+                SmsManager.getDefault().sendTextMessage(recipientsAdapter.getItem(i).getValue(), null, smsMessage, null, null);
             }
 
             return null;
@@ -146,5 +197,181 @@ public class SmsActivity extends Activity {
 
             finish();
         }
+    }
+
+    private class ContactEntry implements Comparable<ContactEntry> {
+        private String name;
+        private String value;
+
+        public ContactEntry(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public boolean equals(ContactEntry other) {
+            return compareTo(other) == 0;
+        }
+
+        public int hashCode() {
+            return (getName() + getValue()).hashCode();
+        }
+
+        @Override
+        public int compareTo(ContactEntry other) {
+            if(other == null) {
+                return -1;
+            }
+
+            int compare = getName().compareToIgnoreCase(other.getName());
+            if(compare == 0) {
+                return getValue().compareToIgnoreCase(other.getValue());
+            }
+            else {
+                return compare;
+            }
+        }
+    }
+
+    private class ContactEntryAdapter extends BaseAdapter implements Filterable {
+        private List<ContactEntry> contacts;
+        private List<ContactEntry> filteredContacts;
+        private boolean useFiltered;
+        private LayoutInflater inflater;
+
+        public ContactEntryAdapter(List<ContactEntry> contacts, boolean useFiltered) {
+            this.contacts = contacts;
+            Collections.sort(this.contacts);
+            filteredContacts = new ArrayList<ContactEntry>(this.contacts);
+            this.useFiltered = useFiltered;
+            inflater = LayoutInflater.from(SmsActivity.this);
+        }
+
+        public List<ContactEntry> getList() {
+            if(useFiltered) {
+                return filteredContacts;
+            }
+            else {
+                return contacts;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return getList().size();
+        }
+
+        @Override
+        public ContactEntry getItem(int i) {
+            return getList().get(i);
+        }
+
+        public boolean remove(ContactEntry entry) {
+            int index = Collections.binarySearch(getList(), entry);
+            if(index < 0) {
+                return false;
+            }
+            else {
+                getList().remove(index);
+                notifyDataSetChanged();
+                return true;
+            }
+        }
+
+        public void add(ContactEntry entry) {
+            int index = Collections.binarySearch(getList(), entry);
+            if(index < 0) {
+                index = ~index;
+                getList().add(index, entry);
+                notifyDataSetChanged();
+            }
+        }
+
+        public boolean contains(ContactEntry entry) {
+            return Collections.binarySearch(getList(), entry) >= 0;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getView(int i, View convertView, ViewGroup parent) {
+            final ContactViewHolder holder;
+
+            if(inflater == null) {
+                inflater = LayoutInflater.from(SmsActivity.this);
+            }
+
+            if(convertView == null) {
+                convertView = inflater.inflate(R.layout.layout_contact, null);
+
+                holder = new ContactViewHolder();
+                holder.name = (TextView) convertView.findViewById((R.id.contact_item_name));
+                holder.value = (TextView) convertView.findViewById((R.id.contact_item_number));
+            }
+            else {
+                holder = (ContactViewHolder) convertView.getTag();
+            }
+
+            ContactEntry entry = getItem(i);
+            holder.name.setText(entry.getName());
+            holder.value.setText(entry.getValue());
+
+            convertView.setTag(holder);
+
+            return convertView;
+        }
+
+        @Override
+        public Filter getFilter() {
+            return new Filter() {
+                @Override
+                protected FilterResults performFiltering(CharSequence filterCs) {
+                    FilterResults results = new FilterResults();
+                    String filter = filterCs.toString().toLowerCase(Locale.ENGLISH);
+
+                    if(filter == null || filter.trim().isEmpty()) {
+                        filteredContacts = new ArrayList<ContactEntry>(contacts);
+                    }
+                    else {
+                        filteredContacts = new ArrayList<ContactEntry>();
+                        for(ContactEntry entry : contacts) {
+                            if(entry.getName().toLowerCase(Locale.ENGLISH).startsWith(filter) ||
+                                    entry.getValue().toLowerCase(Locale.ENGLISH).startsWith(filter)) {
+                                filteredContacts.add(entry);
+                            }
+                        }
+                    }
+                    return results;
+                }
+
+                @Override
+                protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                    notifyDataSetChanged();
+                }
+            };
+        }
+    }
+
+    private static class ContactViewHolder {
+        TextView name;
+        TextView value;
     }
 }
