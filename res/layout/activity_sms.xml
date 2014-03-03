@@ -5,41 +5,60 @@
         android:layout_height="fill_parent"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout
-            android:id="@+id/contacts_recipients_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:orientation="horizontal">
-
-    </LinearLayout>
-
-    <Button
-            android:id="@+id/send_sms_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send"
-            android:layout_below="@id/contacts_recipients_container"
-            android:layout_alignParentRight="true"/>
-
     <EditText
             android:id="@+id/contacts_filter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="Filter Contacts"
-            android:layout_alignBottom="@+id/send_sms_button"
             android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/send_sms_button"
+            android:layout_alignParentTop="true"
             android:inputType="text"/>
 
-    <ListView
-            android:id="@+id/contacts_list"
+    <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/contacts_filter"
             android:layout_marginTop="5dp">
 
-    </ListView>
+        <ListView
+                android:id="@+id/contacts_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_above="@+id/send_sms_button">
 
+        </ListView>
+
+        <Button
+                android:id="@+id/send_sms_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Send"/>
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/send_sms_button"
+                android:layout_alignParentBottom="true">
+
+            <ListView
+                    android:id="@+id/recipients_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+            </ListView>
+
+            <TextView
+                    android:id="@+id/recipients_empty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Add contacts from above"
+                    android:visibility="gone"/>
+
+        </FrameLayout>
+
+    </RelativeLayout>
 </RelativeLayout>
