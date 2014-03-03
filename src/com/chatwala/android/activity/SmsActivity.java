@@ -282,28 +282,37 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         }
 
         public boolean remove(ContactEntry entry) {
-            int index = Collections.binarySearch(getList(), entry);
+            int index = Collections.binarySearch(contacts, entry);
             if(index < 0) {
                 return false;
             }
             else {
-                getList().remove(index);
+                contacts.remove(index);
+                index = Collections.binarySearch(filteredContacts, entry);
+                if(index >= 0) {
+                    filteredContacts.remove(index);
+                }
                 notifyDataSetChanged();
                 return true;
             }
         }
 
         public void add(ContactEntry entry) {
-            int index = Collections.binarySearch(getList(), entry);
+            int index = Collections.binarySearch(contacts, entry);
             if(index < 0) {
                 index = ~index;
-                getList().add(index, entry);
+                contacts.add(index, entry);
+                index = Collections.binarySearch(filteredContacts, entry);
+                if(index < 0) {
+                    index = ~index;
+                    filteredContacts.add(index, entry);
+                }
                 notifyDataSetChanged();
             }
         }
 
         public boolean contains(ContactEntry entry) {
-            return Collections.binarySearch(getList(), entry) >= 0;
+            return Collections.binarySearch(contacts, entry) >= 0;
         }
 
         @Override
