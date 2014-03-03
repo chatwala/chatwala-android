@@ -46,7 +46,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         void recordingDone(File videoFile);
     }
 
-    public CameraPreviewView(Context context, CameraPreviewCallback callback)
+    public CameraPreviewView(Context context, CameraPreviewCallback callback) throws Exception
     {
         super(context);
         initSurface();
@@ -54,12 +54,12 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         this.callback = callback;
     }
 
-    public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback)
+    public CameraPreviewView(Context context, AttributeSet attrs, CameraPreviewCallback callback) throws Exception
     {
         this(context, callback);
     }
 
-    public CameraPreviewView(Context context, AttributeSet attrs, int defStyle, CameraPreviewCallback callback)
+    public CameraPreviewView(Context context, AttributeSet attrs, int defStyle, CameraPreviewCallback callback) throws Exception
     {
         this(context, callback);
     }
@@ -150,7 +150,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         setSurfaceTextureListener(this);
     }
 
-    private void openCamera()
+    private void openCamera() throws Exception
     {
         try
         {
@@ -167,6 +167,7 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         catch (Exception e)
         {
             this.releaseResources();
+            throw e;
         }
     }
 
