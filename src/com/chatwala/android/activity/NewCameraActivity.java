@@ -941,6 +941,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
 
+        if(buttonPress) {
+            CWAnalytics.sendStopPressedEvent(analyticsDuration());
+        }
+
         if(buttonPress && getCurrentMessageOrigin() != MessageOrigin.INITIATOR) {
             cameraPreviewView.stopRecording();
             showSendOrCancelAlert();

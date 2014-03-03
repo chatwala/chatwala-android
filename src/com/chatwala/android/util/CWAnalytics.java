@@ -48,6 +48,7 @@ public class CWAnalytics
     private static String ACTION_STOP_REPLY = "STOP_REPLY";
     private static String ACTION_BACKGROUND_WHILE_REPLY = "BACKGROUND_WHILE_REPLY";
     private static String ACTION_COMPLETE_REPLY = "COMPLETE_REPLY";
+    private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
 
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
@@ -213,6 +214,10 @@ public class CWAnalytics
     public static void sendReviewCompleteEvent(Long duration)
     {
         sendEvent(ACTION_COMPLETE_REVIEW, LABEL_NO_TAP, duration);
+    }
+
+    public static void sendStopPressedEvent(long duration) {
+        sendEvent(ACTION_STOP_PRESSED, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendSendMessageEvent(Long previewNum)
