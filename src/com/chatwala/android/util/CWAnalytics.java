@@ -28,21 +28,29 @@ public class CWAnalytics
     private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
     private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
     private static String ACTION_START_RECORDING = "START_RECORDING";
+    private static String ACTION_STOP_RECORDING = "STOP_RECORDING";
+    private static String ACTION_BACKGROUND_WHILE_RECORDING = "BACKGROUND_WHILE_RECORDING";
     private static String ACTION_COMPLETE_RECORDING = "COMPLETE_RECORDING";
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
+    private static String ACTION_START_PREVIEW = "START_PREVIEW";
     private static String ACTION_REDO_MESSAGE = "REDO_MESSAGE";
     private static String ACTION_SEND_EMAIL = "SEND_EMAIL";
     private static String ACTION_CANCEL_EMAIL = "CANCEL_EMAIL";
     private static String ACTION_START_REVIEW = "START_REVIEW";
     private static String ACTION_STOP_REVIEW = "STOP_REVIEW";
+    private static String ACTION_BACKGROUND_WHILE_REVIEW= "BACKGROUND_WHILE_REVIEW";
     private static String ACTION_COMPLETE_REVIEW = "COMPLETE_REVIEW";
     private static String ACTION_START_REACTION = "START_REACTION";
     private static String ACTION_STOP_REACTION = "STOP_REACTION";
+    private static String ACTION_BACKGROUND_WHILE_REACTION = "BACKGROUND_WHILE_REACTION";
     private static String ACTION_COMPLETE_REACTION = "COMPLETE_REACTION";
     private static String ACTION_START_REPLY = "START_REPLY";
+    private static String ACTION_STOP_REPLY = "STOP_REPLY";
+    private static String ACTION_BACKGROUND_WHILE_REPLY = "BACKGROUND_WHILE_REPLY";
     private static String ACTION_COMPLETE_REPLY = "COMPLETE_REPLY";
+    private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
 
-    private static String LABEL_TAB_BUTTON = "TAP_BUTTON";
+    private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
     private static String LABEL_NO_TAP = "NO_TAP";
 
@@ -127,51 +135,99 @@ public class CWAnalytics
         sendEvent(ACTION_DRAWER_CLOSED, null, null);
     }
 
-    public static void sendStartReviewEvent()
+    public static void sendRecordingStartEvent(boolean buttonTapped)
     {
-        sendEvent(ACTION_START_REVIEW, null, null);
+        sendEvent(ACTION_START_RECORDING, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, new Long(actionIncrement));
+        incrementAction();
     }
 
-    public static void sendStopReviewEvent(Long duration)
-    {
-        sendEvent(ACTION_STOP_REVIEW, null, duration);
+    public static void sendRecordingStopEvent(long duration) {
+        sendEvent(ACTION_STOP_RECORDING, LABEL_TAP_BUTTON, duration);
     }
 
-    public static void sendReviewCompleteEvent(Long duration)
-    {
-        sendEvent(ACTION_COMPLETE_REVIEW, null, duration);
+    public static void sendBackgroundWhileRecordingEvent(long duration) {
+        sendEvent(ACTION_BACKGROUND_WHILE_RECORDING, LABEL_NO_TAP, duration);
     }
 
-    public static void sendStartReactionEvent()
+    public static void sendRecordingCompleteEvent(Long duration)
     {
-        sendEvent(ACTION_START_REACTION, null, null);
+        sendEvent(ACTION_COMPLETE_RECORDING, LABEL_NO_TAP, duration);
     }
 
-    public static void sendStopReactionEvent(Long duration)
+    public static void sendReactionStartEvent()
     {
-        sendEvent(ACTION_STOP_REACTION, null, duration);
+        sendEvent(ACTION_START_REACTION, LABEL_NO_TAP, null);
+    }
+
+    public static void sendReactionStartEvent(boolean buttonTapped)
+    {
+        sendEvent(ACTION_START_REACTION, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendReactionStopEvent(Long duration)
+    {
+        sendEvent(ACTION_STOP_REACTION, LABEL_TAP_BUTTON, duration);
+    }
+
+    public static void sendBackgroundWhileReactionEvent(long duration) {
+        sendEvent(ACTION_BACKGROUND_WHILE_REACTION, LABEL_NO_TAP, duration);
     }
 
     public static void sendReactionCompleteEvent(Long duration)
     {
-        sendEvent(ACTION_COMPLETE_REACTION, null, duration);
+        sendEvent(ACTION_COMPLETE_REACTION, LABEL_NO_TAP, duration);
     }
 
-    public static void sendRecordingStartEvent(boolean buttonTapped)
+    public static void sendReplyStartEvent()
     {
-        sendEvent(isStarterMessage ? ACTION_START_RECORDING : ACTION_START_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, new Long(actionIncrement));
+        sendEvent(ACTION_START_REPLY, LABEL_NO_TAP, new Long(actionIncrement));
         incrementAction();
     }
 
-    public static void sendRecordingEndEvent(boolean buttonTapped, Long duration)
+    public static void sendReplyStopEvent(long duration) {
+        sendEvent(ACTION_STOP_REPLY, LABEL_TAP_BUTTON, duration);
+    }
+
+    public static void sendBackgroundWhileReplyEvent(long duration) {
+        sendEvent(ACTION_BACKGROUND_WHILE_REPLY, LABEL_NO_TAP, duration);
+    }
+
+    public static void sendReplyCompleteEvent(Long duration)
     {
-        sendEvent(isStarterMessage ? ACTION_COMPLETE_RECORDING : ACTION_COMPLETE_REPLY, buttonTapped ? LABEL_TAB_BUTTON : LABEL_NO_TAP, duration);
+        sendEvent(ACTION_COMPLETE_REPLY, LABEL_NO_TAP, duration);
+    }
+
+    public static void sendReviewStartEvent(boolean buttonTapped)
+    {
+        sendEvent(ACTION_START_REVIEW, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendReviewStopEvent(Long duration)
+    {
+        sendEvent(ACTION_STOP_REVIEW, LABEL_TAP_BUTTON, duration);
+    }
+
+    public static void sendBackgroundWhileReviewEvent(long duration) {
+        sendEvent(ACTION_BACKGROUND_WHILE_REVIEW, LABEL_NO_TAP, duration);
+    }
+
+    public static void sendReviewCompleteEvent(Long duration)
+    {
+        sendEvent(ACTION_COMPLETE_REVIEW, LABEL_NO_TAP, duration);
+    }
+
+    public static void sendStopPressedEvent(long duration) {
+        sendEvent(ACTION_STOP_PRESSED, LABEL_TAP_BUTTON, duration);
     }
 
     public static void sendSendMessageEvent(Long previewNum)
     {
         sendEvent(ACTION_SEND_MESSAGE, null, new Long(numRedos));
         resetRedos();
+    }
+
+    public static void sendPreviewStartEvent() {
+        sendEvent(ACTION_START_PREVIEW, LABEL_NO_TAP, null);
     }
 
     public static void sendRedoMessageEvent(Long previewNum)
@@ -182,7 +238,7 @@ public class CWAnalytics
 
     private static void sendEvent(String action, String label, Long value)
     {
-        String labelString = label != null ? label : "none";
+        String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
         Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
                 "\n\tCATEGORY:\t" + categoryString +

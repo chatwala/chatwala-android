@@ -1,5 +1,6 @@
 package com.chatwala.android.activity;
 
+import android.app.AlertDialog;
 import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -119,6 +120,26 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private boolean closePreviewOnReturn = false;
 
+    private static enum MessageOrigin {
+        INITIATOR,
+        LINK,
+        INBOX
+    }
+
+    private MessageOrigin getCurrentMessageOrigin() {
+        if(incomingMessage != null) {
+            if("unknown_recipient".equals(incomingMessage.getRecipientId())) {
+                return MessageOrigin.LINK;
+            }
+            else {
+                return MessageOrigin.INBOX;
+            }
+        }
+        else {
+            return MessageOrigin.INITIATOR;
+        }
+    }
+
     public synchronized AppState getAppState()
     {
         return appState;
@@ -156,27 +177,22 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             case PlaybackOnly:
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
-                CWAnalytics.sendStartReviewEvent();
                 setTimerKnobForRecording();
                 break;
             case PlaybackRecording:
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
-                CWAnalytics.sendStartReactionEvent();
                 setTimerKnobForRecording();
                 break;
             case Recording:
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 analyticsTimerReset();
-                CWAnalytics.sendRecordingStartEvent(true);
                 setTimerKnobForRecording();
                 break;
             case PreviewReady:
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 if(shouldShowPreview) {
-                    timerKnob.setVisibility(View.VISIBLE);
-                    timerKnob.setImageResource(R.drawable.ic_action_send_ios);
-                    showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+                    startPreview();
                 }
                 else {
                     triggerButtonAction(true);
@@ -192,29 +208,75 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
     }
 
+    private void startPreview() {
+        timerKnob.setVisibility(View.VISIBLE);
+        timerKnob.setImageResource(R.drawable.ic_action_send_ios);
+        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+        CWAnalytics.sendPreviewStartEvent();
+    }
+
     private void analyticsTimerReset()
     {
         analyticsTimerStart = System.currentTimeMillis();
     }
 
-    private void analyticsStateEnd(AppState appState, boolean buttonPress)
+    private void analyticsStateEnd(AppState newAppState, boolean buttonPress)
     {
-        if (appState != AppState.Transition)
+        long duration = analyticsDuration();
+        MessageOrigin origin = getCurrentMessageOrigin();
+        switch (this.appState)
         {
-            long duration = analyticsDuration();
-            switch (this.appState)
-            {
-                case PlaybackOnly:
-                    CWAnalytics.sendReviewCompleteEvent(duration);
-                    break;
-                case PlaybackRecording:
+            case PlaybackOnly:
+                if(origin == MessageOrigin.INBOX) {
+                    if(newAppState == AppState.Transition) {
+                        CWAnalytics.sendReviewStopEvent(duration);
+                    }
+                    else if(newAppState == AppState.Off) {
+                        CWAnalytics.sendBackgroundWhileReviewEvent(duration);
+                    }
+                    else {
+                        CWAnalytics.sendReviewCompleteEvent(duration);
+                        CWAnalytics.sendReactionStartEvent();
+                    }
+                }
+                break;
+            case PlaybackRecording:
+                if(newAppState == AppState.Transition) {
+                    CWAnalytics.sendReactionStopEvent(duration);
+                }
+                else if(newAppState == AppState.Off) {
+                    CWAnalytics.sendBackgroundWhileReactionEvent(duration);
+                }
+                else {
                     CWAnalytics.sendReactionCompleteEvent(duration);
-                    break;
-                case Recording:
-                    CWAnalytics.sendRecordingEndEvent(buttonPress, duration);
-                    break;
+                    CWAnalytics.sendReplyStartEvent();
+                }
+                break;
+            case Recording:
+                if(origin == MessageOrigin.INITIATOR) {
+                    if(newAppState == AppState.ReadyStopped) {
+                        CWAnalytics.sendRecordingStopEvent(duration);
+                    }
+                    else if(newAppState == AppState.Off) {
+                        CWAnalytics.sendBackgroundWhileRecordingEvent(duration);
+                    }
+                    else {
+                        CWAnalytics.sendRecordingCompleteEvent(duration);
+                    }
+                }
+                else {
+                    if(newAppState == AppState.ReadyStopped) {
+                        CWAnalytics.sendReplyStopEvent(duration);
+                    }
+                    else if(newAppState == AppState.Off) {
+                        CWAnalytics.sendBackgroundWhileRecordingEvent(duration);
+                    }
+                    else {
+                        CWAnalytics.sendReplyCompleteEvent(duration);
+                    }
+                }
 
-            }
+                break;
         }
     }
 
@@ -483,20 +545,28 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
         if (state == AppState.ReadyStopped)
         {
+            MessageOrigin origin = getCurrentMessageOrigin();
+            if(origin == MessageOrigin.INITIATOR) {
+                CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress);
+            }
+            else if(origin == MessageOrigin.LINK) {
+                CWAnalytics.sendReactionStartEvent(fromCenterButtonPress);
+            }
+            else if(origin == MessageOrigin.INBOX) {
+                CWAnalytics.sendReviewStartEvent(fromCenterButtonPress);
+            }
             startPlaybackRecording();
             return;
         }
 
         if (state == AppState.PlaybackOnly)
         {
-            CWAnalytics.sendStopReviewEvent(analyticsDuration());
             abortBeforeRecording();
             return;
         }
 
         if (state == AppState.PlaybackRecording)
         {
-            CWAnalytics.sendStopReactionEvent(analyticsDuration());
             abortRecording();
             return;
         }
@@ -872,14 +942,39 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             heartbeatTimer.abort();
 
         if(buttonPress) {
-            setAppState(AppState.ReadyStopped, buttonPress);
-            abortRecording();
+            CWAnalytics.sendStopPressedEvent(analyticsDuration());
+        }
+
+        if(buttonPress && getCurrentMessageOrigin() != MessageOrigin.INITIATOR) {
+            cameraPreviewView.stopRecording();
+            showSendOrCancelAlert();
         }
         else {
             setAppState(AppState.PreviewLoading, buttonPress);
             cameraPreviewView.stopRecording();
         }
     }
+
+    private void showSendOrCancelAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.send_or_cancel_title)
+                .setCancelable(false)
+                .setPositiveButton(R.string.send_or_cancel_send, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        setAppState(AppState.PreviewLoading, true);
+                    }
+                })
+                .setNegativeButton(R.string.send_or_cancel_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        setAppState(AppState.ReadyStopped, true);
+                        tearDownSurface();
+                        createSurface();
+                    }
+                }).create().show();
+    }
+
 
     private void previewSurfaceReady()
     {
@@ -970,6 +1065,19 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             try
             {
+                while(getAppState() != AppState.PreviewLoading) {
+                    try {
+                        Thread.sleep(500);
+                        if(getAppState() == AppState.ReadyStopped || getAppState() == AppState.LoadingFileCamera) {
+                            params[0].delete();
+                            cancel(true);
+                            return null;
+                        }
+                    }
+                    catch(Exception e) {
+                        return null;
+                    }
+                }
                 return VideoUtils.findMetadata(params[0]);
             }
             catch (IOException e)
