@@ -50,6 +50,12 @@ public class CWAnalytics
     private static String ACTION_COMPLETE_REPLY = "COMPLETE_REPLY";
     private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
 
+    private static String ACTION_RECIPIENT_ADDED = " RECIPIENT_ADDED";
+    private static String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
+    private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
+    private static String ACTION_MESSAGE_SENT_FAILED = "MESSAGE_SENT_FAILED";
+    private static String ACTION_BACKGROUND_WHILE_SMS = "BACKGROUND_WHILE_SMS";
+
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
     private static String LABEL_NO_TAP = "NO_TAP";
@@ -234,6 +240,26 @@ public class CWAnalytics
     {
         numRedos++;
         sendEvent(ACTION_REDO_MESSAGE, null, new Long(numRedos));
+    }
+
+    public static void sendRecipientAddedEvent() {
+        sendEvent(ACTION_RECIPIENT_ADDED, LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendMessageSentEvent(long numRecipients) {
+        sendEvent(ACTION_MESSAGE_SENT, LABEL_TAP_BUTTON, numRecipients);
+    }
+
+    public static void sendMessageSentConfirmedEvent() {
+        sendEvent(ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, null);
+    }
+
+    public static void sendMessageSentFailedEvent() {
+        sendEvent(ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
+    }
+
+    public static void sendBackgroundWhileSmsEvent() {
+        sendEvent(ACTION_BACKGROUND_WHILE_SMS, LABEL_NO_TAP, null);
     }
 
     private static void sendEvent(String action, String label, Long value)
