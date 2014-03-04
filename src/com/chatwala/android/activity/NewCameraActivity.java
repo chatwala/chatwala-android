@@ -269,7 +269,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                         CWAnalytics.sendReplyStopEvent(duration);
                     }
                     else if(newAppState == AppState.Off) {
-                        CWAnalytics.sendBackgroundWhileRecordingEvent(duration);
+                        CWAnalytics.sendBackgroundWhileReplyEvent(duration);
                     }
                     else {
                         CWAnalytics.sendReplyCompleteEvent(duration);
@@ -469,10 +469,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     @Override
     protected void onPause()
     {
+        super.onPause();
+
         if (heartbeatTimer != null)
             heartbeatTimer.abort();
-
-        super.onPause();
 
         activityActive = false;
 
@@ -487,6 +487,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
 //        resetOpeningVolume();
         tearDownSurface();
+
     }
 
     @Override

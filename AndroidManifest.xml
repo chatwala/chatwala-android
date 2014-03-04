@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="20009"
+          android:versionCode="20010"
           android:versionName="1.4.6">
     <uses-sdk android:minSdkVersion="15"/>
 
@@ -85,6 +85,13 @@
 
         <service android:name="co.touchlab.android.superbus.SuperbusService"
                  android:exported="false"/>
+
+        <receiver android:name="com.chatwala.android.SmsSentReceiver"
+                  android:exported="false">
+            <intent-filter>
+                <action android:name="com.chatwala.android.SMS_SENT"/>
+            </intent-filter>
+        </receiver>
 
         <receiver android:name="co.touchlab.android.superbus.network.ConnectionChangeReceiver"
                   android:exported="false">

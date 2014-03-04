@@ -31,8 +31,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="75dp"
                     android:layout_alignParentTop="true"
+                    android:layout_above="@+id/contacts_filter"
                     android:layout_marginTop="5dp"
-                    android:visibility="gone">
+                    android:visibility="visible">
 
                 <TextView
                         android:id="@+id/send_sms_lbl"
@@ -61,13 +62,17 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/recipients_container"
-                    android:hint="Enter Recipients"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="75dp"
+                    android:hint="Enter SMS Recipients"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="#888"
-                    android:inputType="text"/>
+                    android:textColor="#fff"
+                    android:inputType="textNoSuggestions">
+                    <requestFocus/>
+            </AutoCompleteTextView>
 
-            <EditText
+            <!--<EditText
                     android:id="@+id/sms_message_txt"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -79,15 +84,21 @@
                     android:hint="Message"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textColor="#888"
-                    android:inputType="text"/>
+                    android:inputType="text"/>-->
 
         </RelativeLayout>
 
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight=".5"
-                android:background="@drawable/chat_watermark">
+                android:layout_weight=".5">
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/chat_watermark" />
 
             <TextView
                     android:id="@+id/sms_copy"
@@ -95,12 +106,18 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:textColor="#000"
-                    android:text="Enter recipients and tap send"
+                    android:text="Enter recipients and tap to send"
                     android:textAppearance="?android:attr/textAppearanceLarge"/>
 
         </RelativeLayout>
 
     </LinearLayout>
+
+    <View
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/center_button_halo"
+            android:layout_gravity="center"/>
 
     <TextView
             android:id="@+id/send_sms_button"

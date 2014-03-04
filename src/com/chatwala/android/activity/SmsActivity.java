@@ -1,9 +1,12 @@
 package com.chatwala.android.activity;
 
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -15,10 +18,15 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.view.*;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
+import com.chatwala.android.SmsSentReceiver;
+import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.Logger;
 
+import javax.sql.CommonDataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +36,14 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     public static final String SMS_MESSAGE_URL_EXTRA = "sms_message_url";
     public static final String SMS_MESSAGE_EXTRA = "sms_message";
 
+    private static final int MAX_SMS_MESSAGE_LENGTH = 160;
+
     private static final int CONTACTS_LOADER_CODE = 0;
 
     private String smsMessageUrl;
     private String smsMessage;
+
+    private boolean sendAnalyticsBackgroundEvent = true;
 
     private AutoCompleteTextView contactsFilter;
     private ListView recipientsListView;
@@ -41,7 +53,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
     private String[] contactsProjection = new String[] {ContactsContract.CommonDataKinds.Phone._ID,
                                                         ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                                                        ContactsContract.CommonDataKinds.Phone.NUMBER};
+                                                        ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                                        ContactsContract.CommonDataKinds.Phone.TYPE};
 
     private Toast noContactsToast;
 
@@ -65,35 +78,41 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         smsMessageUrl = getIntent().getStringExtra(SMS_MESSAGE_URL_EXTRA);
         smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
 
-        ((TextView) findViewById(R.id.sms_message_txt)).setText(smsMessage);
+        contactsAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), true, true);
+        recipientsAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), false, false);
 
         contactsFilter = (AutoCompleteTextView) findViewById(R.id.contacts_filter);
+        contactsFilter.setHintTextColor(Color.WHITE);
         contactsFilter.setThreshold(0);
         contactsFilter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                CWAnalytics.sendRecipientAddedEvent();
                 ContactEntry entry = contactsAdapter.getItem(i);
                 contactsFilter.setText("");
-                if(contactsAdapter.remove(entry)) {
+                if (contactsAdapter.remove(entry)) {
                     recipientsAdapter.add(entry);
-                    if(recipientsAdapter.getCount() == 1) {
-                        findViewById(R.id.recipients_container).setVisibility(View.VISIBLE);
-                    }
                 }
             }
         });
+
+        contactsFilter.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
+                        .showSoftInput(contactsFilter, InputMethodManager.SHOW_FORCED);
+            }
+        }, 100);
+
 
         recipientsListView = (ListView) findViewById(R.id.recipients_list);
         recipientsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ContactEntry entry = recipientsAdapter.getItem(i);
-                if(recipientsAdapter.remove(entry)) {
-                    if(entry.isContact()) {
+                if (recipientsAdapter.remove(entry)) {
+                    if (entry.isContact()) {
                         contactsAdapter.add(entry);
-                    }
-                    if(recipientsAdapter.getCount() == 0) {
-                        findViewById(R.id.recipients_container).setVisibility(View.GONE);
                     }
                 }
             }
@@ -102,20 +121,35 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         findViewById(R.id.send_sms_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(recipientsAdapter.isEmpty()) {
-                    if(noContactsToast != null) {
+                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
+                        .hideSoftInputFromWindow(contactsFilter.getWindowToken(), 0);
+                if (recipientsAdapter.isEmpty()) {
+                    if (noContactsToast != null) {
                         noContactsToast.cancel();
                     }
                     noContactsToast = Toast.makeText(SmsActivity.this, "You must enter recipients", Toast.LENGTH_SHORT);
                     noContactsToast.show();
-                }
-                else {
-                    new SendSmsAsyncTask().execute(new Void[] {});
+                } else {
+                    new SendSmsAsyncTask().execute(new Void[]{});
                 }
             }
         });
 
         getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        finish();
+
+        if(sendAnalyticsBackgroundEvent) {
+            CWAnalytics.sendBackgroundWhileSmsEvent();
+        }
+
+        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(contactsFilter.getWindowToken(), 0);
     }
 
     @Override
@@ -135,28 +169,50 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        if(!cursor.moveToFirst()) {
-            return;
-        }
-
         List<ContactEntry> contacts = new ArrayList<ContactEntry>(cursor.getCount());
 
-        do {
-            try {
-                String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                contacts.add(new ContactEntry(name, value, true));
-            }
-            catch(Exception e) {
-                continue;
-            }
-        } while(cursor.moveToNext());
+        if(cursor.moveToFirst()) {
+            do {
+                try {
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                    String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    String type = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE));
+                    type = getTypeString(type);
+                    contacts.add(new ContactEntry(name, value, type, true));
+                }
+                catch(Exception e) {
+                    continue;
+                }
+            } while(cursor.moveToNext());
+        }
 
         contactsAdapter = new ContactEntryAdapter(contacts, true, true);
         contactsFilter.setAdapter(contactsAdapter);
 
         recipientsAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), false, false);
         recipientsListView.setAdapter(recipientsAdapter);
+    }
+
+    private String getTypeString(String typeStr) {
+        int type = Integer.parseInt(typeStr);
+        if(type == ContactsContract.CommonDataKinds.Phone.TYPE_HOME) {
+            return "Home";
+        }
+        else if(type == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
+            return "Mobile";
+        }
+        else if(type == ContactsContract.CommonDataKinds.Phone.TYPE_WORK) {
+            return "Work";
+        }
+        else if(type == ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME) {
+            return "Fax Home";
+        }
+        else if(type == ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK) {
+            return "Fax Work";
+        }
+        else {
+            return "Other";
+        }
     }
 
     @Override
@@ -176,8 +232,23 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         @Override
         protected Void doInBackground(Void... v) {
             for(int i = 0; i < recipientsAdapter.getCount(); i++) {
+                String messageUrlWithPrefix = "... " + smsMessageUrl;
+                int maxMessageSize = MAX_SMS_MESSAGE_LENGTH - messageUrlWithPrefix.length();
+                if(smsMessage.length() > maxMessageSize) {
+                    smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
+                }
                 String message = smsMessage + "... " + smsMessageUrl;
-                SmsManager.getDefault().sendTextMessage(recipientsAdapter.getItem(i).getValue(), null, message, null, null);
+
+                PendingIntent sentIntent = PendingIntent.getBroadcast(SmsActivity.this, 0, new Intent(SmsSentReceiver.SMS_SENT), 0);
+
+                try {
+                    SmsManager.getDefault().sendTextMessage(recipientsAdapter.getItem(i).getValue(), null, message, sentIntent, null);
+                    CWAnalytics.sendMessageSentEvent(recipientsAdapter.getCount());
+                }
+                catch(Exception e) {
+                    Logger.e("There was an exception while sending SMS(s)", e);
+                    CWAnalytics.sendMessageSentFailedEvent();
+                }
             }
 
             return null;
@@ -190,7 +261,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             if(pd != null && pd.isShowing()) {
                 pd.dismiss();
             }
-
+            sendAnalyticsBackgroundEvent = false;
             finish();
         }
     }
@@ -198,11 +269,13 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     private class ContactEntry implements Comparable<ContactEntry> {
         private String name;
         private String value;
+        private String type;
         private boolean isContact;
 
-        public ContactEntry(String name, String value, boolean isContact) {
+        public ContactEntry(String name, String value, String type, boolean isContact) {
             this.name = name;
             this.value = value;
+            this.type = type;
             this.isContact = isContact;
         }
 
@@ -222,9 +295,15 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             this.value = value;
         }
 
-        public boolean isContact() {
-            return isContact;
+        public String getType() {
+            return (type == null ? "" : type);
         }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public boolean isContact() { return isContact; }
 
         public boolean equals(ContactEntry other) {
             return compareTo(other) == 0;
@@ -351,12 +430,15 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 holder = new ContactViewHolder();
                 holder.name = (TextView) convertView.findViewById(R.id.contact_item_name);
                 holder.value = (TextView) convertView.findViewById(R.id.contact_item_number);
+                holder.type = (TextView) convertView.findViewById(R.id.contact_item_type);
 
                 if(showNumbers) {
                     holder.value.setVisibility(View.VISIBLE);
+                    holder.type.setVisibility(View.VISIBLE);
                 }
                 else {
                     holder.value.setVisibility(View.GONE);
+                    holder.type.setVisibility(View.GONE);
                 }
             }
             else {
@@ -367,6 +449,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             holder.name.setText(entry.getName());
             if(showNumbers) {
                 holder.value.setText(entry.getValue());
+                holder.type.setText(entry.getType());
+
             }
 
             convertView.setTag(holder);
@@ -402,7 +486,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         if(filterList == null) {
                             filterList = new ArrayList<ContactEntry>();
                         }
-                        filterList.add(new ContactEntry(numberFilter, numberFilter, false));
+                        filterList.add(new ContactEntry(numberFilter, numberFilter, "Other", false));
                         Collections.sort(filterList);
                     }
 
@@ -427,5 +511,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     private static class ContactViewHolder {
         TextView name;
         TextView value;
+        TextView type;
     }
 }
