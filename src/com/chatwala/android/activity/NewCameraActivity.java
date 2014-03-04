@@ -1392,16 +1392,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void sendSms(final String messageId)
     {
-        String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
-        String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
+        String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
+        String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
-        openSmsShare(smsText);
+        openSmsShare(messageUrl, messageText);
     }
 
-    private void openSmsShare(String smsText)
+    private void openSmsShare(String messageUrl, String messageText)
     {
         Intent i = new Intent(this, SmsActivity.class);
-        i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, smsText);
+        i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageUrl);
+        i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);
         startActivity(i);
     }
 
