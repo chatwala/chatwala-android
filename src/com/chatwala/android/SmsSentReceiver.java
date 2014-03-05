@@ -14,18 +14,26 @@ import com.chatwala.android.util.CWAnalytics;
 public class SmsSentReceiver extends BroadcastReceiver {
     public static final String SMS_SENT = "com.chatwala.android.SMS_SENT";
 
+    private static Toast smsSentToast;
+
     @Override
     public void onReceive(Context context, Intent intent) {
+        if(smsSentToast != null) {
+            smsSentToast.cancel();
+        }
         switch(getResultCode()) {
             case Activity.RESULT_OK:
                 CWAnalytics.sendMessageSentConfirmedEvent();
+                smsSentToast = Toast.makeText(context.getApplicationContext(), "Message sent", Toast.LENGTH_SHORT);
+                smsSentToast.show();
                 break;
             case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
             case SmsManager.RESULT_ERROR_NO_SERVICE:
             case SmsManager.RESULT_ERROR_NULL_PDU:
             case SmsManager.RESULT_ERROR_RADIO_OFF:
                 CWAnalytics.sendMessageSentFailedEvent();
-                Toast.makeText(context, "There was an error sending the message", Toast.LENGTH_SHORT).show();
+                smsSentToast = Toast.makeText(context.getApplicationContext(), "There was an error sending the message", Toast.LENGTH_SHORT);
+                smsSentToast.show();
         }
     }
 }
