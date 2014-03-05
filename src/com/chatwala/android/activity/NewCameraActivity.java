@@ -58,8 +58,9 @@ import com.chatwala.android.http.BaseHttpRequest;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewCameraActivity extends BaseNavigationDrawerActivity
-{
+public class NewCameraActivity extends BaseNavigationDrawerActivity {
+    public static final String INITIATOR_EXTRA = "initiator";
+
     public static final int RECORDING_TIME = 10000;
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
     public static final String HANGOUTS_PACKAGE_NAME = "com.google.android.talk";
@@ -68,6 +69,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private int openingVolume;
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
+
+    private boolean isFacebookFlow = false;
 
     private ChatwalaMessage playbackMessage = null;
     private ChatwalaMessage messageToSendDirectly = null;
@@ -191,7 +194,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                 break;
             case PreviewReady:
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                if(shouldShowPreview) {
+                if(shouldShowPreview || isFacebookFlow) {
                     startPreview();
                 }
                 else {
@@ -211,7 +214,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
     private void startPreview() {
         timerKnob.setVisibility(View.VISIBLE);
         timerKnob.setImageResource(R.drawable.ic_action_send_ios);
-        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.send_instructions);
+        int messageRes = R.string.send_instructions;
+        if(isFacebookFlow) {
+            messageRes = R.string.facebook_flow_send_instructions;
+        }
+        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
         CWAnalytics.sendPreviewStartEvent();
     }
 
@@ -353,6 +360,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         {
             openDrawer();
         }
+
+        if(getIntent().hasExtra(INITIATOR_EXTRA)) {
+            if("fb".equals(getIntent().getStringExtra(INITIATOR_EXTRA))) {
+                isFacebookFlow = true;
+            }
+        }
+
 //        captureOpeningVolume();
 
         Logger.i("End of onCreate()");
@@ -627,13 +641,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 }
                             });
 
-                            if (AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
-                            {
-                                sendSms(messageId);
+                            if(isFacebookFlow) {
+                                sendFacebookPostShare(messageId);
                             }
-                            else
-                            {
-                                sendEmail(messageId);
+                            else {
+                                if (AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms()) {
+                                    sendSms(messageId);
+                                }
+                                else {
+                                    sendEmail(messageId);
+                                }
                             }
 
                             return null;
@@ -1031,7 +1048,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         else
         {
             removeWaterSplash();
-            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, R.string.basic_instructions);
+            int messageRes = R.string.basic_instructions;
+            if(isFacebookFlow) {
+                messageRes = R.string.facebook_flow_instructions;
+            }
+            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
         }
 
         liveForRecording();
@@ -1094,9 +1115,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
             recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation, null, false);
             recordPreviewCompletionListener = new ReplayCountingCompletionListener();
 
-            if(shouldShowPreview) {
+            if(shouldShowPreview || isFacebookFlow) {
                 cameraPreviewContainer.addView(recordPreviewVideoView);
-                closeRecordPreviewView.setVisibility(View.VISIBLE);
+                if(!isFacebookFlow) {
+                    closeRecordPreviewView.setVisibility(View.VISIBLE);
+                }
                 recordPreviewVideoView.start();
                 recordPreviewVideoView.setOnCompletionListener(recordPreviewCompletionListener);
             }
@@ -1348,6 +1371,34 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         });
     }
 
+    private void sendFacebookPostShare(String messageId) {
+        //http://stackoverflow.com/questions/7545254/android-and-facebook-share-intent
+        String urlToShare = EnvironmentVariables.get().getWebPath() + messageId;
+        urlToShare = "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + urlToShare;
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, urlToShare);
+
+        // See if official Facebook app is found
+        boolean facebookAppFound = false;
+        List<ResolveInfo> matches = getPackageManager().queryIntentActivities(intent, 0);
+        for (ResolveInfo info : matches) {
+            if (info.activityInfo.packageName.toLowerCase().startsWith("com.facebook")) {
+                intent.setPackage(info.activityInfo.packageName);
+                facebookAppFound = true;
+                break;
+            }
+        }
+
+        // As fallback, launch sharer.php in a browser
+        if (!facebookAppFound) {
+            String sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=" + urlToShare;
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
+        }
+
+        startActivity(intent);
+    }
+
     @SuppressWarnings("unchecked")
     private void sendEmail(final String messageId)
     {
@@ -1453,7 +1504,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         }
 
         public String getDisplayMessage() {
-            if(!shouldShowPreview && isReply && countdownBegin == 5) {
+            if(!isFacebookFlow || !shouldShowPreview && isReply && countdownBegin == 5) {
                 displayMessage = getString(R.string.sending_reply_countdown);
             }
             return displayMessage;

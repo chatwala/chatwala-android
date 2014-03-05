@@ -50,12 +50,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
-            <intent-filter>
-                <data android:scheme="chatwala"/>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
         </activity>
 
         <activity android:name=".activity.SmsActivity"
@@ -90,6 +84,14 @@
                   android:exported="false">
             <intent-filter>
                 <action android:name="com.chatwala.android.SMS_SENT"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".receivers.InitiatorReceiver">
+            <intent-filter>
+                <data android:scheme="chatwala" android:host="chatwala.com" android:pathPattern="/initiator/.*"/>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </receiver>
 
