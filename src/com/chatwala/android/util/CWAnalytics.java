@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.EnvironmentVariables;
+import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.http.BaseHttpRequest;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.GoogleAnalytics;
@@ -49,6 +50,7 @@ public class CWAnalytics
     private static String ACTION_BACKGROUND_WHILE_REPLY = "BACKGROUND_WHILE_REPLY";
     private static String ACTION_COMPLETE_REPLY = "COMPLETE_REPLY";
     private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
+    private static String ACTION_BACK_PRESSED = "BACK_PRESSED";
 
     private static String ACTION_RECIPIENT_ADDED = " RECIPIENT_ADDED";
     private static String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
@@ -226,9 +228,9 @@ public class CWAnalytics
         sendEvent(ACTION_STOP_PRESSED, LABEL_TAP_BUTTON, duration);
     }
 
-    public static void sendSendMessageEvent(Long previewNum)
+    public static void sendSendMessageEvent(DeliveryMethod method, Long previewNum)
     {
-        sendEvent(ACTION_SEND_MESSAGE, null, new Long(numRedos));
+        sendEvent(ACTION_SEND_MESSAGE, method.getDisplayString(), new Long(numRedos));
         resetRedos();
     }
 
@@ -260,6 +262,10 @@ public class CWAnalytics
 
     public static void sendBackgroundWhileSmsEvent() {
         sendEvent(ACTION_BACKGROUND_WHILE_SMS, LABEL_NO_TAP, null);
+    }
+
+    public static void sendBackPressedEvent() {
+        sendEvent(ACTION_BACK_PRESSED, LABEL_TAP_BUTTON, null);
     }
 
     private static void sendEvent(String action, String label, Long value)
