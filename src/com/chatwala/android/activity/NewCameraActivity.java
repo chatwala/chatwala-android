@@ -71,6 +71,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
 
+    DeliveryMethod deliveryMethod;
+
     private boolean isFacebookFlow = false;
 
     private ChatwalaMessage playbackMessage = null;
@@ -216,7 +218,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         timerKnob.setVisibility(View.VISIBLE);
         timerKnob.setImageResource(R.drawable.ic_action_send_ios);
         int messageRes = R.string.send_instructions;
-        if(isFacebookFlow) {
+        if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
             messageRes = R.string.facebook_flow_send_instructions;
         }
         showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
@@ -430,6 +432,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
         shouldShowPreview = AppPrefs.getInstance(this).getPrefShowPreview();
+        deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
 
         Logger.i();
         CWAnalytics.setStarterMessage(!replyMessageAvailable());
@@ -490,6 +493,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             heartbeatTimer.abort();
 
         activityActive = false;
+
+        isFacebookFlow = false;
 
         AppState state = getAppState();
 
@@ -641,22 +646,21 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                                 }
                             });
 
-                            DeliveryMethod method = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
-                            CWAnalytics.sendSendMessageEvent(method, (long) recordPreviewCompletionListener.replays);
+                            CWAnalytics.sendSendMessageEvent(deliveryMethod, (long) recordPreviewCompletionListener.replays);
                             if(isFacebookFlow) {
                                 sendFacebookPostShare(messageId);
                             }
-                            else if (method == DeliveryMethod.SMS) {
+                            else if (deliveryMethod == DeliveryMethod.SMS) {
                                 sendSms(messageId);
                             }
-                            else if(method == DeliveryMethod.CWSMS) {
+                            else if(deliveryMethod == DeliveryMethod.CWSMS) {
                                 sendChatwalaSms(messageId);
                             }
-                            else if(method == DeliveryMethod.EMAIL) {
+                            else if(deliveryMethod == DeliveryMethod.EMAIL) {
                                 sendEmail(messageId);
                             }
                             else {
-                                //fb
+                                sendFacebookPostShare(messageId);
                             }
 
                             return null;
@@ -754,6 +758,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     @Override
     public void onBackPressed()
     {
+        CWAnalytics.sendBackPressedEvent();
         Logger.logUserAction("onBackPressed");
         AppState state = getAppState();
         if (state == AppState.PreviewReady)
@@ -1055,7 +1060,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         {
             removeWaterSplash();
             int messageRes = R.string.basic_instructions;
-            if(isFacebookFlow) {
+            if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
                 messageRes = R.string.facebook_flow_instructions;
             }
             showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
@@ -1110,7 +1115,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             }
             catch (IOException e)
             {
-                throw new RuntimeException(e);
+                Logger.e("Got an IOException while getting the video metadata", e);
+                return null;
             }
 
         }
@@ -1380,7 +1386,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private void sendFacebookPostShare(String messageId) {
         //http://stackoverflow.com/questions/7545254/android-and-facebook-share-intent
         String urlToShare = EnvironmentVariables.get().getWebPath() + messageId;
-        urlToShare = "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + urlToShare;
+
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TEXT, urlToShare);
@@ -1401,6 +1407,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             String sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=" + urlToShare;
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
         }
+
+        closePreviewOnReturn = true;
 
         startActivity(intent);
     }
@@ -1580,7 +1588,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
 
         public String getDisplayMessage() {
-            if(!isFacebookFlow || !shouldShowPreview && isReply && countdownBegin == 5) {
+            if(!isFacebookFlow && !shouldShowPreview && isReply && countdownBegin == 5) {
                 displayMessage = getString(R.string.sending_reply_countdown);
             }
             return displayMessage;
