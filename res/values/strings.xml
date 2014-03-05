@@ -10,6 +10,9 @@
     <string name="basic_instructions_141"></string>
     <string name="basic_instructions">Tap to record a message.\nSee your friends react here.</string>
 
+    <string name="facebook_flow_instructions">Start a conversation with your Facebook friends. Their reactions will appear here.</string>
+    <string name="facebook_flow_send_instructions">Tap to post this to Facebook and see your friends react.</string>
+
     <string name="recording_countdown">Recording...%d</string>
     <string name="recording_reply_countdown">Recording your reply...%d</string>
     <string name="sending_reply_countdown">Sending reply in...%d</string>
@@ -26,6 +29,7 @@
     <string name="couldnt_find_message">Couldn\'t load message. Please try again.</string>
     <string name="loading_message_text">Loading your friend\'s message!</string>
 
+    <string name="send_sms">Send SMS</string>
     <string name="settings">Settings</string>
     <string name="message_preview">Message Preview: </string>
     <string name="delivery_method">Delivery method: </string>
