@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.EnvironmentVariables;
+import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.http.BaseHttpRequest;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.GoogleAnalytics;
@@ -226,9 +227,9 @@ public class CWAnalytics
         sendEvent(ACTION_STOP_PRESSED, LABEL_TAP_BUTTON, duration);
     }
 
-    public static void sendSendMessageEvent(Long previewNum)
+    public static void sendSendMessageEvent(DeliveryMethod method, Long previewNum)
     {
-        sendEvent(ACTION_SEND_MESSAGE, null, new Long(numRedos));
+        sendEvent(ACTION_SEND_MESSAGE, method.getDisplayString(), new Long(numRedos));
         resetRedos();
     }
 

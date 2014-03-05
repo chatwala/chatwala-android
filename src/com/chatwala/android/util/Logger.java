@@ -28,7 +28,7 @@ public class Logger {
     private static final String CL_VIDEO_HEIGHT = "VIDEO_HEIGHT";
     private static final String CL_FRAMERATE = "FRAMERATE";
     private static final String CL_SHARE_LINK = "SHARE_LINK";
-    private static final String CL_USING_SMS = "USING_SMS";
+    private static final String CL_DELIVERY_METHOD = "DELIVERY_METHOD";
     private static final String CL_REFRESH_INTERVAL = "REFRESH_INTERVAL";
     private static final String CL_STORAGE_LIMIT = "STORAGE_LIMIT";
 
@@ -382,11 +382,11 @@ public class Logger {
         });
     }
 
-    public static void logUsingSms(final Boolean usingSms) {
+    public static void logDeliveryMethod(final String deliveryMethod) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                Crashlytics.setBool(CL_USING_SMS, usingSms);
+                Crashlytics.setString(CL_DELIVERY_METHOD, deliveryMethod);
             }
         });
     }

@@ -26,6 +26,7 @@ import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.*;
+import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
@@ -581,7 +582,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
         if (state == AppState.PreviewReady)
         {
             setAppState(AppState.Sharing);
-            CWAnalytics.sendSendMessageEvent((long) recordPreviewCompletionListener.replays);
 
             new AsyncTask<Void, Void, Boolean>()
             {
@@ -627,13 +627,19 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
                                 }
                             });
 
-                            if (AppPrefs.getInstance(NewCameraActivity.this).getPrefUseSms())
-                            {
+                            DeliveryMethod method = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
+                            CWAnalytics.sendSendMessageEvent(method, (long) recordPreviewCompletionListener.replays);
+                            if (method == DeliveryMethod.SMS){
                                 sendSms(messageId);
                             }
-                            else
-                            {
+                            else if(method == DeliveryMethod.CWSMS) {
+                                sendChatwalaSms(messageId);
+                            }
+                            else if(method == DeliveryMethod.EMAIL) {
                                 sendEmail(messageId);
+                            }
+                            else {
+                                //fb
                             }
 
                             return null;
@@ -1393,14 +1399,84 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity
 
     private void sendSms(final String messageId)
     {
+        String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
+        String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
+        closePreviewOnReturn = true;
+        openSmsShare(smsText);
+    }
+
+    private void openSmsShare(String smsText)
+    {
+        if (Build.VERSION.SDK_INT > 18)
+        {
+            String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(this);
+
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType("text/plain");
+            sendIntent.putExtra(Intent.EXTRA_TEXT, smsText);
+
+            if (defaultSmsPackageName != null)//Can be null in case that there is no default, then the user would be able to choose any app that support this intent.
+            {
+                sendIntent.setPackage(defaultSmsPackageName);
+            }
+            startActivity(sendIntent);
+        }
+        else
+        {
+            Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+            sendIntent.setData(Uri.parse("sms:"));
+            sendIntent.putExtra("sms_body", smsText);
+
+            PackageManager pm = getPackageManager();
+            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(sendIntent, 0);
+
+            ResolveInfo resolveInfo = null;
+            if(resolveInfos.size() == 1)
+            {
+                resolveInfo = resolveInfos.get(0);
+            }
+            else if(resolveInfos.size() > 1)
+            {
+                for (ResolveInfo info : resolveInfos)
+                {
+                    if(info.isDefault)
+                    {
+                        resolveInfo = info;
+                        break;
+                    }
+                }
+                if(resolveInfo == null)
+                {
+                    List<ResolveInfo> trimApps = new ArrayList<ResolveInfo>(resolveInfos.size());
+                    for (ResolveInfo info : resolveInfos)
+                    {
+                        String packageName = info.activityInfo.applicationInfo.packageName;
+                        if(!packageName.equalsIgnoreCase(HANGOUTS_PACKAGE_NAME))
+                        {
+                            trimApps.add(info);
+                        }
+                    }
+                    if(trimApps.size() == 1)
+                        resolveInfo = trimApps.get(0);
+                }
+            }
+
+            if(resolveInfo != null)
+            {
+                ActivityInfo activity = resolveInfo.activityInfo;
+                ComponentName name = new ComponentName(activity.applicationInfo.packageName, activity.name);
+                sendIntent.setComponent(name);
+            }
+
+            startActivity(sendIntent);
+        }
+    }
+
+    private void sendChatwalaSms(final String messageId)
+    {
         String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
         String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
-        openSmsShare(messageUrl, messageText);
-    }
-
-    private void openSmsShare(String messageUrl, String messageText)
-    {
         Intent i = new Intent(this, SmsActivity.class);
         i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageUrl);
         i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);

@@ -13,7 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import com.chatwala.android.*;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.util.Logger;
+import com.chatwala.android.util.MessageDataStore;
+import xmlwise.Plist;
+import xmlwise.XmlParseException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -75,19 +83,9 @@ public class SettingsActivity extends BaseChatWalaActivity
                     return;
                 }
 
-                DeliveryOptions selected = (DeliveryOptions) view.getTag();
-                switch (selected)
-                {
-                    case SMS:
-                        AppPrefs.getInstance(SettingsActivity.this).setPrefUseSms(true);
-                        Logger.logUsingSms(true);
-                        break;
-                    case Email:
-                        AppPrefs.getInstance(SettingsActivity.this).setPrefUseSms(false);
-                        Logger.logUsingSms(false);
-                        break;
-                    default:
-                }
+                DeliveryMethod selected = (DeliveryMethod) view.getTag();
+                AppPrefs.getInstance(SettingsActivity.this).setDeliveryMethod(selected);
+                Logger.logDeliveryMethod(selected.getDisplayString());
             }
 
             @Override
@@ -96,7 +94,7 @@ public class SettingsActivity extends BaseChatWalaActivity
 
             }
         });
-        deliveryMethodSpinner.setSelection(AppPrefs.getInstance(SettingsActivity.this).getPrefUseSms() ? 0 : 1);
+        deliveryMethodSpinner.setSelection(AppPrefs.getInstance(SettingsActivity.this).getDeliveryMethod().getMethod());
 
         refreshIntervalSpinner = (Spinner)findViewById(R.id.refresh_spinner);
         refreshIntervalSpinner.setAdapter(new RefreshIntervalAdapter());
@@ -254,16 +252,43 @@ public class SettingsActivity extends BaseChatWalaActivity
 
     class DeliveryMethodAdapter extends BaseAdapter
     {
-        @Override
-        public int getCount()
-        {
-            return DeliveryOptions.values().length;
+        private DeliveryMethod[] methods;
+
+        public DeliveryMethodAdapter() {
+            methods = DeliveryMethod.values();
+            try {
+
+                if(!ChatwalaApplication.isChatwalaSmsEnabled()) {
+                    /*DeliveryMethod[] newMethods = new DeliveryMethod[methods.length - 1];
+                    for(int i = 0; i < methods.length; i++) {
+                        if(methods[i] == DeliveryMethod.CWSMS) {
+                            while(++i < methods.length) {
+                                newMethods[i - 1] = methods[i];
+                            }
+                            break;
+                        }
+                        else {
+                            newMethods[i] = methods[i];
+                        }
+                    }
+                    methods = newMethods;*/
+                }
+            }
+            catch (Exception e) {
+                Logger.e("Exception with disabling ChatwalaSMS", e);
+            }
         }
 
         @Override
-        public Object getItem(int position)
+        public int getCount()
         {
-            return DeliveryOptions.values()[position];
+            return methods.length;
+        }
+
+        @Override
+        public DeliveryMethod getItem(int position)
+        {
+            return methods[position];
         }
 
         @Override
@@ -287,7 +312,7 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
 
             convertView.setTag(getItem(position));
-            ((TextView)convertView).setText(getItem(position).toString());
+            ((TextView)convertView).setText(getItem(position).getDisplayString());
 
             return convertView;
         }
@@ -380,10 +405,27 @@ public class SettingsActivity extends BaseChatWalaActivity
         OFF
     }
 
-    enum DeliveryOptions
-    {
-        SMS,
-        Email
+    public static enum DeliveryMethod {
+        SMS(0, "SMS"),
+        CWSMS(1, "Chatwala SMS"),
+        EMAIL(2, "Email"),
+        FB(3, "Facebook");
+
+        private int method;
+        private String displayString;
+
+        DeliveryMethod(int method, String displayString) {
+            this.method = method;
+            this.displayString = displayString;
+        }
+
+        public int getMethod() {
+            return method;
+        }
+
+        public String getDisplayString() {
+            return displayString;
+        }
     }
 
     enum RefreshOptions
