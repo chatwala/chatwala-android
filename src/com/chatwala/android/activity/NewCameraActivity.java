@@ -197,7 +197,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 break;
             case PreviewReady:
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                if(shouldShowPreview || isFacebookFlow) {
+                if(shouldShowPreview || isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
                     startPreview();
                 }
                 else {
@@ -1127,7 +1127,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             recordPreviewVideoView = new DynamicTextureVideoView(NewCameraActivity.this, recordPreviewFile, videoInfo.width, videoInfo.height, videoInfo.rotation, null, false);
             recordPreviewCompletionListener = new ReplayCountingCompletionListener();
 
-            if(shouldShowPreview || isFacebookFlow) {
+            if(shouldShowPreview || isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
                 cameraPreviewContainer.addView(recordPreviewVideoView);
                 if(!isFacebookFlow) {
                     closeRecordPreviewView.setVisibility(View.VISIBLE);
@@ -1588,7 +1588,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
 
         public String getDisplayMessage() {
-            if(!isFacebookFlow && !shouldShowPreview && isReply && countdownBegin == 5) {
+            if(!shouldShowPreview && isReply && countdownBegin == 5) {
                 displayMessage = getString(R.string.sending_reply_countdown);
             }
             return displayMessage;
