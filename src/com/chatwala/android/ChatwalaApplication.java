@@ -15,6 +15,7 @@ import co.touchlab.android.superbus.provider.PersistenceProvider;
 import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
 import com.chatwala.android.activity.KillswitchActivity;
+import com.chatwala.android.activity.SettingsActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
@@ -92,6 +93,12 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             String userId = UUID.randomUUID().toString();
             prefs.setUserId(userId);
             Logger.i("User id is " + userId);
+        }
+
+        if(!isChatwalaSmsEnabled()) {
+            if(AppPrefs.getInstance(getApplicationContext()).getDeliveryMethod() == SettingsActivity.DeliveryMethod.CWSMS) {
+                AppPrefs.getInstance(getApplicationContext()).setDeliveryMethod(SettingsActivity.DeliveryMethod.SMS);
+            }
         }
 
         isKillswitchShowing = new AtomicBoolean(false);
@@ -204,6 +211,31 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         {
             return DatabaseHelper.getInstance(ChatwalaApplication.this).getWritableDatabase();
         }
+    }
+
+    public static boolean isChatwalaSmsEnabled() {
+        /*try {
+            File killswitchFile = MessageDataStore.makePlistFile();
+
+            if(killswitchFile.exists()) {
+                Map<String, Object> properties = Plist.load(killswitchFile);
+                Boolean val = (Boolean) properties.get("SMS_DISABLED");
+                if(val != null && val) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+            else {
+                return true;
+            }
+        }
+        catch(Exception e) {
+            Logger.e("There was an error checking if ChatwalaSMS is enabled", e);
+            return true;
+        }*/
+        return true;
     }
 
     public static boolean isKillswitchActive(Context context)

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import co.touchlab.android.superbus.BusHelper;
+import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CameraUtils;
@@ -33,6 +34,7 @@ public class AppPrefs
     public static final String PREF_CHECKED_HAPPY = "PREF_CHECKED_HAPPY";
     public static final String PREF_SHARE_COUNT = "PREF_SHARE_COUNT";
     public static final String PREF_USE_SMS = "PREF_USE_SMS";
+    public static final String PREF_DELIVERY_METHOD = "PREF_DELIVERY_METHOD";
     public static final String PREF_MESSAGE_LOAD_INTERVAL = "PREF_MESSAGE_LOAD_INTERVAL";
     public static final String PREF_DISK_SPACE_MAX = "PREF_DISK_SPACE_MAX";
     public static final String PREF_FEEDBACK_SHOWN = "PREF_FEEDBACK_SHOWN";
@@ -76,6 +78,18 @@ public class AppPrefs
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         if(firstOpen) {
             mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, false).apply();
+            setDeliveryMethod(DeliveryMethod.SMS);
+        }
+        else {
+            if(mSp.contains(PREF_USE_SMS)) {
+                if(mSp.getBoolean(PREF_USE_SMS, true)) {
+                    setDeliveryMethod(DeliveryMethod.SMS);
+                }
+                else {
+                    setDeliveryMethod(DeliveryMethod.EMAIL);
+                }
+                mSp.edit().remove(PREF_USE_SMS).apply();
+            }
         }
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
@@ -177,14 +191,24 @@ public class AppPrefs
         mSp.edit().putInt(PREF_SHARE_COUNT, bitDepth).apply();
     }
 
-    public void setPrefUseSms(boolean useSms)
-    {
-        mSp.edit().putBoolean(PREF_USE_SMS, useSms).apply();
+    public void setDeliveryMethod(DeliveryMethod method) {
+        mSp.edit().putInt(PREF_DELIVERY_METHOD, method.getMethod()).apply();
     }
 
-    public boolean getPrefUseSms()
-    {
-        return mSp.getBoolean(PREF_USE_SMS, true);
+    public DeliveryMethod getDeliveryMethod() {
+        int method = mSp.getInt(PREF_DELIVERY_METHOD, -1);
+        if(method == -1 || method == 0) {
+            return DeliveryMethod.SMS;
+        }
+        else if(method == 1) {
+            return DeliveryMethod.CWSMS;
+        }
+        else if(method == 2) {
+            return DeliveryMethod.EMAIL;
+        }
+        else {
+            return DeliveryMethod.FB;
+        }
     }
 
     public void setPrefMessageLoadInterval(int minutes)

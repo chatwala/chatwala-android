@@ -10,6 +10,9 @@
     <string name="basic_instructions_141"></string>
     <string name="basic_instructions">Tap to record a message.\nSee your friends react here.</string>
 
+    <string name="facebook_flow_instructions">Start a conversation with your Facebook friends. Their reactions will appear here.</string>
+    <string name="facebook_flow_send_instructions">Tap to post this to Facebook and see your friends react.</string>
+
     <string name="recording_countdown">Recording...%d</string>
     <string name="recording_reply_countdown">Recording your reply...%d</string>
     <string name="sending_reply_countdown">Sending reply in...%d</string>
