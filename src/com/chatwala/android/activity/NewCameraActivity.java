@@ -218,7 +218,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         timerKnob.setVisibility(View.VISIBLE);
         timerKnob.setImageResource(R.drawable.ic_action_send_ios);
         int messageRes = R.string.send_instructions;
-        if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
+        if(isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
             messageRes = R.string.facebook_flow_send_instructions;
         }
         showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
@@ -974,7 +974,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             CWAnalytics.sendStopPressedEvent(analyticsDuration());
         }
 
-        if(buttonPress && getCurrentMessageOrigin() != MessageOrigin.INITIATOR) {
+        if(buttonPress && getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) {
             cameraPreviewView.stopRecording();
             showSendOrCancelAlert();
         }
