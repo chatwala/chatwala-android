@@ -150,8 +150,9 @@ public class SettingsActivity extends BaseChatWalaActivity
             @Override
             public void onClick(View v)
             {
-                Uri uri = Uri.parse("http://www.chatwala.com/tos");
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                Intent intent = new Intent(SettingsActivity.this, ChatwalaWebActivity.class);
+                intent.putExtra(ChatwalaWebActivity.CHATWALA_WEB_TITLE_EXTRA, getString(R.string.terms_and_conditions));
+                intent.putExtra(ChatwalaWebActivity.CHATWALA_WEB_URL_EXTRA, "http://www.chatwala.com/tos");
                 startActivity(intent);
             }
         });
@@ -161,8 +162,9 @@ public class SettingsActivity extends BaseChatWalaActivity
             @Override
             public void onClick(View v)
             {
-                Uri uri = Uri.parse("http://www.chatwala.com/privacy");
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                Intent intent = new Intent(SettingsActivity.this, ChatwalaWebActivity.class);
+                intent.putExtra(ChatwalaWebActivity.CHATWALA_WEB_TITLE_EXTRA, getString(R.string.privacy_policy));
+                intent.putExtra(ChatwalaWebActivity.CHATWALA_WEB_URL_EXTRA, "http://www.chatwala.com/privacy");
                 startActivity(intent);
             }
         });
