@@ -72,6 +72,9 @@
                   android:label="@string/update_profile_pic"
                   android:screenOrientation="portrait"
                   android:theme="@style/ChatwalaTheme"/>
+        <activity android:name=".activity.ChatwalaWebActivity"
+                  android:screenOrientation="portrait"
+                  android:theme="@style/ChatwalaTheme"/>
         <activity android:name=".activity.FeedbackActivity"
                   android:label="@string/feedback"
                   android:screenOrientation="portrait"
