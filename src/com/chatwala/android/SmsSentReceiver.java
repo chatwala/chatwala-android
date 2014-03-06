@@ -12,8 +12,6 @@ import com.chatwala.android.util.CWAnalytics;
  * Created by Eliezer on 3/4/14.
  */
 public class SmsSentReceiver extends BroadcastReceiver {
-    public static final String SMS_SENT = "com.chatwala.android.SMS_SENT";
-
     private static Toast smsSentToast;
 
     @Override

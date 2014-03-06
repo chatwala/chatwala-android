@@ -257,9 +257,8 @@ public class SettingsActivity extends BaseChatWalaActivity
         public DeliveryMethodAdapter() {
             methods = DeliveryMethod.values();
             try {
-
                 if(!ChatwalaApplication.isChatwalaSmsEnabled()) {
-                    /*DeliveryMethod[] newMethods = new DeliveryMethod[methods.length - 1];
+                    DeliveryMethod[] newMethods = new DeliveryMethod[methods.length - 1];
                     for(int i = 0; i < methods.length; i++) {
                         if(methods[i] == DeliveryMethod.CWSMS) {
                             while(++i < methods.length) {
@@ -271,7 +270,7 @@ public class SettingsActivity extends BaseChatWalaActivity
                             newMethods[i] = methods[i];
                         }
                     }
-                    methods = newMethods;*/
+                    methods = newMethods;
                 }
             }
             catch (Exception e) {
