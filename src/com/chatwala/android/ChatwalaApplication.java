@@ -214,7 +214,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     }
 
     public static boolean isChatwalaSmsEnabled() {
-        /*try {
+        try {
             File killswitchFile = MessageDataStore.makePlistFile();
 
             if(killswitchFile.exists()) {
@@ -234,8 +234,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         catch(Exception e) {
             Logger.e("There was an error checking if ChatwalaSMS is enabled", e);
             return true;
-        }*/
-        return true;
+        }
     }
 
     public static boolean isKillswitchActive(Context context)

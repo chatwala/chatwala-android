@@ -24,6 +24,9 @@ public class CWAnalytics
     private static String CATEGORY_CONVERSATION_STARTER = "CONVERSATION_STARTER";
     private static String CATEGORY_CONVERSATION_REPLIER = "CONVERSATION_REPLIER";
 
+    private static String ACTION_INSTALL_FROM_FACEBOOK = "INSTALL_FROM_FACEBOOK";
+    private static String ACTION_DEEP_LINK_FROM_FACEBOOK = "DEEP_LINK_FROM_FACEBOOK";
+
     private static String ACTION_APP_OPEN = "APP_OPEN";
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
     private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
@@ -124,6 +127,10 @@ public class CWAnalytics
     public static void sendAppOpenEvent()
     {
         sendEvent(ACTION_APP_OPEN, null, null);
+    }
+
+    public static void sendFacebookInitiatorEvent() {
+        sendEvent((isFirstOpen ? ACTION_INSTALL_FROM_FACEBOOK : ACTION_DEEP_LINK_FROM_FACEBOOK), LABEL_NO_TAP, null);
     }
 
     public static void sendAppBackgroundEvent()

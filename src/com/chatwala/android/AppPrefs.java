@@ -78,17 +78,20 @@ public class AppPrefs
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         if(firstOpen) {
             mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, false).apply();
-            setDeliveryMethod(DeliveryMethod.SMS);
+            setDeliveryMethod(DeliveryMethod.CWSMS);
         }
         else {
-            if(mSp.contains(PREF_USE_SMS)) {
+            if(mSp.contains(PREF_USE_SMS)) { //if coming from 1.4.6 or before //TODO take out after killswitch thrown
                 if(mSp.getBoolean(PREF_USE_SMS, true)) {
-                    setDeliveryMethod(DeliveryMethod.SMS);
+                    setDeliveryMethod(DeliveryMethod.CWSMS); //and they use SMS, switch them to CWSMS
                 }
                 else {
                     setDeliveryMethod(DeliveryMethod.EMAIL);
                 }
                 mSp.edit().remove(PREF_USE_SMS).apply();
+            }
+            else {
+                UpdateManager.handleUpdateIfNeeded(application);
             }
         }
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
@@ -196,8 +199,8 @@ public class AppPrefs
     }
 
     public DeliveryMethod getDeliveryMethod() {
-        int method = mSp.getInt(PREF_DELIVERY_METHOD, -1);
-        if(method == -1 || method == 0) {
+        int method = mSp.getInt(PREF_DELIVERY_METHOD, 1);
+        if(method == 0) {
             return DeliveryMethod.SMS;
         }
         else if(method == 1) {

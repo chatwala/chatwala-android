@@ -123,19 +123,46 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             public void onClick(View view) {
                 ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
                         .hideSoftInputFromWindow(contactsFilter.getWindowToken(), 0);
-                if (recipientsAdapter.isEmpty()) {
-                    if (noContactsToast != null) {
-                        noContactsToast.cancel();
+
+                String enteredNumber = null;
+                //if there are no recipients, check the filter to see if there's a number
+                //if there is, send it, otherwise toast error
+                if(recipientsAdapter.isEmpty()) {
+                    String filterString = contactsFilter.getText().toString().trim();
+                    if(filterString.isEmpty()) {
+                        showErrorToast("Please enter a recipient");
+                        return;
                     }
-                    noContactsToast = Toast.makeText(SmsActivity.this, "You must enter recipients", Toast.LENGTH_SHORT);
-                    noContactsToast.show();
-                } else {
-                    new SendSmsAsyncTask().execute(new Void[]{});
+
+                    enteredNumber = PhoneNumberUtils.extractNetworkPortion(filterString);
+                    if(enteredNumber.isEmpty()) {
+                        showErrorToast("Please enter a valid recipient");
+                        return;
+                    }
+
                 }
+                new SendSmsAsyncTask(enteredNumber).execute(new Void[]{});
             }
         });
 
         getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, this);
+    }
+
+    private void showErrorToast(String error) {
+        if (noContactsToast != null) {
+            noContactsToast.cancel();
+        }
+        noContactsToast = Toast.makeText(SmsActivity.this, error, Toast.LENGTH_SHORT);
+        noContactsToast.show();
+        return;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(contactsFilter.getWindowToken(), 0);
     }
 
     @Override
@@ -148,8 +175,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             CWAnalytics.sendBackgroundWhileSmsEvent();
         }
 
-        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
-                .hideSoftInputFromWindow(contactsFilter.getWindowToken(), 0);
     }
 
     @Override
@@ -221,7 +246,12 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     }
 
     private class SendSmsAsyncTask extends AsyncTask<Void, Void, Void> {
-        ProgressDialog pd;
+        private ProgressDialog pd;
+        private String contactsFilterEnteredValue;
+
+        public SendSmsAsyncTask(String contactsFilterEnteredValue) {
+            this.contactsFilterEnteredValue = contactsFilterEnteredValue;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -231,27 +261,41 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
         @Override
         protected Void doInBackground(Void... v) {
-            for(int i = 0; i < recipientsAdapter.getCount(); i++) {
-                String messageUrlWithPrefix = "... " + smsMessageUrl;
-                int maxMessageSize = MAX_SMS_MESSAGE_LENGTH - messageUrlWithPrefix.length();
-                if(smsMessage.length() > maxMessageSize) {
-                    smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
-                }
-                String message = smsMessage + "... " + smsMessageUrl;
+            String messageUrlWithPrefix = "... " + smsMessageUrl;
+            int maxMessageSize = MAX_SMS_MESSAGE_LENGTH - messageUrlWithPrefix.length();
+            if(smsMessage.length() > maxMessageSize) {
+                smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
+            }
+            String message = smsMessage + "... " + smsMessageUrl;
 
-                PendingIntent sentIntent = PendingIntent.getBroadcast(SmsActivity.this, 0, new Intent(SmsSentReceiver.SMS_SENT), 0);
+            if(contactsFilterEnteredValue != null && !contactsFilterEnteredValue.isEmpty()) {
+                PendingIntent sentIntent = PendingIntent.getBroadcast(SmsActivity.this, 0,
+                        new Intent(SmsActivity.this, SmsSentReceiver.class), 0);
 
-                try {
-                    SmsManager.getDefault().sendTextMessage(recipientsAdapter.getItem(i).getValue(), null, message, sentIntent, null);
-                    CWAnalytics.sendMessageSentEvent(recipientsAdapter.getCount());
+                doSendMessage(contactsFilterEnteredValue, message, sentIntent);
+                CWAnalytics.sendMessageSentEvent(1);
+            }
+            else {
+                for(int i = 0; i < recipientsAdapter.getCount(); i++) {
+                    PendingIntent sentIntent = PendingIntent.getBroadcast(SmsActivity.this, i,
+                            new Intent(SmsActivity.this, SmsSentReceiver.class), 0);
+
+                    doSendMessage(recipientsAdapter.getItem(i).getValue(), message, sentIntent);
                 }
-                catch(Exception e) {
-                    Logger.e("There was an exception while sending SMS(s)", e);
-                    CWAnalytics.sendMessageSentFailedEvent();
-                }
+                CWAnalytics.sendMessageSentEvent(recipientsAdapter.getCount());
             }
 
             return null;
+        }
+
+        private void doSendMessage(String recipient, String message, PendingIntent sentIntent) {
+            try {
+                SmsManager.getDefault().sendTextMessage(recipient, null, message, sentIntent, null);
+            }
+            catch(Exception e) {
+                Logger.e("There was an exception while sending SMS(s)", e);
+                CWAnalytics.sendMessageSentFailedEvent();
+            }
         }
 
         @Override
@@ -474,9 +518,25 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     else {
                         filterList = new ArrayList<ContactEntry>();
                         for(ContactEntry entry : contacts) {
-                            if(entry.getName().toLowerCase(Locale.ENGLISH).startsWith(filter) ||
-                                    entry.getValue().toLowerCase(Locale.ENGLISH).startsWith(filter)) {
+                            String sanitizedValue = PhoneNumberUtils.extractNetworkPortion(entry.getValue());
+                            String sanitizedFilter = PhoneNumberUtils.extractNetworkPortion(filter);
+                            if(!sanitizedValue.isEmpty() && !sanitizedFilter.isEmpty() &&
+                                    sanitizedValue.startsWith(sanitizedFilter)) {
                                 filterList.add(entry);
+                            }
+                            else {
+                                if(entry.getName().toLowerCase((Locale.ENGLISH)).startsWith(filter)) {
+                                    filterList.add(entry);
+                                }
+                                else {
+                                    String[] names = entry.getName().split(" ");
+                                    for(String name : names) {
+                                        if(name.toLowerCase(Locale.ENGLISH).startsWith(filter)) {
+                                            filterList.add(entry);
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
