@@ -364,8 +364,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             openDrawer();
         }
 
-        if(getIntent().hasExtra(INITIATOR_EXTRA)) {
-            if("fb".equals(getIntent().getStringExtra(INITIATOR_EXTRA))) {
+        if(getIntent().getData() != null) {
+            if("fb".equals(getIntent().getData().getLastPathSegment())) {
+                CWAnalytics.sendFacebookInitiatorEvent();
+                getIntent().setData(null);
                 isFacebookFlow = true;
             }
         }
