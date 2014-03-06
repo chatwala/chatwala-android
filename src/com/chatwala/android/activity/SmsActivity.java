@@ -525,11 +525,16 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                                 filterList.add(entry);
                             }
                             else {
-                                String[] names = entry.getName().split(" ");
-                                for(String name : names) {
-                                    if(name.toLowerCase(Locale.ENGLISH).startsWith(filter)) {
-                                        filterList.add(entry);
-                                        break;
+                                if(entry.getName().toLowerCase((Locale.ENGLISH)).startsWith(filter)) {
+                                    filterList.add(entry);
+                                }
+                                else {
+                                    String[] names = entry.getName().split(" ");
+                                    for(String name : names) {
+                                        if(name.toLowerCase(Locale.ENGLISH).startsWith(filter)) {
+                                            filterList.add(entry);
+                                            break;
+                                        }
                                     }
                                 }
                             }
