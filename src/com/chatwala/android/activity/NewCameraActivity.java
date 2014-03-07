@@ -388,6 +388,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 referrer = new Referrer(getIntent().getData());
                 if(referrer.isNotReferrer()) {
                     referrer = null;
+                    return;
                 }
                 else {
                     getIntent().setData(null);
