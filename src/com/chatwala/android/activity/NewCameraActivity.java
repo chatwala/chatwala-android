@@ -73,6 +73,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     DeliveryMethod deliveryMethod;
 
+    private String recordCopyOverride;
+
     private boolean isFacebookFlow = false;
 
     private ChatwalaMessage playbackMessage = null;
@@ -217,12 +219,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private void startPreview() {
         timerKnob.setVisibility(View.VISIBLE);
         timerKnob.setImageResource(R.drawable.ic_action_send_ios);
-        int messageRes = R.string.send_instructions;
-        if(isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
-            messageRes = R.string.facebook_flow_send_instructions;
-        }
-        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
+        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, getPreviewCopy());
         CWAnalytics.sendPreviewStartEvent();
+    }
+
+    private String getPreviewCopy() {
+        if(isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
+            return getString(R.string.facebook_flow_send_instructions);
+        }
+        else {
+            return getString(R.string.send_instructions);
+        }
     }
 
     private void analyticsTimerReset()
@@ -372,9 +379,30 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             }
         }
 
+
+        parseReferrer();
+
 //        captureOpeningVolume();
 
         Logger.i("End of onCreate()");
+    }
+
+    private void parseReferrer() {
+        String referrer = AppPrefs.getInstance(this).getReferrer();
+        if(referrer == null) {
+            return;
+        }
+
+        if(referrer.equals("fb")) {
+            isFacebookFlow = true;
+        }
+        else if(referrer.startsWith("message")) {
+            String message = referrer.substring(7);
+            getIntent().putExtra(MESSAGE_ID, message);
+        }
+        else if(referrer.startsWith("copy")) {
+            recordCopyOverride = referrer.substring(4);
+        }
     }
 
     private void runWaterSplash()
@@ -951,6 +979,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         //TODO get rid of this
         AndroidUtils.isMainThread();
 
+        recordCopyOverride = null;
+
         if(getAppState() == AppState.ReadyStopped) {
             showRecordingCountdown(false);
         }
@@ -1061,14 +1091,22 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         else
         {
             removeWaterSplash();
-            int messageRes = R.string.basic_instructions;
-            if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
-                messageRes = R.string.facebook_flow_instructions;
-            }
-            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
+            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, getRecordCopy());
         }
 
         liveForRecording();
+    }
+
+    private String getRecordCopy() {
+        if(recordCopyOverride != null) {
+            return recordCopyOverride;
+        }
+        else if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
+            return getString(R.string.facebook_flow_instructions);
+        }
+        else {
+            return getString(R.string.basic_instructions);
+        }
     }
 
     private void liveForRecording()
@@ -1544,7 +1582,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         startActivity(i);
     }
 
-    private void showMessage(View messageView, TextView messageViewText, int colorRes, int messageRes)
+    private void showMessage(View messageView, TextView messageViewText, int colorRes, int messageRes) {
+        showMessage(messageView, messageViewText, colorRes, getString(messageRes));
+    }
+
+    private void showMessage(View messageView, TextView messageViewText, int colorRes, String message)
     {
         if (messageView.getVisibility() != View.GONE)
             return;
@@ -1554,7 +1596,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         messageView.startAnimation(animation);
         messageView.setBackgroundColor(getResources().getColor(colorRes));
         messageView.setVisibility(View.VISIBLE);
-        messageViewText.setText(messageRes);
+        messageViewText.setText(message);
         messageViewText.setVisibility(View.VISIBLE);
     }
 
