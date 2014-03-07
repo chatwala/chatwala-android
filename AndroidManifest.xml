@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="20014"
-          android:versionName="1.4.9">
+          android:versionCode="20015"
+          android:versionName="1.4.10">
     <uses-sdk android:minSdkVersion="15"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -38,7 +38,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <intent-filter>
-                <data android:scheme="http" android:host="chatwala.com"/>
+                <data android:scheme="http" android:host="chatwala.com" android:pathPattern="/(dev/|qa/|)\?.*$"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -72,6 +72,9 @@
                   android:label="@string/update_profile_pic"
                   android:screenOrientation="portrait"
                   android:theme="@style/ChatwalaTheme"/>
+        <activity android:name=".activity.ChatwalaWebActivity"
+                  android:screenOrientation="portrait"
+                  android:theme="@style/ChatwalaTheme"/>
         <activity android:name=".activity.FeedbackActivity"
                   android:label="@string/feedback"
                   android:screenOrientation="portrait"
@@ -83,6 +86,12 @@
 
         <service android:name="co.touchlab.android.superbus.SuperbusService"
                  android:exported="false"/>
+
+        <receiver android:name=".receivers.ReferralReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
 
         <receiver android:name="com.chatwala.android.SmsSentReceiver"
                   android:exported="false">
