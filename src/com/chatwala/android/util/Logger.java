@@ -81,7 +81,7 @@ public class Logger {
 
         @Override
         public void run() {
-            if(logToAndroid) {
+            if(logToAndroid || (level == Log.ERROR || level == Log.WARN)) {
                 logToAndroid(createAndroidMessage(message), t, level);
             }
 

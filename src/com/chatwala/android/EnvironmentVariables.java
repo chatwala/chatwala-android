@@ -11,7 +11,9 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
             "http://chatwala.com/?",
             "UA-46207837-1",
-            "213176338890949"
+            "213176338890949",
+            false,
+            false
     ),
 
     QA(
@@ -20,7 +22,9 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
             "http://chatwala.com/qa/?",
             "UA-46207837-4",
-            "213176338890949"
+            "213176338890949",
+            true,
+            true
     ),
 
     DEV(
@@ -29,7 +33,9 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/dev/?",
             "UA-46207837-3",
-            "213176338890949"
+            "213176338890949",
+            true,
+            true
     ),
 
     SANDBOX(
@@ -38,7 +44,9 @@ public enum EnvironmentVariables {
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/?",
             "UA-46207837-3",
-            "213176338890949"
+            "213176338890949",
+            true,
+            true
     );
 
     public static EnvironmentVariables get()
@@ -56,8 +64,10 @@ public enum EnvironmentVariables {
     public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
     private String apiPath, displayString, plistPath, webPath, googleAnalyticsID, facebookAppId;
+    private boolean isDebug, canSwitchUser;
 
-    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String googleAnalyticsID, String facebookAppId)
+    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath,
+                         String googleAnalyticsID, String facebookAppId, boolean isDebug, boolean canSwitchUser)
     {
         this.apiPath = apiPath;
         this.displayString = displayString;
@@ -65,6 +75,8 @@ public enum EnvironmentVariables {
         this.webPath = webPath;
         this.googleAnalyticsID = googleAnalyticsID;
         this.facebookAppId = facebookAppId;
+        this.isDebug = isDebug;
+        this.canSwitchUser = canSwitchUser;
     }
 
     public String getApiPath()
@@ -94,4 +106,8 @@ public enum EnvironmentVariables {
     }
 
     public String getFacebookAppId() { return facebookAppId; }
+
+    public boolean getIsDebug() { return isDebug; }
+
+    public boolean getCanSwitchUser() { return canSwitchUser; }
 }

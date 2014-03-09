@@ -199,6 +199,12 @@ public abstract class BaseHttpRequest<T>
             Logger.i("==================HTTP RESPONSE==================");
             String responseLog = "Response from: " + response.getUrl();
             responseLog += "\n" + response.getHeaders().toString().replaceAll("],", "]\n");
+            if(response.getHeaders().get("Content-Type").toString().contains("application/json")) {
+                responseLog += "\n" + response.getBodyAsString();
+            }
+            else {
+                responseLog += "\n<Non-JSON response>";
+            }
             Logger.i(responseLog);
         } catch(Exception e) {} //nothing to do about this now...probably a bug in their HTTP libraries
     }

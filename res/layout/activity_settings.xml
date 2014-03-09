@@ -252,6 +252,59 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dev_features_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"
+            android:layout_marginBottom="20dip"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/settings_button_accent"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/settings_button_background">
+            <RelativeLayout
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:padding="20dip">
+                <TextView
+                    android:id="@+id/override_user_lbl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:text="@string/override_user"
+                    android:textColor="@color/text_white"/>
+
+                <EditText
+                    android:id="@+id/override_user_box"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:layout_toRightOf="@+id/override_user_lbl"
+                    android:layout_toLeftOf="@+id/override_user_cb"/>
+
+                <CheckBox
+                    android:id="@+id/override_user_cb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+        </LinearLayout>
+        </LinearLayout>
+
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dip"

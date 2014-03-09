@@ -41,6 +41,8 @@
     <string name="feedback">Feedback</string>
     <string name="version_information">Version Information</string>
 
+    <string name="override_user">Override User</string>
+
     <string name="update_profile_pic">Update Profile Pic</string>
     <string name="change_profile_pic">CHANGE!</string>
     <string name="change_profile_pic_bottom_panel">Tap CHANGE! to update your profile pic.</string>

@@ -47,6 +47,9 @@ public class AppPrefs
     public static final String PREF_FEEDBACK_MESSAGE_COUNT = "PREF_FEEDBACK_MESSAGE_COUNT";
     public static final String PREF_ACTION_INCREMENT = "PREF_ACTION_INCREMENT";
 
+    public static final String PREF_OVERRIDE_USER = "PREF_OVERRIDE_USER";
+    public static final String PREF_OVERRIDE_USER_ID = "PREF_OVERRIDE_USER_ID";
+
     public static synchronized AppPrefs getInstance(Context context)
     {
         if (INSTANCE == null)
@@ -129,7 +132,28 @@ public class AppPrefs
 
     public String getUserId()
     {
-        return mSp.getString(PREF_USER_ID, null);
+        if(EnvironmentVariables.get().getCanSwitchUser() && isUserIdOverridden()) {
+            return mSp.getString(PREF_OVERRIDE_USER_ID, null);
+        }
+        else {
+            return mSp.getString(PREF_USER_ID, null);
+        }
+    }
+
+    public boolean isUserIdOverridden() {
+        return mSp.getBoolean(PREF_OVERRIDE_USER, false);
+    }
+
+    public void overrideUserId(String newUserId) {
+        mSp.edit().putBoolean(PREF_OVERRIDE_USER, true)
+                  .putString(PREF_OVERRIDE_USER_ID, newUserId)
+                  .apply();
+    }
+
+    public void restoreUserId() {
+        mSp.edit().putBoolean(PREF_OVERRIDE_USER, false)
+                  .putString(PREF_OVERRIDE_USER_ID, null)
+                  .apply();
     }
 
     public void setGcmToken(String token)

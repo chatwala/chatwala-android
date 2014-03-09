@@ -7,10 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.*;
 import com.chatwala.android.*;
 import com.chatwala.android.loaders.BroadcastSender;
@@ -196,6 +193,38 @@ public class SettingsActivity extends BaseChatWalaActivity
                 builder.show();
             }
         });
+
+        if(EnvironmentVariables.get().getCanSwitchUser()) {
+            final AppPrefs prefs = AppPrefs.getInstance(this);
+            String overridingUserId = null;
+            boolean isUserIdOverridden = prefs.isUserIdOverridden();
+
+            findViewById(R.id.dev_features_container).setVisibility(View.VISIBLE);
+            CheckBox overrideUserCb = (CheckBox) findViewById(R.id.override_user_cb);
+            final EditText overrideUserIdEt = (EditText) findViewById((R.id.override_user_box));
+
+            overrideUserCb.setChecked(isUserIdOverridden);
+            overrideUserCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                    if(isChecked) {
+                        String newId = overrideUserIdEt.getText().toString().trim();
+                        if(!newId.isEmpty()) {
+                            prefs.overrideUserId(overrideUserIdEt.getText().toString());
+                        }
+                    }
+                    else {
+                        prefs.restoreUserId();
+                    }
+                }
+            });
+
+            if(isUserIdOverridden) {
+                overridingUserId = prefs.getUserId();
+                overrideUserIdEt.setText(overridingUserId);
+            }
+
+        }
     }
 
     @Override
