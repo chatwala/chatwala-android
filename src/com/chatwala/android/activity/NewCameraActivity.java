@@ -33,6 +33,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.receivers.ReferralReceiver;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
@@ -71,7 +72,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
 
-    DeliveryMethod deliveryMethod;
+    private DeliveryMethod deliveryMethod;
+    private Referrer referrer;
 
     private String recordCopyOverride;
 
@@ -314,6 +316,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         super.onCreate(savedInstanceState);
         Logger.i("Beginning of onCreate()");
 
+        findReferrer();
+        CWAnalytics.initAnalytics(this, referrer);
+
         buttonDelayHandler = new Handler();
 
         setMainContent(getLayoutInflater().inflate(R.layout.activity_main, (ViewGroup) getWindow().getDecorView(), false));
@@ -371,37 +376,40 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             openDrawer();
         }
 
-        if(getIntent().getData() != null) {
-            if("fb".equals(getIntent().getData().getLastPathSegment())) {
-                CWAnalytics.sendFacebookInitiatorEvent();
-                getIntent().setData(null);
-                isFacebookFlow = true;
-            }
-        }
-
-
-        parseReferrer();
-
 //        captureOpeningVolume();
 
         Logger.i("End of onCreate()");
     }
 
-    private void parseReferrer() {
-        String referrer = AppPrefs.getInstance(this).getReferrer();
-        if(referrer == null) {
-            return;
+    private void findReferrer() {
+        String referrerPref = AppPrefs.getInstance(this).getReferrer();
+        if(referrerPref == null) {
+            if(getIntent() != null && getIntent().getData() != null) {
+                referrer = new Referrer(getIntent().getData());
+                if(referrer.isNotReferrer()) {
+                    referrer = null;
+                    return;
+                }
+                else {
+                    getIntent().setData(null);
+                }
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            referrer = new Referrer(referrerPref);
         }
 
-        if(referrer.equals("fb")) {
+        if(referrer.isFacebookReferrer()) {
             isFacebookFlow = true;
         }
-        else if(referrer.startsWith("message")) {
-            String message = referrer.substring(7);
-            getIntent().putExtra(MESSAGE_ID, message);
+        else if(referrer.isMessageReferrer()) {
+            getIntent().putExtra(MESSAGE_ID, referrer.getValue());
         }
-        else if(referrer.startsWith("copy")) {
-            recordCopyOverride = referrer.substring(4);
+        else if(referrer.isCopyReferrer()) {
+            recordCopyOverride = referrer.getValue();
         }
     }
 
@@ -465,7 +473,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
 
         Logger.i();
-        CWAnalytics.setStarterMessage(!replyMessageAvailable());
+        CWAnalytics.setStarterMessage(!replyMessageAvailable(), referrer);
 
         activityActive = true;
         setAppState(AppState.Transition);
@@ -524,6 +532,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
         activityActive = false;
 
+        if(referrer != null && referrer.isFacebookReferrer() && getAppState() == AppState.PreviewReady) {
+            closeResultPreview();
+        }
+        referrer = null;
         isFacebookFlow = false;
 
         AppState state = getAppState();
@@ -676,7 +688,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                                 }
                             });
 
-                            CWAnalytics.sendSendMessageEvent(deliveryMethod, (long) recordPreviewCompletionListener.replays);
+                            if(isFacebookFlow) {
+                                CWAnalytics.sendSendMessageEvent(DeliveryMethod.FB, (long) recordPreviewCompletionListener.replays);
+                            }
+                            else {
+                                CWAnalytics.sendSendMessageEvent(deliveryMethod, (long) recordPreviewCompletionListener.replays);
+                            }
+
                             if(isFacebookFlow) {
                                 sendFacebookPostShare(messageId);
                             }
@@ -1112,15 +1130,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private void liveForRecording()
     {
         Logger.i();
-        runOnUiThread(new Runnable()
-        {
+        runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 AppState appStateTest = getAppState();
-                Logger.i("AppState = "  + appStateTest);
-                if (appStateTest == AppState.LoadingFileCamera)
-                {
+                Logger.i("AppState = " + appStateTest);
+                if (appStateTest == AppState.LoadingFileCamera) {
                     setAppState(AppState.ReadyStopped);
                 }
             }
