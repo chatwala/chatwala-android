@@ -20,7 +20,7 @@ public class Referrer {
     private boolean isAdReferrer = false;
 
     public Referrer(Uri adReferrer) {
-        if("ads".equals(adReferrer.getLastPathSegment())) {
+        if("ad".equals(adReferrer.getLastPathSegment())) {
             parseAdReferrer(adReferrer);
         }
         else {

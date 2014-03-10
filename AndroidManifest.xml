@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="20015"
+          android:versionCode="20016"
           android:versionName="1.4.10">
     <uses-sdk android:minSdkVersion="15"/>
 
@@ -50,7 +50,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
             <intent-filter>
-                <data android:scheme="http" android:host="www.chatwala.com" android:pathPattern="/(dev/|qa/|)ads"/>
+                <data android:scheme="http" android:host="www.chatwala.com" android:pathPattern="/(dev/|qa/|)ad/"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
