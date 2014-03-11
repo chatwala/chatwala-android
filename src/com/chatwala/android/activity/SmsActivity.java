@@ -142,23 +142,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         contactsFilter = (AutoCompleteTextView) findViewById(R.id.contacts_filter);
         contactsFilter.setHintTextColor(Color.WHITE);
         contactsFilter.setThreshold(0);
-        contactsFilter.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
-            @Override
-            public void afterTextChanged(Editable editable) {}
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-                if(charSequence.length() == 0) {
-                    contactsFilter.setTextAppearance(SmsActivity.this, android.R.style.TextAppearance_Medium);
-                    contactsFilter.setHintTextColor(Color.WHITE);
-                }
-                else {
-                    contactsFilter.setTextAppearance(SmsActivity.this, android.R.style.TextAppearance_Large);
-                }
-            }
-        });
         contactsFilter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
