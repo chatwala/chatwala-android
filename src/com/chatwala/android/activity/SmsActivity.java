@@ -145,10 +145,10 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         contactsFilter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                CWAnalytics.sendRecipientAddedEvent();
                 ContactEntry entry = contactsAdapter.getItem(i);
                 contactsFilter.setText("");
                 if (contactsAdapter.remove(entry)) {
+                    CWAnalytics.sendRecipientAddedEvent();
                     recipientsAdapter.add(entry);
                 }
             }
@@ -173,6 +173,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ContactEntry entry = mostContactedAdapter.getItem(i);
                 if(!recipientsAdapter.contains(entry)) {
+                    CWAnalytics.sendRecentAddedEvent();
                     recipientsAdapter.add(entry);
                 }
                 else {

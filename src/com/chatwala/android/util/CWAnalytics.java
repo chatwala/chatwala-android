@@ -55,7 +55,8 @@ public class CWAnalytics
     private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
     private static String ACTION_BACK_PRESSED = "BACK_PRESSED";
 
-    private static String ACTION_RECIPIENT_ADDED = " RECIPIENT_ADDED";
+    private static String ACTION_RECIPIENT_ADDED = "RECIPIENT_ADDED";
+    private static String ACTION_RECENT_ADDED = "RECENT_ADDED";
     private static String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
     private static String ACTION_MESSAGE_SENT_FAILED = "MESSAGE_SENT_FAILED";
@@ -253,6 +254,10 @@ public class CWAnalytics
 
     public static void sendRecipientAddedEvent() {
         sendEvent(ACTION_RECIPIENT_ADDED, LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendRecentAddedEvent() {
+        sendEvent(ACTION_RECENT_ADDED, LABEL_TAP_SCREEN, null);
     }
 
     public static void sendMessageSentEvent(long numRecipients) {
