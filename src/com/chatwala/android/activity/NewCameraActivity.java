@@ -377,14 +377,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             }
         }
 
-        showTutorialIfNeeded();
-
 //        captureOpeningVolume();
 
         Logger.i("End of onCreate()");
     }
 
     private void showTutorialIfNeeded() {
+        if(tutorialView != null) {
+            tutorialView.hide();
+        }
+
         ShowcaseView.ConfigOptions co = new ShowcaseView.ConfigOptions();
         co.showcaseId = FIRST_BUTTON_TUTORIAL_ID;
         co.hideOnClickOutside = false;
@@ -1037,6 +1039,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private void previewSurfaceReady()
     {
         Logger.i();
+        showTutorialIfNeeded();
         initStartState();
     }
 
