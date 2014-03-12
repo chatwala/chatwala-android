@@ -584,10 +584,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         if(!wasFirstButtonPressed) {
             wasFirstButtonPressed = true;
             AppPrefs.getInstance(this).setFirstButtonPressed();
-            if(tutorialView != null) {
-                ShowcaseView.registerShot(this, tutorialView.getConfigOptions().showcaseId);
-                tutorialView.hide();
-            }
+        }
+
+        if(tutorialView != null) {
+            ShowcaseView.registerShot(this, tutorialView.getConfigOptions().showcaseId);
+            tutorialView.hide();
         }
 
         //Don't do anything.  These should be very short states.
