@@ -444,10 +444,10 @@ public class ShowcaseView extends RelativeLayout
     }
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD) //lint check until we make this code ours
-    public void registerShot() {
-        SharedPreferences internal = getContext()
+    public static void registerShot(Context context, int showcaseId) {
+        SharedPreferences internal = context
                 .getSharedPreferences(PREFS_SHOWCASE_INTERNAL, Context.MODE_PRIVATE);
-            internal.edit().putBoolean("hasShot" + getConfigOptions().showcaseId, true).apply();
+            internal.edit().putBoolean("hasShot" + showcaseId, true).apply();
     }
 
     public void hide() {

@@ -387,6 +387,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             tutorialView.hide();
         }
 
+        if(replyMessageAvailable()) {
+            ShowcaseView.registerShot(this, FIRST_BUTTON_TUTORIAL_ID);
+            return;
+        }
+
         ShowcaseView.ConfigOptions co = new ShowcaseView.ConfigOptions();
         co.showcaseId = FIRST_BUTTON_TUTORIAL_ID;
         co.hideOnClickOutside = false;
@@ -394,12 +399,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
         ViewTarget target = new ViewTarget(R.id.timerDial, this);
         tutorialView = ShowcaseView.insertShowcaseView(target, this, "Welcome to Chatwala.", "A new way to have conversations. Tap to get started.", co);
-        tutorialView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                triggerButtonAction(false);
-            }
-        });
     }
 
     private void runWaterSplash()
@@ -586,7 +585,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             wasFirstButtonPressed = true;
             AppPrefs.getInstance(this).setFirstButtonPressed();
             if(tutorialView != null) {
-                tutorialView.registerShot();
+                ShowcaseView.registerShot(this, tutorialView.getConfigOptions().showcaseId);
                 tutorialView.hide();
             }
         }
