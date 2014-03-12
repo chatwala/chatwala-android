@@ -44,7 +44,7 @@ public class ClingDrawerImpl implements ClingDrawer {
         int dh = getShowcaseHeight();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-        	canvas.drawCircle(x, y, 160, mEraser);
+        	canvas.drawCircle(x, y, 235, mEraser);
         }
 
         mShowcaseDrawable.setBounds(mShowcaseRect);
