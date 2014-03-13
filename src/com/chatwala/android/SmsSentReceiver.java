@@ -22,8 +22,6 @@ public class SmsSentReceiver extends BroadcastReceiver {
         switch(getResultCode()) {
             case Activity.RESULT_OK:
                 CWAnalytics.sendMessageSentConfirmedEvent();
-                smsSentToast = Toast.makeText(context.getApplicationContext(), "Message sent", Toast.LENGTH_SHORT);
-                smsSentToast.show();
                 break;
             case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
             case SmsManager.RESULT_ERROR_NO_SERVICE:
