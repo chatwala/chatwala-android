@@ -62,6 +62,9 @@ public class Referrer {
                 referrer = COPY;
                 value = referrerStr.substring(4);
             }
+            else {
+                referrer = NONE;
+            }
         }
         else {
             referrer = NONE;

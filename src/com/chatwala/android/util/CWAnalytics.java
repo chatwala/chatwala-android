@@ -21,6 +21,7 @@ import com.google.analytics.tracking.android.Tracker;
  */
 public class CWAnalytics
 {
+    private static String CATEGORY_REFERRER = "REFERRER";
     private static String CATEGORY_FIRST_OPEN = "FIRST_OPEN";
     private static String CATEGORY_CONVERSATION_STARTER = "CONVERSATION_STARTER";
     private static String CATEGORY_CONVERSATION_REPLIER = "CONVERSATION_REPLIER";
@@ -30,6 +31,8 @@ public class CWAnalytics
     private static String CATEGORY_FIRST_OPEN_COPY = "FIRST_OPEN_COPY";
 
     private static String CATEGORY_AD_REFERRER_FACEBOOK = "AD_REFERRER_FACEBOOK";
+
+    private static String ACTION_REFERRER_RECEIVED = "REFERRER_RECEIVED";
 
     private static String ACTION_APP_OPEN = "APP_OPEN";
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
@@ -135,6 +138,9 @@ public class CWAnalytics
             else if(referrer.isCopyReferrer()) {
                 categoryString = CATEGORY_FIRST_OPEN_COPY;
             }
+            else {
+                categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+            }
         }
         else {
             categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
@@ -143,6 +149,10 @@ public class CWAnalytics
         if(!categoryString.equals(oldCategoryString)) {
             resetActionIncrement();
         }
+    }
+
+    public static void sendReferrerReceivedEvent(String referrer) {
+        sendEvent(CATEGORY_REFERRER, ACTION_REFERRER_RECEIVED, referrer, null);
     }
 
     public static void sendAppOpenEvent()
@@ -300,11 +310,23 @@ public class CWAnalytics
     {
         String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
+        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
         Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
                 "\n\tCATEGORY:\t" + categoryString +
                 "\n\tACTION:\t" + action +
                 "\n\tLABEL:\t" + labelString +
                 "\n\tVALUE:\t" + valueString);
-        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
+    }
+
+    private static void sendEvent(String category, String action, String label, Long value)
+    {
+        String labelString = label != null ? label : LABEL_NO_TAP;
+        String valueString = value != null ? value.toString() : "none";
+        tracker.send(MapBuilder.createEvent(category, action, label, value).build());
+        Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
+                "\n\tCATEGORY:\t" + category +
+                "\n\tACTION:\t" + action +
+                "\n\tLABEL:\t" + labelString +
+                "\n\tVALUE:\t" + valueString);
     }
 }
