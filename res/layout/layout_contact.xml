@@ -1,38 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:padding="5dp"
               android:background="#fff"
+              android:descendantFocusability="blocksDescendants"
               android:orientation="vertical">
 
-    <TextView
-            android:id="@+id/contact_item_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:textColor="#000"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:orientation="horizontal">
 
-    <RelativeLayout
+        <TextView
+                android:id="@+id/contact_item_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".90"
+                android:layout_gravity="left"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:textColor="#000"
+                android:text="Me"/>
+
+        <CheckBox
+                android:id="@+id/contact_sent_cb"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".10"
+                android:gravity="right"/>
+
+    </LinearLayout>
+
+    <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:orientation="horizontal">
 
         <TextView
                 android:id="@+id/contact_item_number"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_toLeftOf="@+id/contact_item_type"
-                android:textColor="#000"/>
+                android:layout_weight=".50"
+                android:textColor="#000"
+                android:text="9178814316"/>
 
         <TextView
                 android:id="@+id/contact_item_type"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:textColor="#000"/>
+                android:layout_weight=".30"
+                android:layout_marginLeft="30dp"
+                android:textColor="#000"
+                android:text="Mobile"/>
 
-    </RelativeLayout>
-
+        <TextView
+                android:id="@+id/contact_sent_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".30"
+                android:gravity="right"
+                android:textColor="#000"
+                android:text="Sending in 3"/>
+    </LinearLayout>
 </LinearLayout>
