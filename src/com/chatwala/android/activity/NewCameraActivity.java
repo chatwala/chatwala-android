@@ -42,6 +42,8 @@ import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.ui.DynamicTextureVideoView;
 import com.chatwala.android.ui.TimerDial;
 import com.chatwala.android.util.*;
+import com.espian.showcaseview.ShowcaseView;
+import com.espian.showcaseview.targets.ViewTarget;
 import com.j256.ormlite.dao.Dao;
 import org.apache.commons.io.IOUtils;
 
@@ -78,6 +80,9 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private String recordCopyOverride;
 
     private boolean isFacebookFlow = false;
+
+    private ShowcaseView tutorialView;
+    private static final int FIRST_BUTTON_TUTORIAL_ID = 1000;
 
     private ChatwalaMessage playbackMessage = null;
     private ChatwalaMessage messageToSendDirectly = null;
@@ -413,6 +418,25 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
     }
 
+    private void showTutorialIfNeeded() {
+        if(tutorialView != null) {
+            tutorialView.hide();
+        }
+
+        if(replyMessageAvailable()) {
+            ShowcaseView.registerShot(this, FIRST_BUTTON_TUTORIAL_ID);
+            return;
+        }
+
+        ShowcaseView.ConfigOptions co = new ShowcaseView.ConfigOptions();
+        co.showcaseId = FIRST_BUTTON_TUTORIAL_ID;
+        co.hideOnClickOutside = false;
+        co.shotType = ShowcaseView.TYPE_ONE_SHOT;
+
+        ViewTarget target = new ViewTarget(R.id.timerDial, this);
+        tutorialView = ShowcaseView.insertShowcaseView(target, this, "Welcome to Chatwala.", "A new way to have conversations. Tap to get started.", co);
+    }
+
     private void runWaterSplash()
     {
         Logger.i("Start of runWaterSplash()");
@@ -600,6 +624,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         if(!wasFirstButtonPressed) {
             wasFirstButtonPressed = true;
             AppPrefs.getInstance(this).setFirstButtonPressed();
+        }
+
+        if(tutorialView != null) {
+            ShowcaseView.registerShot(this, tutorialView.getConfigOptions().showcaseId);
+            tutorialView.hide();
         }
 
         //Don't do anything.  These should be very short states.
@@ -1058,6 +1087,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private void previewSurfaceReady()
     {
         Logger.i();
+        showTutorialIfNeeded();
         initStartState();
     }
 

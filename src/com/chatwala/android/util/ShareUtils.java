@@ -1,5 +1,4 @@
 package com.chatwala.android.util;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;

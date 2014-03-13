@@ -55,7 +55,7 @@
     <string name="killswitch">KILLSWITCH</string>
 
     <!--DEV-->
-   <!-- <string name="facebookAppId">1472279299660540</string>-->
+    <!--<string name="facebookAppId">1472279299660540</string>-->
     <!--QA-->
     <!--<string name="facebookAppId">639218822814074</string>-->
     <!--PROD-->
