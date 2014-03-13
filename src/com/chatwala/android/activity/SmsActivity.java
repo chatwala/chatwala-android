@@ -3,6 +3,7 @@ package com.chatwala.android.activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -178,10 +179,12 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 if(s.toString().isEmpty()) {
                     contactsListView.setAdapter(mostContactedAdapter);
                     findViewById(R.id.recent_contacts_lbl).setVisibility(View.VISIBLE);
+                    findViewById(R.id.contacts_filter_clear).setVisibility(View.GONE);
                 }
                 else {
                     contactsListView.setAdapter(contactsAdapter);
                     findViewById(R.id.recent_contacts_lbl).setVisibility(View.GONE);
+                    findViewById(R.id.contacts_filter_clear).setVisibility(View.VISIBLE);
                 }
                 contactsAdapter.getFilter().filter(s.toString());
             }
@@ -200,11 +203,14 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ContactEntryAdapter adapter = (ContactEntryAdapter) contactsListView.getAdapter();
                 ContactEntry entry = adapter.getItem(i);
-                if(entry.isSending()) {
-                    contactsSentTo.remove(entry.getName() + entry.getValue());
-                    entry.cancelSend();
+
+                if(!entry.isContact()) {
+                    entry.sendMessage();
+                    contactsFilter.setText("");
+                    return;
                 }
-                else {
+
+                if(!entry.isSending()) {
                     if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
                         entry.setIsSent(true);
                     }
@@ -213,6 +219,13 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         entry.startSend();
                     }
                 }
+            }
+        });
+
+        findViewById(R.id.contacts_filter_clear).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                contactsFilter.setText("");
             }
         });
 
@@ -441,6 +454,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
         public void setIsSent(boolean isSent) {
             this.isSent = isSent;
+            contactsAdapter.notifyDataSetChanged();
+            mostContactedAdapter.notifyDataSetChanged();
         }
 
         public boolean isSentOrSending() {
@@ -621,6 +636,36 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             holder.status.setText(entry.getSendingStatus());
             holder.sentCb.setChecked(entry.isSentOrSending());
             holder.sentCb.setEnabled(!entry.isSent());
+            holder.sentCb.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isChecked = ((CheckBox)v).isChecked();
+                    if(!entry.isContact()) {
+                        entry.sendMessage();
+                        contactsFilter.setText("");
+                        return;
+                    }
+
+                    if(isChecked) {
+                        if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
+                            entry.setIsSent(true);
+                            notifyDataSetChanged();
+                        }
+                        else {
+                            contactsSentTo.put(entry.getName() + entry.getValue(), true);
+                            entry.startSend();
+                        }
+                    }
+                    else {
+                        contactsSentTo.remove(entry.getName() + entry.getValue());
+                        entry.cancelSend();
+                    }
+                }
+            });
+            int id = Resources.getSystem().getIdentifier("btn_check_holo_light", "drawable", "android");
+            if(id != 0) {
+                holder.sentCb.setButtonDrawable(id);
+            }
 
             if(entry.isSent()) {
                 convertView.setBackgroundColor(Color.GRAY);

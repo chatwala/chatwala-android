@@ -5,27 +5,44 @@
         android:background="#000"
         android:orientation="vertical">
 
-    <EditText
-            android:id="@+id/contacts_filter"
+    <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-            android:ems="10"
-            android:hint="Type names or tap to send"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#fff"
-            android:background="#000"
-            android:inputType="textNoSuggestions">
-        <requestFocus/>
-    </EditText>
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+        <EditText
+                android:id="@+id/contacts_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/contacts_filter_clear"
+                android:layout_alignBaseline="@+id/contacts_filter_clear"
+                android:ems="10"
+                android:hint="Type names or tap to send"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#fff"
+                android:background="#000"
+                android:inputType="textNoSuggestions">
+            <requestFocus/>
+        </EditText>
+
+        <Button
+                android:id="@+id/contacts_filter_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:visibility="gone"
+                android:text="Clear"/>
+    </RelativeLayout>
     
     <TextView
             android:id="@+id/recent_contacts_lbl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="3dp"
-            android:layout_marginLeft="2dp"
+            android:layout_marginLeft="10dp"
             android:textAppearance="?android:textAppearanceMedium"
             android:textStyle="bold"
             android:textColor="#fff"
