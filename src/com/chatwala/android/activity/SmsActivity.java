@@ -489,6 +489,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             timeToSend = TIME_TO_SEND;
             contactsAdapter.notifyDataSetChanged();
             mostContactedAdapter.notifyDataSetChanged();
+            CWAnalytics.sendMessageSendCanceledEvent();
         }
 
         public String getSendingStatus() {
