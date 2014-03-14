@@ -310,7 +310,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             String previousName = null;
 
             if(cursor.moveToFirst()) {
-                while(cursor.moveToNext() && mostContactedContacts.size() != MOST_CONTACTED_CONTACT_LIMIT) {
+                do {
                     try {
                         String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                         String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
@@ -350,7 +350,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         Logger.e("Exceptione", e);
                         continue;
                     }
-                }
+                } while(cursor.moveToNext() && mostContactedContacts.size() != MOST_CONTACTED_CONTACT_LIMIT);
             }
 
             mostContactedAdapter = new ContactEntryAdapter(mostContactedContacts, true, mostContactedEntryComparator);
@@ -467,6 +467,14 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 return false;
             }
 
+            ContactEntryAdapter adapter = (ContactEntryAdapter) contactsListView.getAdapter();
+            if(adapter == contactsAdapter) {
+                CWAnalytics.sendRecipientAddedEvent();
+            }
+            else if(adapter == mostContactedAdapter) {
+                CWAnalytics.sendRecentAddedEvent();
+            }
+
             isSending = true;
             timeToSend = TIME_TO_SEND;
 
@@ -481,6 +489,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             timeToSend = TIME_TO_SEND;
             contactsAdapter.notifyDataSetChanged();
             mostContactedAdapter.notifyDataSetChanged();
+            CWAnalytics.sendMessageSendCanceledEvent();
         }
 
         public String getSendingStatus() {
