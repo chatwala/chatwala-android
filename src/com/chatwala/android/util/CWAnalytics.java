@@ -152,7 +152,11 @@ public class CWAnalytics
         }
     }
 
-    public static void sendReferrerReceivedEvent(String referrer) {
+    public static void sendReferrerReceivedEvent(Context context, String referrer) {
+        if(tracker == null) {
+            tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
+        }
+
         sendEvent(CATEGORY_REFERRER, ACTION_REFERRER_RECEIVED, referrer, null);
     }
 

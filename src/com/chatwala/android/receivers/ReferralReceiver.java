@@ -21,13 +21,13 @@ public class ReferralReceiver extends BroadcastReceiver {
                 if(rawReferrer != null) {
                     String referrer = URLDecoder.decode(rawReferrer, "UTF-8");
                     Logger.i("Got referrer - " + referrer);
-                    CWAnalytics.sendReferrerReceivedEvent(referrer);
+                    CWAnalytics.sendReferrerReceivedEvent(context, referrer);
                     AppPrefs.getInstance(context).putReferrer(referrer);
                 }
             }
         }
         catch(Exception e) {
-            Logger.e("Couldn't process referrer");
+            Logger.e("Couldn't process referrer", e);
         }
     }
 }
