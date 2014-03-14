@@ -31,7 +31,6 @@ public class UpdateManager {
             AppPrefs prefs = AppPrefs.getInstance(context);
             switch(vc) {
                 case 20014:
-                case 20015:
                     do20014Update(context, prefs);
                     break;
                 default:
