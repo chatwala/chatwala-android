@@ -69,6 +69,67 @@ public class ZipUtil
         zipFile.close();
     }
 
+    public static File buildZipToSend(Context context, final File incomingVideoFile, final String messageMetaDataJSONString) {
+        File buildDir = MessageDataStore.makeTempChatDir();
+        buildDir.mkdirs();
+
+        File preppedVideoFile = MessageDataStore.makeVideoFile(buildDir);
+
+        File outZip;
+        try
+        {
+            FileOutputStream output = new FileOutputStream(preppedVideoFile);
+            FileInputStream input = new FileInputStream(incomingVideoFile);
+            IOUtils.copy(input, output);
+
+            input.close();
+            output.close();
+
+            File metadataFile = MessageDataStore.makeMetadataFile(buildDir);
+
+            FileWriter fileWriter = new FileWriter(metadataFile);
+
+            fileWriter.append(messageMetaDataJSONString);
+
+            fileWriter.close();
+
+            outZip = MessageDataStore.makeOutboxWalaFile();
+            zipFiles(outZip, Arrays.asList(buildDir.listFiles()));
+
+            for(File file : buildDir.listFiles())
+            {
+                file.delete();
+            }
+            buildDir.delete();
+
+            /*
+            if(!MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId()).exists())
+            {
+                final Context applicationContext = context.getApplicationContext();
+                DataProcessor.runProcess(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        BusHelper.submitCommandSync(applicationContext, new PutUserProfilePictureCommand(incomingVideoFile.getPath(), false));
+                    }
+                });
+            }
+            else
+            {
+                incomingVideoFile.delete();
+            }*/
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return outZip;
+
+    }
+
+    /*
     public static File buildZipToSend(Context context, final File incomingVideoFile, final ChatwalaMessage originalMessage, final VideoUtils.VideoMetadata originalVideoMetadata, String newMessageId)
     {
         File buildDir = MessageDataStore.makeTempChatDir();
@@ -88,16 +149,16 @@ public class ZipUtil
 
             File metadataFile = MessageDataStore.makeMetadataFile(buildDir);
 
-            MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.makeNewMetadata(context) : new MessageMetadata(context);
-            sendMessageMetadata.incrementForNewMessage();
-            sendMessageMetadata.messageId = newMessageId;
+            //MessageMetadata sendMessageMetadata = originalMessage != null ? originalMessage.makeNewMetadata(context) : new MessageMetadata(context);
+            //sendMessageMetadata.incrementForNewMessage();
+            //sendMessageMetadata.messageId = newMessageId;
 
-            long startRecordingMillis = Math.round(originalMessage != null ? originalMessage.getStartRecording() * 1000d : 0);
-            long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + NewCameraActivity.VIDEO_PLAYBACK_START_DELAY);
-            sendMessageMetadata.startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
+            //long startRecordingMillis = Math.round(originalMessage != null ? originalMessage.getStartRecording() * 1000d : 0);
+            //long chatMessageDuration = originalVideoMetadata == null ? 0 : (originalVideoMetadata.duration + NewCameraActivity.VIDEO_PLAYBACK_START_DELAY);
+            //originalMessage.setStartRecording(((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d);
 
-            sendMessageMetadata.senderId = AppPrefs.getInstance(context).getUserId();
-            sendMessageMetadata.recipientId = originalMessage != null ? originalMessage.getSenderId() : "unknown_recipient";
+            //originalMessage.setSenderId(AppPrefs.getInstance(context).getUserId());
+            //originalMessage.setRecipientId(originalMessage != null ? originalMessage.getSenderId() : "unknown_recipient";
 
             FileWriter fileWriter = new FileWriter(metadataFile);
 
@@ -141,5 +202,5 @@ public class ZipUtil
         }
 
         return outZip;
-    }
+    }*/
 }

@@ -19,6 +19,7 @@ public class PutUserProfilePictureCommand extends SqliteCommand
     private String path;
     private boolean isPicture;
 
+
     public PutUserProfilePictureCommand(){}
 
     public PutUserProfilePictureCommand(String path, Boolean isPicture)

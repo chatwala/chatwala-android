@@ -6,18 +6,52 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.util.Log;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.R;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by matthewdavis on 2/3/14.
  */
 public class ThumbUtils
 {
+
+    public static File createThumbFromFirstFrame(Context context, String videoFilePath) {
+
+        Bitmap frame = VideoUtils.createVideoFrame(videoFilePath, 1);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        frame.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] toReturn = stream.toByteArray();
+
+        InputStream is = new ByteArrayInputStream(stream.toByteArray());
+        File file = MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId());
+        try
+        {
+            FileOutputStream os = new FileOutputStream(file);
+
+
+            final byte[] buffer = new byte[1024];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                os.write(buffer, 0, read);
+            }
+
+            os.close();
+            is.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return file;
+    }
+
     public static void createThumbForUserImage(Context context, String userId)
     {
         File thumbImageFile = MessageDataStore.findUserImageThumbInLocalStore(userId);

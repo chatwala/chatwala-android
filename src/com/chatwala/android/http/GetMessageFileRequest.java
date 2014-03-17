@@ -51,7 +51,8 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected String getResourceURL()
     {
-        return "messages/" + chatwalaMessage.getMessageId();
+        Logger.e("CHATWALA MESSAGE READ URL =" + chatwalaMessage.getReadUrl());
+        return chatwalaMessage.getReadUrl();
     }
 
     @Override
@@ -126,20 +127,11 @@ public class GetMessageFileRequest extends BaseGetRequest
 
         if(!exists)
         {
-            chatwalaMessage.setTimestamp(System.currentTimeMillis());
+            //chatwalaMessage.setTimestamp(System.currentTimeMillis());
             chatwalaMessage.setMessageState(ChatwalaMessage.MessageState.UNREAD);
 
-            try
-            {
-                chatwalaMessage.initMetadata(context, metadataJson);
-            }
-            catch (JSONException e)
-            {
-                throw new RuntimeException(e);
-            }
-
-            Logger.i("New message metadata " + metadataJson.toString());
-            chatwalaMessage.saveMetadata(databaseHelper);
+            //Logger.i("New message metadata " + metadataJson.toString());
+            //chatwalaMessage.saveMetadata(databaseHelper);
         }
         else
         {
@@ -161,7 +153,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(chatwalaMessage.getSenderId()));
+        //BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(chatwalaMessage.getSenderId()));
         BusHelper.submitCommandSync(context, new ClearStoreCommand());
     }
 }

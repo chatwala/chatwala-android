@@ -24,8 +24,8 @@ public enum EnvironmentVariables {
     ),
 
     DEV(
-            "https://chatwala-deveast-13.azurewebsites.net/",
-            "deveast_13",
+            "https://chatwala-deveast-20.azurewebsites.net/",
+            "deveast_20",
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/dev/?",
             "UA-46207837-3",

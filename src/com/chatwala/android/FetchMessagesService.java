@@ -12,6 +12,7 @@ import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
+import com.chatwala.android.superbus.server20.GetUserInboxCommand;
 import com.chatwala.android.util.Logger;
 
 import java.util.Date;
@@ -43,7 +44,7 @@ public class FetchMessagesService extends IntentService
             @Override
             public void run()
             {
-                BusHelper.submitCommandSync(FetchMessagesService.this, new GetMessagesForUserCommand());
+                BusHelper.submitCommandSync(FetchMessagesService.this, new GetUserInboxCommand());
             }
         });
     }

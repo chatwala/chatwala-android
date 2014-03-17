@@ -96,8 +96,8 @@ public class PostSubmitMessageRequest extends BasePostRequest<ChatwalaMessage>
     {
         if(videoMetadata != null)
         {
-            File outFile = ZipUtil.buildZipToSend(context, new File(messagePath), originalMessage, videoMetadata, messageMetadata.getMessageId());
-            BusHelper.submitCommandSync(context, new PutMessageFileWithSasCommand(outFile.getPath(), messageMetadata.getMessageId(), messageMetadata.getUrl(), originalMessageId, recipientId));
+            //File outFile = ZipUtil.buildZipToSend(context, new File(messagePath), originalMessage, videoMetadata, messageMetadata.getMessageId());
+            //BusHelper.submitCommandSync(context, new PutMessageFileWithSasCommand(outFile.getPath(), messageMetadata.getMessageId(), messageMetadata.getUrl(), originalMessageId, recipientId));
         }
     }
 

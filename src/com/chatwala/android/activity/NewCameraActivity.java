@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -31,11 +30,12 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
-import com.chatwala.android.http.PostSubmitMessageRequest;
+import com.chatwala.android.http.server20.StartUnknownRecipientMessageRequest;
+import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
-import com.chatwala.android.superbus.PutMessageFileCommand;
-import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
+import com.chatwala.android.superbus.server20.NewMessageFlowCommand;
+import com.chatwala.android.superbus.server20.ReplyFlowCommand;
 import com.chatwala.android.ui.CameraPreviewView;
 import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.ui.DynamicTextureVideoView;
@@ -48,9 +48,8 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.chatwala.android.http.BaseHttpRequest;
 
 /**
  * Created with IntelliJ IDEA.
@@ -453,7 +452,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         {
             if(!replyMessageAvailable())
             {
-                prepManualSend();
+               // prepManualSend();
             }
             setAppState(AppState.PreviewLoading);
             if(recordPreviewFile == null)
@@ -609,42 +608,59 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 @Override
                 protected Boolean doInBackground(Void... params)
                 {
+
+                    Logger.e("MO1");
                     if(replyMessageAvailable() && playbackMessage == null)
                     {
                         try
                         {
+                            Logger.e("MO2");
                             playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(getIntent().getStringExtra(MESSAGE_ID));
                         }
                         catch (Exception e)
                         {
+                            Logger.e("MO2.1");
                             Logger.e("Error loading playback for share", e);
                             //On any exception, just continue on without it.  We probably had a problem with the initial video load and the user started a new conversation
                             playbackMessage = null;
                         }
                     }
 
-                    if (playbackMessage == null && messageToSendDirectly == null)
+                    if (playbackMessage != null)
                     {
-                        File outFile = ZipUtil.buildZipToSend(NewCameraActivity.this, recordPreviewFile, incomingMessage, chatMessageVideoMetadata, null);
-                        ChatwalaNotificationManager.makeErrorInitialSendNotification(NewCameraActivity.this, outFile);
+                        Logger.e("MO3");
+
+                        DataProcessor.runProcess(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                Logger.e("MO4");
+                                BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(),chatMessageVideoMetadata.duration));
+                            }
+                        });
                         return false;
                     }
                     else
                     {
+
+                        Logger.e("MO5");
                         if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
-                            final String messageId = messageToSendDirectly.getMessageId();
-                            final String messageSasUrl = messageToSendDirectly.getUrl();
-                            messageToSendDirectly = null;
 
-                            final File outFile = ZipUtil.buildZipToSend(NewCameraActivity.this, recordPreviewFile, incomingMessage, chatMessageVideoMetadata, messageId);
+                            Logger.e("MO6");
+                            final String messageId = UUID.randomUUID().toString();
 
                             DataProcessor.runProcess(new Runnable()
                             {
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new PutMessageFileWithSasCommand(outFile.getAbsolutePath(), messageId, messageSasUrl, null, "unknown_recipient"));
+                                    Logger.e("MO7");
+                                    Logger.e("MO7 mid=" + messageId);
+                                    Logger.e("MO7 recordPreviewFile.getPath() = " + recordPreviewFile.getPath());
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new NewMessageFlowCommand(messageId, recordPreviewFile.getPath()));
+                                    Logger.e("MO8");
                                 }
                             });
 
@@ -1165,7 +1181,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
         else
         {
-            prepManualSend();
+           // prepManualSend();
         }
 
         setAppState(AppState.LoadingFileCamera);
@@ -1364,10 +1380,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 {
                     try
                     {
-                        ChatwalaMessage messageInfo = new PostSubmitMessageRequest(NewCameraActivity.this, null, null, null, null).execute();
-                        if (messageInfo != null)
+                        //ChatwalaMessage messageInfo = new PostSubmitMessageRequest(NewCameraActivity.this, null, null, null, null).execute();
+
+                        ChatwalaResponse<ChatwalaMessage> response = (ChatwalaResponse<ChatwalaMessage>) new StartUnknownRecipientMessageRequest(NewCameraActivity.this, UUID.randomUUID().toString()).execute();
+                        ChatwalaMessage message = response.getResponseData();
+                        if (message != null)
                         {
-                            messageToSendDirectly = messageInfo;
+                            messageToSendDirectly = message;
                             break;
                         }
                     }

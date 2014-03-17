@@ -28,7 +28,7 @@ public class MessageDataStore
     private static final int BYTES_IN_MEG = 1048576;
 
     private static ChatwalaApplication chatwalaApplication = null;
-    private static File tempDir, messageDir, outboxDir, usersDir, plistDir;
+    private static File tempDir, messageDir, outboxDir, usersDir, plistDir, thumbnailDir;
 
     private static final String WALA_FILE_PREFIX = "vid_";
     private static final String CHAT_DIR_PREFIX = "chat_";

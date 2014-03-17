@@ -53,7 +53,10 @@ public class ShareUtils
                 ChatwalaMessage chatwalaMessage = new ChatwalaMessage();
                 chatwalaMessage.setMessageFile(MessageDataStore.makeVideoFile(outFolder));
                 FileInputStream input = new FileInputStream(MessageDataStore.makeMetadataFile(outFolder));
-                chatwalaMessage.initMetadata(activity, new JSONObject(IOUtils.toString(input)));
+                //chatwalaMessage.initMetadata(activity, new JSONObject(IOUtils.toString(input)));
+                chatwalaMessage.populateFromMetaDataJSON(new JSONObject(IOUtils.toString(input)));
+                chatwalaMessage.setMessageMetaDataString(IOUtils.toString(input));
+
 
                 input.close();
 

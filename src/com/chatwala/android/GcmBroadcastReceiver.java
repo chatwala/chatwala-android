@@ -6,6 +6,7 @@ import android.content.Intent;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.GetMessagesForUserCommand;
+import com.chatwala.android.superbus.server20.GetUserInboxCommand;
 import com.chatwala.android.util.Logger;
 
 /**
@@ -22,7 +23,7 @@ public class GcmBroadcastReceiver extends BroadcastReceiver
             @Override
             public void run()
             {
-                BusHelper.submitCommandSync(context, new GetMessagesForUserCommand());
+                BusHelper.submitCommandSync(context, new GetUserInboxCommand());
             }
         });
     }

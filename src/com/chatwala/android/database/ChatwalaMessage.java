@@ -17,8 +17,7 @@ import java.sql.SQLException;
  * To change this template use File | Settings | File Templates.
  */
 @DatabaseTable(tableName = "message")
-public class ChatwalaMessage
-{
+public class ChatwalaMessage {
     @DatabaseField(id = true)
     private String messageId;
 
@@ -37,8 +36,25 @@ public class ChatwalaMessage
     @DatabaseField
     private String thumbnailUrl;
 
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
-    private MessageMetadata messageMetadata;
+    @DatabaseField
+    private String shareUrl;
+
+    @DatabaseField
+    private String readUrl;
+
+    private String writeUrl;
+
+    @DatabaseField
+    private long threadIndex;
+
+    @DatabaseField
+    private String threadId;
+
+    @DatabaseField
+    private String groupId;
+
+    @DatabaseField
+    private double startRecording;
 
     @DatabaseField
     private String fileUrl = null;
@@ -51,95 +67,161 @@ public class ChatwalaMessage
     @DatabaseField
     private MessageState messageState;
 
+    @DatabaseField
+    private String messageMetaDataString;
 
-    public String getMessageId()
-    {
+    @DatabaseField
+    private String replyingToMessageId;
+
+    public String getReplyingToMessageId() {
+        return replyingToMessageId;
+    }
+
+    public void setReplyingToMessageId(String replyingToMessageId) {
+        this.replyingToMessageId = replyingToMessageId;
+    }
+
+    public String getMessageId() {
         return messageId;
     }
 
-    public void setMessageId(String messageId)
-    {
+    public void setMessageId(String messageId) {
         this.messageId = messageId;
     }
 
-    public String getUrl()
-    {
+    public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url)
-    {
+    public void setUrl(String url) {
         this.url = url;
     }
 
-    public String getSenderId()
-    {
-        return senderId != null ? senderId : messageMetadata.senderId;
+    public String getSenderId() {
+        return senderId;
     }
 
-    public void setSenderId(String senderId)
-    {
+    public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
 
-    public String getRecipientId()
-    {
-        return recipientId != null ? recipientId : messageMetadata.recipientId;
+    public String getRecipientId() {
+        return recipientId;
     }
 
-    public void setRecipientId(String recipientId)
-    {
+    public void setRecipientId(String recipientId) {
+
         this.recipientId = recipientId;
     }
 
-    public Integer getSortId()
-    {
+    public Integer getSortId() {
         return sortId;
     }
 
-    public void setSortId(Integer sortId)
-    {
+    public void setSortId(Integer sortId) {
         this.sortId = sortId;
     }
 
-    public String getThumbnailUrl()
-    {
+    public String getThumbnailUrl() {
         return thumbnailUrl;
     }
 
-    public void setThumbnailUrl(String thumbnailUrl)
-    {
+    public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
     }
 
-    public void initMetadata(Context context, JSONObject metadataJson) throws JSONException
-    {
-        messageMetadata = new MessageMetadata(context);
-        messageMetadata.init(metadataJson);
+    public String getShareUrl() {
+        return shareUrl;
     }
 
-    public void saveMetadata(DatabaseHelper helper) throws SQLException
-    {
-        helper.getMessageMetadataDao().createOrUpdate(messageMetadata);
+    public void setShareUrl(String shareUrl) {
+        this.shareUrl = shareUrl;
     }
 
-    public double getStartRecording()
-    {
-        return messageMetadata != null ? messageMetadata.startRecording : 0;
+    public String getReadUrl() {
+        return readUrl;
     }
 
-    public MessageMetadata makeNewMetadata(Context context)
-    {
-        return messageMetadata != null ? messageMetadata.makeNew(context) : new MessageMetadata(context);
+    public void setReadUrl(String readUrl) {
+        this.readUrl = readUrl;
     }
 
-    public File getMessageFile()
-    {
-        if(messageFile == null && fileUrl != null)
-        {
+    public long getThreadIndex() {
+        return threadIndex;
+    }
+
+    public void setThreadIndex(long threadIndex) {
+        this.threadIndex = threadIndex;
+    }
+
+    public String getThreadId() {
+        return threadId;
+    }
+
+    public void setThreadId(String threadId) {
+        this.threadId = threadId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public void setStartRecording(double startRecording) {
+        this.startRecording = startRecording;
+    }
+
+    public double getStartRecording() {
+        return startRecording;
+    }
+
+    public String getWriteUrl() {
+        return writeUrl;
+    }
+
+    public void setWriteUrl(String writeUrl) {
+        this.writeUrl = writeUrl;
+    }
+
+    public void populateFromMetaDataJSON(JSONObject message_meta_data) throws JSONException{
+        this.setMessageId(message_meta_data.getString("message_id"));
+        this.setRecipientId(message_meta_data.getString("recipient_id"));
+        this.setSenderId(message_meta_data.getString("sender_id"));
+        this.setThumbnailUrl(message_meta_data.getString("thumbnail_url"));
+        this.setUrl(message_meta_data.getString("read_url"));
+        this.setReadUrl(message_meta_data.getString("read_url"));
+        this.setShareUrl(message_meta_data.getString("share_url"));
+        this.setGroupId(message_meta_data.getString("group_id"));
+        this.setThreadIndex(message_meta_data.getInt("thread_index"));
+        this.setThreadId(message_meta_data.getString("thread_id"));
+        this.setMessageMetaDataString(message_meta_data.toString(4));
+
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getMessageMetaDataString() {
+        return messageMetaDataString;
+    }
+
+    public void setMessageMetaDataString(String messageMetaDataString) {
+        this.messageMetaDataString = messageMetaDataString;
+    }
+
+
+    public File getMessageFile() {
+        if (messageFile == null && fileUrl != null) {
             File temp = new File(fileUrl);
-            if(temp.exists())
-            {
+            if (temp.exists()) {
                 messageFile = temp;
             }
         }
@@ -147,45 +229,37 @@ public class ChatwalaMessage
         return messageFile;
     }
 
-    public String getMessageFileUrl()
-    {
-        if(fileUrl == null && messageFile != null)
-        {
+    public String getMessageFileUrl() {
+        if (fileUrl == null && messageFile != null) {
             fileUrl = messageFile.getPath();
         }
 
         return fileUrl;
     }
 
-    public void setMessageFile(File messageFile)
-    {
+    public void setMessageFile(File messageFile) {
         this.messageFile = messageFile;
         this.fileUrl = messageFile.getAbsolutePath();
     }
 
-    public void clearMessageFile()
-    {
+    public void clearMessageFile() {
         this.messageFile = null;
         this.fileUrl = null;
     }
 
-    public Long getTimestamp()
-    {
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp)
-    {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 
-    public MessageState getMessageState()
-    {
+    public MessageState getMessageState() {
         return messageState;
     }
 
-    public void setMessageState(MessageState messageState)
-    {
+    public void setMessageState(MessageState messageState) {
         this.messageState = messageState;
     }
 

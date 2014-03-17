@@ -84,6 +84,30 @@ public abstract class BaseSasPutRequest extends BaseGetRequest
         }
     }
 
+    public static byte[] convertFileToBytes(File file)
+    {
+        FileInputStream fileInputStream;
+
+        byte[] bFile = new byte[(int) file.length()];
+
+        try {
+            //convert file into array of bytes
+            fileInputStream = new FileInputStream(file);
+            fileInputStream.read(bFile);
+            fileInputStream.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return bFile;
+    }
+
     public static byte[] convertMessageToBytes(String localMessageFileUrl)
     {
         Logger.i("Putting local message " + localMessageFileUrl);

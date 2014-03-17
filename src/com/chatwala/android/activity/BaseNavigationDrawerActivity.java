@@ -22,9 +22,9 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DrawerMessageWrapper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.MessagesLoader;
-import com.chatwala.android.superbus.GetMessagesForUserCommand;
 import com.chatwala.android.util.CWAnalytics;
 import com.squareup.picasso.Picasso;
+import com.chatwala.android.superbus.server20.GetUserInboxCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +102,7 @@ public abstract class BaseNavigationDrawerActivity extends BaseChatWalaActivity
                     @Override
                     public void run()
                     {
-                        BusHelper.submitCommandSync(BaseNavigationDrawerActivity.this, new GetMessagesForUserCommand());
+                        BusHelper.submitCommandSync(BaseNavigationDrawerActivity.this, new GetUserInboxCommand());
                     }
                 });
             }

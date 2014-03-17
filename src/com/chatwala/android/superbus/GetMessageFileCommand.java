@@ -20,13 +20,13 @@ import com.chatwala.android.util.MessageDataStore;
  */
 public class GetMessageFileCommand extends SqliteCommand
 {
-    private ChatwalaMessage messageMetadata;
+    private ChatwalaMessage message;
 
     public GetMessageFileCommand(){}
 
     public GetMessageFileCommand(ChatwalaMessage message)
     {
-        this.messageMetadata = message;
+        this.message = message;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class GetMessageFileCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new GetMessageFileRequest(context, messageMetadata).execute();
+        new GetMessageFileRequest(context, message).execute();
     }
 
     @Override
@@ -66,6 +66,6 @@ public class GetMessageFileCommand extends SqliteCommand
 
     public String getMessageId()
     {
-        return messageMetadata.getMessageId();
+        return message.getMessageId();
     }
 }
