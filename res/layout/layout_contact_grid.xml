@@ -4,10 +4,11 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 
-    <ImageView
+    <com.chatwala.android.ui.ContactImageView
             android:id="@+id/contact_item_image"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"/>
 
     <RelativeLayout
             android:id="@+id/contact_item_container"

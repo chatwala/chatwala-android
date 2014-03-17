@@ -346,6 +346,9 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                         String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         String normalizedValue = PhoneNumberUtils.extractNetworkPortion(value);
+                        if(normalizedValue.startsWith("1") && normalizedValue.length() > 1) {
+                            normalizedValue = normalizedValue.substring(1);
+                        }
                         String type = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE));
                         String image = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
                         int timesContacted = cursor.getInt(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED));
@@ -825,7 +828,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
             if(convertView == null) {
                 convertView = getLayoutInflater().inflate(R.layout.layout_contact_grid, null);
-                convertView.setLayoutParams(new GridView.LayoutParams(200, 200));
 
                 holder = new RecentContactViewHolder();
                 holder.container = (RelativeLayout) convertView.findViewById(R.id.contact_item_container);
@@ -834,7 +836,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 holder.status = (TextView) convertView.findViewById(R.id.contact_sent_status);
                 holder.check = (ImageView) convertView.findViewById(R.id.contact_sent_check);
                 holder.image = (ImageView) convertView.findViewById(R.id.contact_item_image);
-                holder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
             }
             else {
                 holder = (RecentContactViewHolder) convertView.getTag();
