@@ -80,7 +80,11 @@ public abstract class BaseHttpRequest<T>
         //do our logs the normal way
         logHttpRequest();
 
+
         HttpResponse httpResponse = makeRequest(client);
+
+        Logger.e("MO, url=" + httpResponse.getUrl());
+        Logger.e("MO, body="+ httpResponse.getBodyAsString());
 
         if(httpResponse.getStatus() == STATUS_REDIRECT)
         {
@@ -88,6 +92,7 @@ public abstract class BaseHttpRequest<T>
             try
             {
                 URL url = new URL(httpResponse.getUrl());
+
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
                 InputStream is = new BufferedInputStream(urlConnection.getInputStream());
@@ -192,6 +197,7 @@ public abstract class BaseHttpRequest<T>
     private void logHttpRequest() {
         Logger.i("==================HTTP REQUEST==================");
         Logger.crashlytics("Request to: " + EnvironmentVariables.get().getApiPath() + getResourceURL());
+
     }
 
     private void logHttpResponse(HttpResponse response) {
@@ -199,6 +205,7 @@ public abstract class BaseHttpRequest<T>
             Logger.i("==================HTTP RESPONSE==================");
             String responseLog = "Response from: " + response.getUrl();
             responseLog += "\n" + response.getHeaders().toString().replaceAll("],", "]\n");
+            responseLog += "\n" + response.getBodyAsString();
             Logger.i(responseLog);
         } catch(Exception e) {} //nothing to do about this now...probably a bug in their HTTP libraries
     }

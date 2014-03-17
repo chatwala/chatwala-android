@@ -40,7 +40,10 @@ public abstract class BasePostRequest<T> extends BaseHttpRequest<T>
     {
         try
         {
-            return makeBodyJson().toString().getBytes("utf-8");
+           String body = makeBodyJson().toString();
+            Logger.e("MO, getPostData.body= "+ body);
+           return body.getBytes("utf-8");
+
         }
         catch (UnsupportedEncodingException e)
         {

@@ -30,6 +30,7 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
+import com.chatwala.android.http.server20.GetShareUrlFromMessageIdRequest;
 import com.chatwala.android.http.server20.StartUnknownRecipientMessageRequest;
 import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.loaders.BroadcastSender;
@@ -45,6 +46,7 @@ import com.espian.showcaseview.ShowcaseView;
 import com.espian.showcaseview.targets.ViewTarget;
 import com.j256.ormlite.dao.Dao;
 import org.apache.commons.io.IOUtils;
+import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -80,7 +82,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private static final int FIRST_BUTTON_TUTORIAL_ID = 1000;
 
     private ChatwalaMessage playbackMessage = null;
-    private ChatwalaMessage messageToSendDirectly = null;
+    private ChatwalaMessageStartInfo messageStartInfo = null;
     private static final String MESSAGE_ID = "MESSAGE_ID";
     public static final String PENDING_SEND_URL = "PENDING_SEND_URL";
     public static final String OPEN_DRAWER = "OPEN_DRAWER";
@@ -476,7 +478,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         {
             if(!replyMessageAvailable())
             {
-               // prepManualSend();
+                prepManualSend();
             }
             setAppState(AppState.PreviewLoading);
             if(recordPreviewFile == null)
@@ -678,18 +680,14 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                         {
 
                             Logger.e("MO6");
-                            final String messageId = UUID.randomUUID().toString();
+                            final String messageId = messageStartInfo.getMessageId();
 
                             DataProcessor.runProcess(new Runnable()
                             {
                                 @Override
                                 public void run()
                                 {
-                                    Logger.e("MO7");
-                                    Logger.e("MO7 mid=" + messageId);
-                                    Logger.e("MO7 recordPreviewFile.getPath() = " + recordPreviewFile.getPath());
                                     BusHelper.submitCommandSync(NewCameraActivity.this, new NewMessageFlowCommand(messageId, recordPreviewFile.getPath()));
-                                    Logger.e("MO8");
                                 }
                             });
 
@@ -1208,7 +1206,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
         else
         {
-           // prepManualSend();
+           prepManualSend();
         }
 
         setAppState(AppState.LoadingFileCamera);
@@ -1397,6 +1395,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private void prepManualSend()
     {
+        Logger.e("MO, prepManualSend");
         DataProcessor.runProcess(new Runnable()
         {
             @Override
@@ -1407,23 +1406,26 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 {
                     try
                     {
-                        //ChatwalaMessage messageInfo = new PostSubmitMessageRequest(NewCameraActivity.this, null, null, null, null).execute();
-
-                        ChatwalaResponse<ChatwalaMessage> response = (ChatwalaResponse<ChatwalaMessage>) new StartUnknownRecipientMessageRequest(NewCameraActivity.this, UUID.randomUUID().toString()).execute();
-                        ChatwalaMessage message = response.getResponseData();
-                        if (message != null)
-                        {
-                            messageToSendDirectly = message;
+                        Logger.e("MO, creating message start info");
+                        String messageId = UUID.randomUUID().toString();
+                        ChatwalaResponse<String> response = (ChatwalaResponse<String>) new GetShareUrlFromMessageIdRequest(NewCameraActivity.this, messageId).execute();
+                        Logger.e("MO, shareUrl=" + response.getResponseData());
+                        if(response.getResponseData()!=null) {
+                            Logger.e("MO, messageStartInfo created");
+                            messageStartInfo = new ChatwalaMessageStartInfo();
+                            messageStartInfo.setShareUrl(response.getResponseData());
+                            messageStartInfo.setMessageId(messageId);
                             break;
                         }
+
                     }
                     catch (TransientException e)
                     {
-                        Logger.e("Couldn't get message ID", e);
+                        Logger.e("MO, Couldn't get message ID", e);
                     }
                     catch (PermanentException e)
                     {
-                        Logger.e("Couldn't get message ID", e);
+                        Logger.e("MO, Couldn't get message ID", e);
                     }
                     attempts++;
                 }
@@ -1432,8 +1434,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     }
 
     private void sendFacebookPostShare(String messageId) {
-        //http://stackoverflow.com/questions/7545254/android-and-facebook-share-intent
-        String urlToShare = EnvironmentVariables.get().getWebPath() + messageId;
+        String urlToShare = messageStartInfo.getShareUrl();
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
@@ -1469,7 +1470,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
         Uri mailtoUri = Uri.parse(uriText);
         //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
-        String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
+        //String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
+        String messageLink = messageStartInfo.getShareUrl();
 
         boolean gmailOk = false;
 
@@ -1506,7 +1508,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private void sendSms(final String messageId)
     {
-        String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
+        String messageLink = messageStartInfo.getShareUrl();
         String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
@@ -1581,11 +1583,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private void sendChatwalaSms(final String messageId)
     {
-        String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
+        //String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
+        String messageLink = messageStartInfo.getShareUrl();
         String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
-        i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageUrl);
+        i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
         i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);
         startActivity(i);
     }
