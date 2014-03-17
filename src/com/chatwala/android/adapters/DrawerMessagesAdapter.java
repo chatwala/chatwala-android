@@ -81,7 +81,7 @@ public class DrawerMessagesAdapter extends BaseAdapter
                     }
                     else
                     {
-                        NewCameraActivity.startMeWithId(activity, message.getMessageId());
+                        NewCameraActivity.startMeWithId(activity, message.getMessageReadUrl(), message.getMessageId());
                         activity.finish();
                     }
                 }

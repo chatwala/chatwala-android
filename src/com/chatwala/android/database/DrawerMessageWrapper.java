@@ -46,6 +46,10 @@ public class DrawerMessageWrapper
         return singleMessage.getMessageId();
     }
 
+    public String getMessageReadUrl() {
+        return singleMessage.getReadUrl();
+    }
+
     public String getSenderId()
     {
         return singleMessage.getSenderId();

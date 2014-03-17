@@ -10,6 +10,7 @@ public enum EnvironmentVariables {
             "prodeast_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
             "http://chatwala.com/?",
+            "http://chatwalaprod{shard}.blob.core.windows.net/messages/{message}",
             "UA-46207837-1",
             "213176338890949"
     ),
@@ -19,6 +20,7 @@ public enum EnvironmentVariables {
             "qa_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
             "http://chatwala.com/qa/?",
+            "http://chatwalanonprod.blob.core.windows.net/qa-messages/{message}",
             "UA-46207837-4",
             "213176338890949"
     ),
@@ -28,6 +30,7 @@ public enum EnvironmentVariables {
             "deveast_20",
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/dev/?",
+            "http://chatwalanonprod.blob.core.windows.net/dev-messages/{message}",
             "UA-46207837-3",
             "213176338890949"
     ),
@@ -37,6 +40,7 @@ public enum EnvironmentVariables {
             "sandbox_13",
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/?",
+            "http://chatwalanonprod.blob.core.windows.net/sandbox-messages/{message}",
             "UA-46207837-3",
             "213176338890949"
     );
@@ -55,14 +59,16 @@ public enum EnvironmentVariables {
     public static final String ALT_HASH_STRING = "http://chatwala.com/#";
     public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
-    private String apiPath, displayString, plistPath, webPath, googleAnalyticsID, facebookAppId;
+    private String apiPath, displayString, plistPath, webPath, messageReadUrlTemplate, googleAnalyticsID, facebookAppId;
 
-    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String googleAnalyticsID, String facebookAppId)
+    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String messageReadUrlTemplate,
+                         String googleAnalyticsID, String facebookAppId)
     {
         this.apiPath = apiPath;
         this.displayString = displayString;
         this.plistPath = plistPath;
         this.webPath = webPath;
+        this.messageReadUrlTemplate = messageReadUrlTemplate;
         this.googleAnalyticsID = googleAnalyticsID;
         this.facebookAppId = facebookAppId;
     }
@@ -87,6 +93,8 @@ public enum EnvironmentVariables {
     {
         return webPath;
     }
+
+    public String getMessageReadUrlTemplate() { return messageReadUrlTemplate; }
 
     public String getGoogleAnalyticsID()
     {

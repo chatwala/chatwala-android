@@ -104,6 +104,17 @@ public class ShareUtils
         return null;
     }
 
+    public static String getReadUrlFromShareUrl(Uri shareUrl) {
+        String shardKey = shareUrl.getQuery().split("\\.")[0];
+        String messageId = shareUrl.getQuery().split("\\.")[1];
+        String readUrl = EnvironmentVariables.get().getMessageReadUrlTemplate();
+        return readUrl.replace("{shard}", shardKey).replace("{message}", messageId);
+    }
+
+    public static String getMessageIdFromShareUrl(Uri shareUrl) {
+        return shareUrl.getQuery().split("\\.")[1];
+    }
+
     public static String getIdFromIntent(Intent callingIntent)
     {
         String uri = callingIntent.getDataString();

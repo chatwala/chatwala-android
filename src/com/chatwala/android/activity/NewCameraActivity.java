@@ -24,15 +24,17 @@ import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
-import com.chatwala.android.*;
+import com.chatwala.android.AppPrefs;
+import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.R;
 import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
-import com.chatwala.android.http.server20.GetShareUrlFromMessageIdRequest;
-import com.chatwala.android.http.server20.StartUnknownRecipientMessageRequest;
+import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
 import com.chatwala.android.http.server20.ChatwalaResponse;
+import com.chatwala.android.http.server20.GetShareUrlFromMessageIdRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.server20.NewMessageFlowCommand;
@@ -46,7 +48,6 @@ import com.espian.showcaseview.ShowcaseView;
 import com.espian.showcaseview.targets.ViewTarget;
 import com.j256.ormlite.dao.Dao;
 import org.apache.commons.io.IOUtils;
-import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -83,6 +84,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private ChatwalaMessage playbackMessage = null;
     private ChatwalaMessageStartInfo messageStartInfo = null;
+    private static final String MESSAGE_READ_URL_EXTRA = "MESSAGE_READ_URL";
     private static final String MESSAGE_ID = "MESSAGE_ID";
     public static final String PENDING_SEND_URL = "PENDING_SEND_URL";
     public static final String OPEN_DRAWER = "OPEN_DRAWER";
@@ -661,13 +663,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                     {
                         Logger.e("MO3");
 
-                        DataProcessor.runProcess(new Runnable()
-                        {
+                        DataProcessor.runProcess(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 Logger.e("MO4");
-                                BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(),chatMessageVideoMetadata.duration));
+                                BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
                             }
                         });
                         return false;
@@ -1320,14 +1320,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         {
             try
             {
+                String readUrl;
                 String playbackMessageId;
-                if (getIntent().hasExtra(MESSAGE_ID))
+                if (getIntent().hasExtra(MESSAGE_READ_URL_EXTRA) && getIntent().hasExtra(MESSAGE_ID))
                 {
+                    readUrl = getIntent().getStringExtra(MESSAGE_READ_URL_EXTRA);
                     playbackMessageId = getIntent().getStringExtra(MESSAGE_ID);
                 }
                 else
                 {
-                    playbackMessageId = ShareUtils.getIdFromIntent(getIntent());
+                    readUrl = ShareUtils.getReadUrlFromShareUrl(getIntent().getData());
+                    playbackMessageId = ShareUtils.getMessageIdFromShareUrl(getIntent().getData());
                 }
 
                 Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao();
@@ -1338,6 +1341,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                     Logger.i("Refreshing message " + playbackMessageId);
                     playbackMessage = new ChatwalaMessage();
                     playbackMessage.setMessageId(playbackMessageId);
+                    playbackMessage.setReadUrl(readUrl);
                     playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
 
                     if(playbackMessage == null)
@@ -1734,9 +1738,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }, 100);
     }
 
-    public static void startMeWithId(final Context context, final String messageId)
+    public static void startMeWithId(final Context context, String messageReadUrl, final String messageId)
     {
         Intent intent = new Intent(context, NewCameraActivity.class);
+        intent.putExtra(MESSAGE_READ_URL_EXTRA, messageReadUrl);
         intent.putExtra(MESSAGE_ID, messageId);
         context.startActivity(intent);
     }

@@ -52,7 +52,7 @@ public class GetUserInboxRequest extends BasePostRequest {
         JSONObject response_code = bodyJson.getJSONObject("response_code");
         JSONArray messages = bodyJson.getJSONArray("messages");
         boolean shouldContinue = bodyJson.getBoolean("continue");
-        String first_id = bodyJson.getString("first_id");
+        String first_id = bodyJson.optString("first_id", null);
 
         chatwalaResponse.setResponseCode(response_code.getInt("code"));
         chatwalaResponse.setResponseMessage(response_code.getString("message"));
