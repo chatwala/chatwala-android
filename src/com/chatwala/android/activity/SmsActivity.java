@@ -852,11 +852,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     holder.image.setImageURI(Uri.parse(entry.getImage()));
                 }
                 else {
-                    holder.image.setImageResource(R.drawable.default_avatar_large);
+                    holder.image.setImageResource(R.drawable.default_contact_icon);
                 }
             }
             catch(Exception e) {
-                holder.image.setImageResource(R.drawable.default_avatar_large);
+                holder.image.setImageResource(R.drawable.default_contact_icon);
             }
 
 
