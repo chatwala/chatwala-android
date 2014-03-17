@@ -128,12 +128,13 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
         @Override
         public void run() {
-            String messageUrlWithPrefix = "... " + smsMessageUrl;
+            //this isn't needed unless we allow for custom messages
+            /*String messageUrlWithPrefix = ": " + smsMessageUrl;
             int maxMessageSize = MAX_SMS_MESSAGE_LENGTH - messageUrlWithPrefix.length();
             if(smsMessage.length() > maxMessageSize) {
                 smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
-            }
-            String message = smsMessage + "... " + smsMessageUrl;
+            }*/
+            String message = smsMessage + ": " + smsMessageUrl;
             PendingIntent sentIntent = PendingIntent.getBroadcast(SmsActivity.this, hashCode(),
                     new Intent(SmsActivity.this, SmsSentReceiver.class), 0);
             try {
