@@ -1195,7 +1195,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private void createSurface()
     {
-        Logger.i();
+
 
         //TODO get rid of this
         AndroidUtils.isMainThread();
@@ -1395,7 +1395,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private void prepManualSend()
     {
-        Logger.e("MO, prepManualSend");
         DataProcessor.runProcess(new Runnable()
         {
             @Override
@@ -1406,12 +1405,12 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 {
                     try
                     {
-                        Logger.e("MO, creating message start info");
+
                         String messageId = UUID.randomUUID().toString();
                         ChatwalaResponse<String> response = (ChatwalaResponse<String>) new GetShareUrlFromMessageIdRequest(NewCameraActivity.this, messageId).execute();
-                        Logger.e("MO, shareUrl=" + response.getResponseData());
+
                         if(response.getResponseData()!=null) {
-                            Logger.e("MO, messageStartInfo created");
+
                             messageStartInfo = new ChatwalaMessageStartInfo();
                             messageStartInfo.setShareUrl(response.getResponseData());
                             messageStartInfo.setMessageId(messageId);
