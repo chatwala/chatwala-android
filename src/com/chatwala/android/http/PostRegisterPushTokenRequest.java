@@ -49,7 +49,7 @@ public class PostRegisterPushTokenRequest extends BasePostRequest
     @Override
     protected String getResourceURL()
     {
-        return "registerPushToken";
+        return "user/registerPushToken";
     }
 
     @Override
