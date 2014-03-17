@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -18,7 +19,6 @@ import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.SparseArray;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
@@ -30,7 +30,6 @@ import com.chatwala.android.util.Logger;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class SmsActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String SMS_MESSAGE_URL_EXTRA = "sms_message_url";
@@ -55,20 +54,23 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
     private EditText contactsFilter;
     private ListView contactsListView;
+    private GridView recentsGridView;
 
     private ContactEntryAdapter contactsAdapter;
-    private ContactEntryAdapter mostContactedAdapter;
+    private RecentContactEntryAdapter recentsdAdapter;
 
     private String[] contactsProjection = new String[] {ContactsContract.CommonDataKinds.Phone._ID,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
-            ContactsContract.CommonDataKinds.Phone.TYPE};
+            ContactsContract.CommonDataKinds.Phone.TYPE,
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI};
 
     private String[] contactedTimesProjection = new String[] {ContactsContract.CommonDataKinds.Phone._ID,
             ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
-            ContactsContract.CommonDataKinds.Phone.TYPE};
+            ContactsContract.CommonDataKinds.Phone.TYPE,
+            ContactsContract.CommonDataKinds.Phone.PHOTO_URI};
 
     private Comparator<ContactEntry> entryComparator = new Comparator<ContactEntry>() {
 
@@ -103,8 +105,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
         @Override
         public int compare(ContactEntry me, ContactEntry other) {
-            MostContactedContactEntry mostContactedMe = (MostContactedContactEntry) me;
-            MostContactedContactEntry mostContactedOther = (MostContactedContactEntry) other;
+            RecentContactEntry mostContactedMe = (RecentContactEntry) me;
+            RecentContactEntry mostContactedOther = (RecentContactEntry) other;
             if(mostContactedMe.getTimesContacted() > mostContactedOther.getTimesContacted()) {
                 return -1;
             }
@@ -168,7 +170,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         contactsSentTo = new HashMap<String, Boolean>();
 
         contactsAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), true, entryComparator);
-        mostContactedAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), false, mostContactedEntryComparator);
+        recentsdAdapter = new RecentContactEntryAdapter(new ArrayList<ContactEntry>(), false, mostContactedEntryComparator);
 
         contactsFilter = (EditText) findViewById(R.id.contacts_filter);
         contactsFilter.setHintTextColor(Color.WHITE);
@@ -177,12 +179,14 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             public void afterTextChanged(Editable s) {
                 //TODO put in postDelayed if not working
                 if(s.toString().isEmpty()) {
-                    contactsListView.setAdapter(mostContactedAdapter);
+                    contactsListView.setVisibility(View.GONE);
+                    recentsGridView.setVisibility(View.VISIBLE);
                     findViewById(R.id.recent_contacts_lbl).setVisibility(View.VISIBLE);
                     findViewById(R.id.contacts_filter_clear).setVisibility(View.GONE);
                 }
                 else {
-                    contactsListView.setAdapter(contactsAdapter);
+                    contactsListView.setVisibility(View.VISIBLE);
+                    recentsGridView.setVisibility(View.GONE);
                     findViewById(R.id.recent_contacts_lbl).setVisibility(View.GONE);
                     findViewById(R.id.contacts_filter_clear).setVisibility(View.VISIBLE);
                 }
@@ -197,13 +201,10 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         });
 
         contactsListView = (ListView) findViewById(R.id.contacts_list);
-
         contactsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ContactEntryAdapter adapter = (ContactEntryAdapter) contactsListView.getAdapter();
-                ContactEntry entry = adapter.getItem(i);
-
+                ContactEntry entry = contactsAdapter.getItem(i);
                 if(!entry.isContact()) {
                     entry.sendMessage();
                     contactsFilter.setText("");
@@ -211,6 +212,33 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 }
 
                 if(!entry.isSending()) {
+                    if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
+                        entry.setIsSent(true);
+                    }
+                    else {
+                        contactsSentTo.put(entry.getName() + entry.getValue(), true);
+                        entry.startSend();
+                    }
+                }
+            }
+        });
+
+        recentsGridView = (GridView) findViewById(R.id.recents_list);
+        recentsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ContactEntry entry = recentsdAdapter.getItem(i);
+                if(!entry.isContact()) {
+                    entry.sendMessage();
+                    contactsFilter.setText("");
+                    return;
+                }
+
+                if(entry.isSending()) {
+                    contactsSentTo.remove(entry.getName() + entry.getValue());
+                    entry.cancelSend();
+                }
+                else {
                     if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
                         entry.setIsSent(true);
                     }
@@ -293,7 +321,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         String type = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE));
                         type = getTypeString(type);
-                        contacts.add(new ContactEntry(name, value, type, true));
+                        String image = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
+                        contacts.add(new ContactEntry(name, value, type, image, true));
                     }
                     catch(Exception e) {
                         continue;
@@ -302,11 +331,13 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             }
 
             contactsAdapter = new ContactEntryAdapter(contacts, true, entryComparator);
+            contactsListView.setAdapter(contactsAdapter);
         }
         else if(cursorLoader.getId() == CONTACTS_TIME_CONTACTED_LOADER_CODE) {
             List<ContactEntry> mostContactedContacts = new ArrayList<ContactEntry>(MOST_CONTACTED_CONTACT_LIMIT);
-            Map<String, MostContactedContactEntry> nonMobileRecentContacts = new HashMap<String, MostContactedContactEntry>();
+            Map<String, RecentContactEntry> nonMobileRecentContacts = new HashMap<String, RecentContactEntry>();
             Map<String, Boolean> addToRecents = new HashMap<String, Boolean>();
+            Map<String, Boolean> addToRecentsByNumber = new HashMap<String, Boolean>();
             String previousName = null;
 
             if(cursor.moveToFirst()) {
@@ -314,7 +345,9 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     try {
                         String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                         String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        String normalizedValue = PhoneNumberUtils.extractNetworkPortion(value);
                         String type = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE));
+                        String image = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
                         int timesContacted = cursor.getInt(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED));
                         type = getTypeString(type);
 
@@ -322,20 +355,28 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                             previousName = name;
                         }
 
+                        if(addToRecentsByNumber.containsKey(normalizedValue)) {
+                            continue;
+                        }
+
                         if(!"Mobile".equals(type)) {
                             if(!addToRecents.containsKey(name) && //if this name wasn't encountered yet
                                addToRecents.containsKey(previousName) && //we should add the previous name to list
                                addToRecents.get(previousName)) {
                                 if(nonMobileRecentContacts.containsKey(previousName)) {
-                                    mostContactedContacts.add(nonMobileRecentContacts.get(previousName));
-                                    if(mostContactedContacts.size() == MOST_CONTACTED_CONTACT_LIMIT) {
-                                        break;
+                                    RecentContactEntry previousNameEntry = nonMobileRecentContacts.get(previousName);
+                                    String normalizedPreviousValue = PhoneNumberUtils.extractNetworkPortion(previousNameEntry.getValue());
+                                    if(!addToRecentsByNumber.containsKey(normalizedPreviousValue)) {
+                                        addToRecentsByNumber.put(normalizedPreviousValue, false); //don't use this number again
+                                        mostContactedContacts.add(previousNameEntry);
+                                        if(mostContactedContacts.size() == MOST_CONTACTED_CONTACT_LIMIT) {
+                                            break;
+                                        }
                                     }
-
                                 }
                                 previousName = name;
-                                nonMobileRecentContacts.put(name, new MostContactedContactEntry(name, value, type, timesContacted, true));
-                                addToRecents.put(name, true);
+                                nonMobileRecentContacts.put(name, new RecentContactEntry(name, value, type, image, timesContacted, true));
+                                addToRecents.put(name, true); //any subsequent equal names won't hit this block
                             }
                             else if(addToRecents.get(name) != null) { //there is more than one non-mobile
                                 addToRecents.put(name, false);
@@ -343,7 +384,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         }
                         else {
                             addToRecents.put(name, false); //we have mobile; don't add any non-mobile
-                            mostContactedContacts.add(new MostContactedContactEntry(name, value, type, timesContacted, true));
+                            addToRecentsByNumber.put(normalizedValue, false); //don't use this number again
+                            mostContactedContacts.add(new RecentContactEntry(name, value, type, image, timesContacted, true));
                         }
                     }
                     catch(Exception e) {
@@ -353,8 +395,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 } while(cursor.moveToNext() && mostContactedContacts.size() != MOST_CONTACTED_CONTACT_LIMIT);
             }
 
-            mostContactedAdapter = new ContactEntryAdapter(mostContactedContacts, true, mostContactedEntryComparator);
-            contactsListView.setAdapter(mostContactedAdapter);
+            recentsdAdapter = new RecentContactEntryAdapter(mostContactedContacts, true, mostContactedEntryComparator);
+            recentsGridView.setAdapter(recentsdAdapter);
         }
     }
 
@@ -389,6 +431,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         private String name;
         private String value;
         private String type;
+        private String image;
         private boolean isContact;
 
         private boolean isSending = false;
@@ -411,14 +454,15 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     }
                 }
                 contactsAdapter.notifyDataSetChanged();
-                mostContactedAdapter.notifyDataSetChanged();
+                recentsdAdapter.notifyDataSetChanged();
             }
         };
 
-        public ContactEntry(String name, String value, String type, boolean isContact) {
+        public ContactEntry(String name, String value, String type, String image, boolean isContact) {
             this.name = name;
             this.value = value;
             this.type = type;
+            this.image = image;
             this.isContact = isContact;
         }
 
@@ -438,6 +482,10 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             return (type == null ? "" : type);
         }
 
+        public String getImage() {
+            return image;
+        }
+
         public boolean isContact() { return isContact; }
 
         public boolean equals(ContactEntry other) {
@@ -455,7 +503,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         public void setIsSent(boolean isSent) {
             this.isSent = isSent;
             contactsAdapter.notifyDataSetChanged();
-            mostContactedAdapter.notifyDataSetChanged();
+            recentsdAdapter.notifyDataSetChanged();
         }
 
         public boolean isSentOrSending() {
@@ -467,11 +515,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 return false;
             }
 
-            ContactEntryAdapter adapter = (ContactEntryAdapter) contactsListView.getAdapter();
-            if(adapter == contactsAdapter) {
+
+            if(contactsListView.isShown()) {
                 CWAnalytics.sendRecipientAddedEvent();
             }
-            else if(adapter == mostContactedAdapter) {
+            else if(recentsGridView.isShown()) {
                 CWAnalytics.sendRecentAddedEvent();
             }
 
@@ -488,7 +536,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             isSent = false;
             timeToSend = TIME_TO_SEND;
             contactsAdapter.notifyDataSetChanged();
-            mostContactedAdapter.notifyDataSetChanged();
+            recentsdAdapter.notifyDataSetChanged();
             CWAnalytics.sendMessageSendCanceledEvent();
         }
 
@@ -515,11 +563,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         }
     }
 
-    private class MostContactedContactEntry extends ContactEntry {
+    private class RecentContactEntry extends ContactEntry {
         private int timesContacted;
 
-        public MostContactedContactEntry(String name, String value, String type, int timesContacted, boolean isContact) {
-            super(name, value, type, isContact);
+        public RecentContactEntry(String name, String value, String type, String image, int timesContacted, boolean isContact) {
+            super(name, value, type, image, isContact);
             this.timesContacted = timesContacted;
         }
 
@@ -544,6 +592,14 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             this.useFiltered = useFiltered;
             inflater = LayoutInflater.from(SmsActivity.this);
             this.comparator = comparator;
+        }
+
+        protected LayoutInflater getLayoutInflater() {
+            return inflater;
+        }
+
+        protected void setLayoutInflater(Context context) {
+            inflater = LayoutInflater.from(context);
         }
 
         public List<ContactEntry> getList() {
@@ -620,12 +676,12 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         public View getView(int i, View convertView, ViewGroup parent) {
             final ContactViewHolder holder;
 
-            if(inflater == null) {
-                inflater = LayoutInflater.from(SmsActivity.this);
+            if(getLayoutInflater() == null) {
+                setLayoutInflater(SmsActivity.this);
             }
 
             if(convertView == null) {
-                convertView = inflater.inflate(R.layout.layout_contact, null);
+                convertView = getLayoutInflater().inflate(R.layout.layout_contact, null);
 
                 holder = new ContactViewHolder();
                 holder.name = (TextView) convertView.findViewById(R.id.contact_item_name);
@@ -732,7 +788,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         if(filterList == null) {
                             filterList = new ArrayList<ContactEntry>();
                         }
-                        filterList.add(new ContactEntry(numberFilter, numberFilter, "Other", false));
+                        filterList.add(new ContactEntry(numberFilter, numberFilter, "Other", null, false));
                         Collections.sort(filterList, comparator);
                     }
 
@@ -754,11 +810,88 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         }
     }
 
+    private class RecentContactEntryAdapter extends ContactEntryAdapter {
+        public RecentContactEntryAdapter(List<ContactEntry> contacts, boolean useFiltered, Comparator<ContactEntry> comparator) {
+            super(contacts, useFiltered, comparator);
+        }
+
+        @Override
+        public View getView(int i, View convertView, ViewGroup parent) {
+            final RecentContactViewHolder holder;
+
+            if(getLayoutInflater() == null) {
+                setLayoutInflater(SmsActivity.this);
+            }
+
+            if(convertView == null) {
+                convertView = getLayoutInflater().inflate(R.layout.layout_contact_grid, null);
+                convertView.setLayoutParams(new GridView.LayoutParams(200, 200));
+
+                holder = new RecentContactViewHolder();
+                holder.container = (RelativeLayout) convertView.findViewById(R.id.contact_item_container);
+                holder.name = (TextView) convertView.findViewById(R.id.contact_item_name);
+                holder.value = (TextView) convertView.findViewById(R.id.contact_item_number);
+                holder.status = (TextView) convertView.findViewById(R.id.contact_sent_status);
+                holder.check = (ImageView) convertView.findViewById(R.id.contact_sent_check);
+                holder.image = (ImageView) convertView.findViewById(R.id.contact_item_image);
+                holder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            }
+            else {
+                holder = (RecentContactViewHolder) convertView.getTag();
+            }
+
+            final ContactEntry entry = getItem(i);
+            String[] names = entry.getName().split(" ");
+            if(names.length > 0) {
+                holder.name.setText(names[0]);
+            }
+            holder.value.setText(entry.getValue());
+            holder.status.setText(entry.getSendingStatus());
+            try {
+                if(entry.getImage() != null) {
+                    holder.image.setImageURI(Uri.parse(entry.getImage()));
+                }
+                else {
+                    holder.image.setImageResource(R.drawable.default_avatar_large);
+                }
+            }
+            catch(Exception e) {
+                holder.image.setImageResource(R.drawable.default_avatar_large);
+            }
+
+
+            if(entry.isSent()) {
+                holder.status.setVisibility(View.GONE);
+                holder.check.setVisibility(View.VISIBLE);
+                holder.container.setBackgroundResource(R.drawable.contact_sent_gradient);
+            }
+            else {
+                holder.status.setVisibility(View.VISIBLE);
+                holder.check.setVisibility(View.GONE);
+                convertView.setBackgroundColor(Color.TRANSPARENT);
+                holder.container.setBackgroundResource(R.drawable.contact_gradient);
+            }
+
+            convertView.setTag(holder);
+
+            return convertView;
+        }
+    }
+
     private static class ContactViewHolder {
         TextView name;
         TextView value;
         TextView type;
         TextView status;
         CheckBox sentCb;
+    }
+
+    private static class RecentContactViewHolder {
+        RelativeLayout container;
+        TextView name;
+        TextView value;
+        TextView status;
+        ImageView check;
+        ImageView image;
     }
 }
