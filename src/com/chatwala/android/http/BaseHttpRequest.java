@@ -48,14 +48,20 @@ public abstract class BaseHttpRequest<T>
     private String clientId = "58041de0bc854d9eb514d2f22d50ad4c";
     private String clientSecret = "ac168ea53c514cbab949a80bebe09a8a";
 
+
+
     public BaseHttpRequest(Context context)
     {
         this.context = context;
     }
 
+    protected boolean ignoreBaseURL() {
+        return false;
+    }
+
     public T execute() throws TransientException, PermanentException
     {
-        ChatwalaHttpClient client = new ChatwalaHttpClient(EnvironmentVariables.get().getApiPath());
+        ChatwalaHttpClient client = new ChatwalaHttpClient(ignoreBaseURL() ? "": EnvironmentVariables.get().getApiPath());
         client.addHeader("x-chatwala", clientId + ":" + clientSecret);
 
         //get version

@@ -55,6 +55,10 @@ public class GetMessageFileRequest extends BaseGetRequest
         return chatwalaMessage.getReadUrl();
     }
 
+    protected boolean ignoreBaseURL() {
+        return true;
+    }
+
     @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
