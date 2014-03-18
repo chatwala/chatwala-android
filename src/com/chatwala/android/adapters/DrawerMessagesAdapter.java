@@ -126,13 +126,14 @@ public class DrawerMessagesAdapter extends BaseAdapter
         currentSenderId = listSenderId;
 
         messageList = incomingList;
+        /*
         Collections.sort(this.messageList, new Comparator<DrawerMessageWrapper>()
         {
             @Override
             public int compare(DrawerMessageWrapper lhs, DrawerMessageWrapper rhs) {
                 return lhs.getSortId() - rhs.getSortId();
             }
-        });
+        });*/
         notifyDataSetChanged();
     }
 

@@ -94,7 +94,7 @@ public class GetUserInboxRequest extends BasePostRequest {
         for(final ChatwalaMessage message : messages)
         {
             boolean exists = databaseHelper.getChatwalaMessageDao().idExists(message.getMessageId());
-            if(exists)
+            /*if(exists)
             {
                 //If a message was first in the chain, not all of this may be filled out
                 final ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
@@ -110,7 +110,7 @@ public class GetUserInboxRequest extends BasePostRequest {
                 updatedMessage.setReplyingToMessageId(message.getReplyingToMessageId());
                 messageDao.update(updatedMessage);
             }
-            else
+            else*/
             {
                 DataProcessor.runProcess(new Runnable() {
                     @Override
