@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.Referrer;
@@ -28,6 +29,7 @@ public class ReferrerReceiver extends BroadcastReceiver {
                     if(!referrer.isNotReferrer()) {
                         Logger.i("Got referrer - " + referrerStr);
                         CWAnalytics.sendReferrerReceivedEvent(context, referrerStr);
+                        AppPrefs.getInstance(context).putReferrer(referrerStr);
                         Intent referrerIntent = new Intent(CW_REFERRER_ACTION);
                         referrerIntent.putExtra(REFERRER_EXTRA, referrer);
                         referrerIntent.setPackage(context.getPackageName());
