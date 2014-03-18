@@ -334,7 +334,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 new IntentFilter(ReferrerReceiver.CW_REFERRER_ACTION));
 
         findReferrer();
-        CWAnalytics.initAnalytics(this, referrer);
+        CWAnalytics.initAnalytics(this);
 
         buttonDelayHandler = new Handler();
 
@@ -410,6 +410,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
 
         if(referrer != null && !referrer.isNotReferrer()) {
+            CWAnalytics.calculateCategory(referrer);
             if(referrer.isFacebookReferrer()) {
                 isFacebookFlow = true;
             }

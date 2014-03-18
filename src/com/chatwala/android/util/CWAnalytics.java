@@ -83,7 +83,7 @@ public class CWAnalytics
 
     private static int actionIncrement=0;
 
-    public static void initAnalytics(Context ctx, Referrer referrer)
+    public static void initAnalytics(Context ctx)
     {
         context = ctx;
         isFirstOpen = AppPrefs.getInstance(context).isFirstOpen();
@@ -92,7 +92,7 @@ public class CWAnalytics
         if(tracker == null) {
             tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
         }
-        calculateCategory(referrer);
+        calculateCategory(null);
     }
 
     public static void setStarterMessage(Boolean isStarter, Referrer referrer) {
@@ -124,22 +124,31 @@ public class CWAnalytics
     public static void calculateCategory(Referrer referrer) {
         String oldCategoryString = new String(categoryString==null?"":categoryString);
         if(referrer != null && !referrer.isNotReferrer()) {
-            if(referrer.isFacebookReferrer()) {
+            if(isFirstOpen) {
                 if(referrer.isInstallReferrer()) {
-                    categoryString = CATEGORY_FIRST_OPEN_FACEBOOK;
+                    if(referrer.isFacebookReferrer()) {
+                        categoryString = CATEGORY_FIRST_OPEN_FACEBOOK;
+                    }
+                    else if(referrer.isMessageReferrer()) {
+                        categoryString = CATEGORY_FIRST_OPEN_MESSAGE;
+                    }
+                    else if(referrer.isCopyReferrer()) {
+                        categoryString = CATEGORY_FIRST_OPEN_COPY;
+                    }
+                    else {
+                        categoryString = CATEGORY_FIRST_OPEN;
+                    }
                 }
-                else if(referrer.isAdReferrer()) {
-                    categoryString = CATEGORY_AD_REFERRER_FACEBOOK;
-                }
-            }
-            else if(referrer.isMessageReferrer()) {
-                categoryString = CATEGORY_FIRST_OPEN_MESSAGE;
-            }
-            else if(referrer.isCopyReferrer()) {
-                categoryString = CATEGORY_FIRST_OPEN_COPY;
             }
             else {
-                categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+                if(referrer.isAdReferrer()) {
+                    if(referrer.isFacebookReferrer()) {
+                        categoryString = CATEGORY_AD_REFERRER_FACEBOOK;
+                    }
+                }
+                else {
+                    categoryString = (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER);
+                }
             }
         }
         else {
