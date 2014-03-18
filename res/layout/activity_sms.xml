@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000"
+        android:background="@color/app_background"
         android:orientation="vertical">
 
     <RelativeLayout
@@ -19,11 +19,12 @@
                 android:layout_alignParentLeft="true"
                 android:layout_toLeftOf="@+id/contacts_filter_clear"
                 android:layout_alignBaseline="@+id/contacts_filter_clear"
+                android:layout_marginLeft="-5dp"
                 android:ems="10"
                 android:hint="Type names or tap to send"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="#fff"
-                android:background="#000"
+                android:textColor="#000"
+                android:textCursorDrawable="@null"
                 android:inputType="textNoSuggestions">
             <requestFocus/>
         </EditText>
@@ -43,10 +44,9 @@
             android:layout_height="wrap_content"
             android:padding="3dp"
             android:layout_marginLeft="10dp"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:textStyle="bold"
-            android:textColor="#fff"
-            android:text="Recent Contacts:"/>
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textColor="#000"
+            android:text="Frequent Contacts:"/>
 
     <FrameLayout
             android:layout_width="match_parent"
