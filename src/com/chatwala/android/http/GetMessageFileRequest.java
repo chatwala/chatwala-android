@@ -21,6 +21,7 @@ import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.chatwala.android.superbus.server20.GetMessageThumbnailCommand;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -157,7 +158,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
-        //BusHelper.submitCommandSync(context, new GetUserProfilePictureCommand(chatwalaMessage.getSenderId()));
+        BusHelper.submitCommandSync(context, new GetMessageThumbnailCommand(chatwalaMessage));
         BusHelper.submitCommandSync(context, new ClearStoreCommand());
     }
 }

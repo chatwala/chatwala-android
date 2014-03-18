@@ -3,12 +3,14 @@ package com.chatwala.android.util;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
-import android.os.Environment;
 import android.os.StatFs;
-import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
-import com.crashlytics.android.Crashlytics;
+
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +30,7 @@ public class MessageDataStore
     private static final int BYTES_IN_MEG = 1048576;
 
     private static ChatwalaApplication chatwalaApplication = null;
-    private static File tempDir, messageDir, outboxDir, usersDir, plistDir, thumbnailDir;
+    private static File tempDir, messageDir, outboxDir, usersDir, plistDir, thumbnailsDir;
 
     private static final String WALA_FILE_PREFIX = "vid_";
     private static final String CHAT_DIR_PREFIX = "chat_";
@@ -44,6 +46,8 @@ public class MessageDataStore
     private static final String PREPPED_VIDEO_FILE = "video.mp4";
 
     private static final String PLIST_FILE = "killswitch.plist";
+
+
 
     public static boolean init(ChatwalaApplication application)
     {
@@ -164,6 +168,49 @@ public class MessageDataStore
         return new File(usersDir, THUMB_FILE_PREFIX + id + PNG_FILE_EXTENSION);
     }
 
+    public static File findMessageThumbTempPathInLocalStore(String url) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] shad= md.digest(url.getBytes("UTF-8"));
+            String shadStr = byteArrayToHexString(shad);
+            return new File(tempDir, shadStr + PNG_FILE_EXTENSION);
+        }
+        catch(NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        catch(java.io.UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return new File(tempDir, "error.png");
+
+    }
+
+    public static File findMessageThumbInLocalStore(String url) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] shad= md.digest(url.getBytes("UTF-8"));
+            String shadStr = byteArrayToHexString(shad);
+            return new File(thumbnailsDir, shadStr + PNG_FILE_EXTENSION);
+        }
+        catch(NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        catch(UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return new File(thumbnailsDir, "error.png");
+
+    }
+
+    public static String byteArrayToHexString(byte[] b) {
+        String result = "";
+        for (int i=0; i < b.length; i++) {
+            result +=
+                    Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
+        }
+        return result;
+    }
+
     private static long megsUsed(File dirToCheck)
     {
 //        long total = 0;
@@ -229,11 +276,15 @@ public class MessageDataStore
         messageDir = new File(application.getFilesDir(), "messages");
         outboxDir = new File(application.getFilesDir(), "outbox");
         plistDir = new File(application.getFilesDir(), "plist");
+        thumbnailsDir = new File(application.getFilesDir(), "thumbnails");
+
 
         tempDir.mkdir();
         messageDir.mkdir();
         outboxDir.mkdir();
         plistDir.mkdir();
+        thumbnailsDir.mkdir();
+
 
         File imagesDir = new File(application.getFilesDir(), "images");
         imagesDir.mkdir();

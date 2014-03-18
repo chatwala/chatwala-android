@@ -1,13 +1,11 @@
 package com.chatwala.android.database;
 
-import android.content.Context;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.sql.SQLException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -72,6 +70,18 @@ public class ChatwalaMessage {
 
     @DatabaseField
     private String replyingToMessageId;
+
+    @DatabaseField
+    private String imageModifiedSince;
+
+
+    public String getImageModifiedSince() {
+        return imageModifiedSince;
+    }
+
+    public void setImageModifiedSince(String imageModifiedSince) {
+        this.imageModifiedSince = imageModifiedSince;
+    }
 
     public String getReplyingToMessageId() {
         return replyingToMessageId;

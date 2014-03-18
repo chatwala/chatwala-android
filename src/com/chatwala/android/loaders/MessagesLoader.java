@@ -41,19 +41,20 @@ public class MessagesLoader extends BaseAsyncLoader<List<ChatwalaMessage>>
             Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
             //List<ChatwalaMessage> messages = messageDao.query(messageDao.queryBuilder().where().isNotNull("sortId").prepare());
             List<ChatwalaMessage> messages = messageDao.queryForAll();
-            /*for(Iterator<ChatwalaMessage> iterator = messages.iterator(); iterator.hasNext();)
+            for(Iterator<ChatwalaMessage> iterator = messages.iterator(); iterator.hasNext();)
             {
                 ChatwalaMessage current = iterator.next();
                 if(!MessageDataStore.findUserImageInLocalStore(current.getSenderId()).exists())
                 {
                     iterator.remove();
                 }
-                else if(!MessageDataStore.findUserImageThumbInLocalStore(current.getSenderId()).exists())
+
+                if(!MessageDataStore.findUserImageThumbInLocalStore(current.getSenderId()).exists())
                 {
                     //Should almost never get here, it's for compatibility with images downloaded before we were making thumbs.
                     ThumbUtils.createThumbForUserImage(getContext(), current.getSenderId());
                 }
-            }*/
+            }
             return messages;
         }
         catch (SQLException e)

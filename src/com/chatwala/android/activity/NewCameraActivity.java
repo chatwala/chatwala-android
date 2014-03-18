@@ -680,7 +680,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                         if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
 
-                            Logger.e("MO6");
+                            Logger.e("MO, messageStartInfo=" + messageStartInfo);
                             final String messageId = messageStartInfo.getMessageId();
 
                             DataProcessor.runProcess(new Runnable()

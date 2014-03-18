@@ -70,9 +70,9 @@ public class NewMessageFlowCommand extends SqliteCommand {
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException {
 
-        Logger.e("MO, complete1");
+
         if(!startCallSucceeded) {
-            Logger.e("MO, start call");
+
             ChatwalaResponse<ChatwalaMessage> startResponse = (ChatwalaResponse<ChatwalaMessage>) new StartUnknownRecipientMessageRequest(context, newMessageId).execute();
             ChatwalaMessage message = startResponse.getResponseData();
             this.writeUrl = message.getWriteUrl();
@@ -80,9 +80,7 @@ public class NewMessageFlowCommand extends SqliteCommand {
             this.messageMetaDataJSONString = message.getMessageMetaDataString();
         }
 
-        Logger.e("MO, complete2");
         if(!thumbSucceeded) {
-            Logger.e("MO, thumb stuff");
             //thumbnail
             final File thumbFile = ThumbUtils.createThumbFromFirstFrame(context, videoFilePath);
 
@@ -96,7 +94,7 @@ public class NewMessageFlowCommand extends SqliteCommand {
                     @Override
                     public void run()
                     {
-                        BusHelper.submitCommandSync(applicationContext, new PutUserProfilePictureCommand(thumbFile.getPath(), false));
+                        BusHelper.submitCommandSync(applicationContext, new UploadUserProfilePictureCommand(thumbFile.getPath()));
                     }
                 });
 
@@ -105,17 +103,12 @@ public class NewMessageFlowCommand extends SqliteCommand {
             this.thumbSucceeded=true;
         }
 
-        Logger.e("MO, complete3");
         if(putCallFailedPreviously) {
-            Logger.e("MO, renew");
             ChatwalaResponse<String> renewResponse = (ChatwalaResponse<String>) new RenewWriteUrlForMessageRequest(context, newMessageId).execute();
             writeUrl = renewResponse.getResponseData();
         }
 
-        Logger.e("MO, complete4");
         if(!putCallSucceeded) {
-
-            Logger.e("MO, put");
             //create wala file
             File outZip = ZipUtil.buildZipToSend(context, new File(videoFilePath), messageMetaDataJSONString);
 
@@ -133,7 +126,6 @@ public class NewMessageFlowCommand extends SqliteCommand {
             this.putCallSucceeded=true;
             this.putCallFailedPreviously=false;
         }
-        Logger.e("MO, complete5");
 
         if(!finalizeSucceeded) {
 

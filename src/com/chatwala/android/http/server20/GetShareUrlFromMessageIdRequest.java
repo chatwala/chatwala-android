@@ -1,24 +1,12 @@
 package com.chatwala.android.http.server20;
 
 import android.content.Context;
-import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.TransientException;
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.database.ChatwalaMessage;
-import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BasePostRequest;
-import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.superbus.GetMessageFileCommand;
-import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.chatwala.android.util.Logger;
-
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 /**
  * Created by samirahman on 3/11/14.

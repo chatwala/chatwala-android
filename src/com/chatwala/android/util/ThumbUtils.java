@@ -5,9 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.os.Message;
 import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.R;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 
@@ -52,6 +54,68 @@ public class ThumbUtils
         return file;
     }
 
+
+    public static void createThumbForMessage(Context context, byte[] imageBytes, String url) throws IOException {
+        File tempFile = MessageDataStore.findMessageThumbTempPathInLocalStore(url);
+        File thumbFile = MessageDataStore.findMessageThumbInLocalStore(url);
+        //write to temp file
+        InputStream is = new ByteArrayInputStream(imageBytes);
+        FileOutputStream os = new FileOutputStream(tempFile);
+        IOUtils.copy(is, os);
+        os.close();
+        is.close();
+
+        Bitmap thumbBitmap = BitmapFactory.decodeFile(tempFile.getPath());
+
+        if(thumbBitmap == null)
+        {
+            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.appicon);
+        }
+        else
+        {
+            Logger.d("Thumb width: " + thumbBitmap.getWidth() + "; thumb height: " + thumbBitmap.getHeight());
+
+            thumbBitmap = rotateBitmap(tempFile, thumbBitmap);
+
+            //don't need the temp file anymore
+            tempFile.delete();
+
+            float thumbWidth = context.getResources().getDimension(R.dimen.thumb_width);
+            float thumbHeight = context.getResources().getDimension(R.dimen.thumb_height);
+            float idealRatio = thumbHeight/thumbWidth;
+            int idealY = (int)((float)thumbBitmap.getWidth() * idealRatio);
+            if(thumbBitmap.getHeight() < idealY)
+            {
+                idealY = thumbBitmap.getHeight();
+            }
+
+            Logger.d("Thumb ratio: " + idealRatio + "; thumb ideal height: " + idealY);
+
+            int yMid = thumbBitmap.getHeight()/2;
+            thumbBitmap = thumbBitmap.createBitmap(thumbBitmap, 0, yMid - (idealY/2), thumbBitmap.getWidth(), idealY);
+        }
+
+        try
+        {
+            FileOutputStream out = new FileOutputStream(thumbFile);
+            thumbBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        thumbBitmap.recycle();
+        thumbBitmap = null;
+    }
+
+
     public static void createThumbForUserImage(Context context, String userId)
     {
         File thumbImageFile = MessageDataStore.findUserImageThumbInLocalStore(userId);
@@ -66,7 +130,7 @@ public class ThumbUtils
         {
             Logger.d("Thumb width: " + thumbBitmap.getWidth() + "; thumb height: " + thumbBitmap.getHeight());
 
-            thumbBitmap = rotateBitmap(userId, thumbBitmap);
+            thumbBitmap = rotateBitmap(MessageDataStore.findUserImageInLocalStore(userId), thumbBitmap);
 
             float thumbWidth = context.getResources().getDimension(R.dimen.thumb_width);
             float thumbHeight = context.getResources().getDimension(R.dimen.thumb_height);
@@ -102,12 +166,13 @@ public class ThumbUtils
         thumbBitmap = null;
     }
 
-    public static Bitmap rotateBitmap(String userId, Bitmap bitmap)
+    public static Bitmap rotateBitmap(File regularImageFile, Bitmap bitmap)
     {
         try
         {
-            File regularImageFile = MessageDataStore.findUserImageInLocalStore(userId);
+            //File regularImageFile = MessageDataStore.findUserImageInLocalStore(userId);
             ExifInterface exifInterface = new ExifInterface(regularImageFile.getPath());
+
             int orientation = Integer.parseInt(exifInterface.getAttribute(ExifInterface.TAG_ORIENTATION));
 
             if (orientation == 1)

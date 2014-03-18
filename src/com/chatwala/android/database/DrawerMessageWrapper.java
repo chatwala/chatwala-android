@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import com.chatwala.android.util.Logger;
 
 /**
  * Created by matthewdavis on 1/27/14.
@@ -60,7 +61,10 @@ public class DrawerMessageWrapper
         return singleMessage.getTimestamp();
     }
 
-    public String getThumbnailUrl() { return singleMessage.getThumbnailUrl(); }
+    public String getThumbnailUrl() {
+        Logger.e("MO, thumbnail url = " + singleMessage.getThumbnailUrl());
+        return singleMessage.getThumbnailUrl();
+    }
 
     public ChatwalaMessage.MessageState getMessageState()
     {

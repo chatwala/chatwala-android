@@ -1,13 +1,24 @@
 package com.chatwala.android.http.server20;
 
 import android.content.Context;
+import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BaseGetRequest;
+import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
+import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -22,6 +33,7 @@ import java.sql.SQLException;
 public class GetMessageThumbnailRequest extends BaseGetRequest
 {
     ChatwalaMessage message;
+    String lastModified=null;
 
     public GetMessageThumbnailRequest(Context context, ChatwalaMessage message)
     {
@@ -36,20 +48,32 @@ public class GetMessageThumbnailRequest extends BaseGetRequest
     }
 
     @Override
+    protected boolean ignoreBaseURL() {
+        return true;
+    }
+
+    protected HttpResponse makeRequest(BusHttpClient client)
+    {
+        client.addHeader("If-Modified-Since", message.getImageModifiedSince());
+        return super.makeRequest(client);
+    }
+
+    @Override
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException
     {
-        File imageFile = MessageDataStore.findUserImageInLocalStore("");
-
         try
         {
-            //Log.d("!!!!!!!!!!!!!!!!", response.getBodyAsString());
-            InputStream is = new ByteArrayInputStream(response.getBody());
-            FileOutputStream os = new FileOutputStream(imageFile);
+            if(response.getStatus()==304) { //nothing has changed
+                return;
+            }
 
-            IOUtils.copy(is, os);
+            Map<String,List<String>> headers = response.getHeaders();
 
-            os.close();
-            is.close();
+            if(headers.containsKey("Last-Modified")) {
+                lastModified = headers.get("Last-Modified").get(0);
+            }
+
+            ThumbUtils.createThumbForMessage(context, response.getBody(), message.getThumbnailUrl());
         }
         catch (FileNotFoundException e)
         {
@@ -60,12 +84,30 @@ public class GetMessageThumbnailRequest extends BaseGetRequest
             throw new RuntimeException(e);
         }
 
-        ThumbUtils.createThumbForUserImage(context, "");
     }
 
     @Override
     protected boolean hasDbOperation()
     {
-        return false;
+        return true;
+    }
+
+    @Override
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
+    {
+        Dao<ChatwalaMessage, String> messageDao = databaseHelper.getChatwalaMessageDao();
+
+        boolean exists = databaseHelper.getChatwalaMessageDao().idExists(message.getMessageId());
+
+        //update last modified
+        if(exists && lastModified!=null)
+        {
+            //If a message was first in the chain, not all of this may be filled out
+            ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
+            updatedMessage.setImageModifiedSince(lastModified);
+            messageDao.update(updatedMessage);
+        }
+
+        return null;
     }
 }

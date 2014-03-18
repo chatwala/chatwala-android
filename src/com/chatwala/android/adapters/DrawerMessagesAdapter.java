@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import com.chatwala.android.util.Logger;
 
 /**
 * Created by matthewdavis on 1/24/14.
@@ -92,7 +93,9 @@ public class DrawerMessagesAdapter extends BaseAdapter
 
         ImageView thumbView = (ImageView) convertView.findViewById(R.id.thumb_view);
         //File thumbImage = MessageDataStore.findUserImageThumbInLocalStore(message.getSenderId());
-        imageLoader.load(message.getThumbnailUrl()).fit().into(thumbView);
+        File thumbImage = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
+        Logger.e(thumbImage.getPath());
+        thumbView.setImageURI(android.net.Uri.fromFile(thumbImage));
 
         if(message.getTimestamp() != null)
         {

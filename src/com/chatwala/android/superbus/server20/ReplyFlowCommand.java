@@ -111,7 +111,7 @@ public class ReplyFlowCommand extends SqliteCommand {
                     @Override
                     public void run()
                     {
-                        BusHelper.submitCommandSync(applicationContext, new PutUserProfilePictureCommand(thumbFile.getPath(), false));
+                        BusHelper.submitCommandSync(applicationContext, new UploadUserProfilePictureCommand(thumbFile.getPath()));
                     }
                 });
 

@@ -59,6 +59,7 @@ public abstract class BaseHttpRequest<T>
         return false;
     }
 
+
     public T execute() throws TransientException, PermanentException
     {
         ChatwalaHttpClient client = new ChatwalaHttpClient(ignoreBaseURL() ? "": EnvironmentVariables.get().getApiPath());
