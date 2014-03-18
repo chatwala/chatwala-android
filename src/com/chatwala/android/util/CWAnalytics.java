@@ -1,13 +1,9 @@
 package com.chatwala.android.util;
 
 import android.content.Context;
-import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
-import com.chatwala.android.http.BaseHttpRequest;
-import com.chatwala.android.receivers.ReferralReceiver;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.Tracker;
@@ -67,6 +63,9 @@ public class CWAnalytics
     private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
     private static String ACTION_MESSAGE_SENT_FAILED = "MESSAGE_SENT_FAILED";
     private static String ACTION_BACKGROUND_WHILE_SMS = "BACKGROUND_WHILE_SMS";
+
+    private static String ACTION_FACEBOOK_SEND_CONFIRMED = "FACEBOOK_SEND_CONFIRMED";
+    private static String ACTION_FACEBOOK_SEND_CANCELED = "FACEBOOK_SEND_CANCELED";
 
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
@@ -305,6 +304,14 @@ public class CWAnalytics
 
     public static void sendMessageSentFailedEvent() {
         sendEvent(ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
+    }
+
+    public static void sendFacebookSendConfirmed() {
+        sendEvent(ACTION_FACEBOOK_SEND_CONFIRMED, LABEL_NO_TAP, null);
+    }
+
+    public static void sendFacebookSendCanceled() {
+        sendEvent(ACTION_FACEBOOK_SEND_CANCELED, LABEL_NO_TAP, null);
     }
 
     public static void sendBackgroundWhileSmsEvent() {

@@ -13,7 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
-import android.util.Log;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -33,9 +33,8 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.receivers.ReferralReceiver;
+import com.chatwala.android.receivers.ReferrerReceiver;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
-import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
 import com.chatwala.android.ui.CameraPreviewView;
 import com.chatwala.android.ui.CroppingLayout;
@@ -53,8 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.chatwala.android.http.BaseHttpRequest;
-
 /**
  * Created with IntelliJ IDEA.
  * User: matthewdavis
@@ -64,6 +61,7 @@ import com.chatwala.android.http.BaseHttpRequest;
  */
 public class NewCameraActivity extends BaseNavigationDrawerActivity {
     public static final String INITIATOR_EXTRA = "initiator";
+    private static final int FACEBOOK_DELIVERY_REQUEST_CODE = 1000;
 
     public static final int RECORDING_TIME = 10000;
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
@@ -315,11 +313,25 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         timerKnob.setImageResource(R.drawable.record_stop);
     }
 
+    private BroadcastReceiver referrerIntentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(getAppState() == AppState.ReadyStopped) {
+                setIntent(intent);
+                Logger.i("Received referrer intent from ReferrerReceiver");
+                findReferrer();
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         Logger.i("Beginning of onCreate()");
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(referrerIntentReceiver,
+                new IntentFilter(ReferrerReceiver.CW_REFERRER_ACTION));
 
         findReferrer();
         CWAnalytics.initAnalytics(this, referrer);
@@ -387,34 +399,26 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     }
 
     private void findReferrer() {
-        String referrerPref = AppPrefs.getInstance(this).getReferrer();
-        if(referrerPref == null) {
-            if(getIntent() != null && getIntent().getData() != null) {
-                referrer = new Referrer(getIntent().getData());
-                if(referrer.isNotReferrer()) {
-                    referrer = null;
-                    return;
-                }
-                else {
-                    getIntent().setData(null);
-                }
-            }
-            else {
-                return;
-            }
+        if(getIntent().hasExtra(ReferrerReceiver.REFERRER_EXTRA)) {
+            referrer = getIntent().getParcelableExtra(ReferrerReceiver.REFERRER_EXTRA);
         }
-        else {
-            referrer = new Referrer(referrerPref);
+        else if(getIntent().getData() != null) {
+            referrer = new Referrer(getIntent().getData());
+            if(!referrer.isNotReferrer()) {
+                getIntent().setData(null);
+            }
         }
 
-        if(referrer.isFacebookReferrer()) {
-            isFacebookFlow = true;
-        }
-        else if(referrer.isMessageReferrer()) {
-            getIntent().putExtra(MESSAGE_ID, referrer.getValue());
-        }
-        else if(referrer.isCopyReferrer()) {
-            recordCopyOverride = referrer.getValue();
+        if(referrer != null && !referrer.isNotReferrer()) {
+            if(referrer.isFacebookReferrer()) {
+                isFacebookFlow = true;
+            }
+            /*else if(referrer.isMessageReferrer()) {
+                getIntent().putExtra(MESSAGE_ID, referrer.getValue());
+            }
+            else if(referrer.isCopyReferrer()) {
+                recordCopyOverride = referrer.getValue();
+            }*/
         }
     }
 
@@ -574,6 +578,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 //        resetOpeningVolume();
         tearDownSurface();
 
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        //shouldn't need to handle anything, but unregistering receivers sometimes crashes unexpectedly
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(referrerIntentReceiver);
+        } catch(Exception ignore) {}
     }
 
     @Override
@@ -1496,6 +1510,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         closePreviewOnReturn = true;
 
         startActivity(intent);
+        //startActivityForResult(intent, FACEBOOK_DELIVERY_REQUEST_CODE);
     }
 
     @SuppressWarnings("unchecked")
@@ -1626,6 +1641,19 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);
         startActivity(i);
     }
+
+    /*@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == FACEBOOK_DELIVERY_REQUEST_CODE) {
+            if(resultCode == RESULT_OK) {
+                CWAnalytics.sendFacebookSendConfirmed();
+            }
+            else if(resultCode == RESULT_CANCELED) {
+                CWAnalytics.sendFacebookSendCanceled();
+            }
+        }
+    }*/
 
     private void showMessage(View messageView, TextView messageViewText, int colorRes, int messageRes) {
         showMessage(messageView, messageViewText, colorRes, getString(messageRes));

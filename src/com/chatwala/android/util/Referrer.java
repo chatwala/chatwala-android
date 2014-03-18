@@ -1,11 +1,13 @@
 package com.chatwala.android.util;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Created by Eliezer on 3/7/14.
  */
-public class Referrer {
+public class Referrer implements Parcelable {
     public static final String FACEBOOK = "fb";
     public static final String MESSAGE = "message";
     public static final String COPY = "copy";
@@ -30,6 +32,15 @@ public class Referrer {
 
     public Referrer(String installReferrer) {
         parseInstallReferrer(installReferrer);
+    }
+
+    public Referrer(Parcel p) {
+        id = p.readString();
+        referrer = p.readString();
+        value = p.readString();
+
+        isInstallReferrer = (p.readInt() == 1);
+        isAdReferrer = (p.readInt() == 1);
     }
 
     private void parseAdReferrer(Uri adReferrer) {
@@ -98,4 +109,33 @@ public class Referrer {
     public String getValue() {
         return value;
     }
+
+    //////////////////////////////
+    // Parcelable apis
+    //////////////////////////////
+    public static final Parcelable.Creator<Referrer> CREATOR
+            = new Parcelable.Creator<Referrer>() {
+        public Referrer createFromParcel(Parcel p) {
+            return new Referrer(p);
+        }
+
+        public Referrer[] newArray(int size) {
+            return new Referrer[size];
+        }
+    };
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel p, int flags) {
+        p.writeString(id);
+        p.writeString(referrer);
+        p.writeString(value);
+        p.writeInt((isInstallReferrer ? 1 : 0));
+        p.writeInt((isAdReferrer ? 1 : 0));
+    }
+    //////////////////////////////
+    // end Parcelable apis
+    //////////////////////////////
 }
