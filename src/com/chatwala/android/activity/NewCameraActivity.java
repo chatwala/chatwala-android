@@ -32,6 +32,7 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
+import com.chatwala.android.http.PostAddToInboxRequest;
 import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
 import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.http.server20.GetShareUrlFromMessageIdRequest;
@@ -1355,6 +1356,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                     messageDao.update(playbackMessage);
                     BroadcastSender.makeNewMessagesBroadcast(NewCameraActivity.this);
                 }
+
+                new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
 
                 return playbackMessage;
             }
