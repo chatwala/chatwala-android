@@ -60,6 +60,8 @@ public class DrawerMessageWrapper
         return singleMessage.getTimestamp();
     }
 
+    public String getThumbnailUrl() { return singleMessage.getThumbnailUrl(); }
+
     public ChatwalaMessage.MessageState getMessageState()
     {
         return singleMessage.getMessageState();
