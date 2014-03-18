@@ -66,7 +66,6 @@ public class GetUserInboxRequest extends BasePostRequest {
             JSONObject message_meta_data = messages.getJSONObject(i);
             ChatwalaMessage currentMessage = new ChatwalaMessage();
             currentMessage.populateFromMetaDataJSON(message_meta_data);
-            currentMessage.setWriteUrl(bodyJson.getString("write_url"));
             currentMessage.setMessageMetaDataString(message_meta_data.toString(4));
             chatwalaMessages.add(currentMessage);
         }
