@@ -37,7 +37,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
     private static final int MAX_SMS_MESSAGE_LENGTH = 160;
 
-    private static final int MOST_CONTACTED_CONTACT_LIMIT = 28;
+    private static final int MOST_CONTACTED_CONTACT_LIMIT = 27;
 
     private static final int CONTACTS_LOADER_CODE = 0;
     private static final int CONTACTS_TIME_CONTACTED_LOADER_CODE = 1;
