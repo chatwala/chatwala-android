@@ -56,20 +56,22 @@ public class UploadUserProfilePictureCommand extends SqliteCommand
     {
 
         File currentFile = new File(path);
-       // File newFile = MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId());
 
-        //copy file to user image location
-        /*
-        try {
-            FileOutputStream output = new FileOutputStream(currentFile);
-            FileInputStream input = new FileInputStream(newFile);
-            IOUtils.copy(input, output);
+        File newFile = MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId());
 
-            input.close();
-            output.close();
-        }
-        catch(IOException e) {
 
+        /*if(newFile.getPath() != currentFile.getPath())  {
+            try {
+                FileOutputStream output = new FileOutputStream(currentFile);
+                FileInputStream input = new FileInputStream(newFile);
+                IOUtils.copy(output, input);
+
+                input.close();
+                output.close();
+            }
+            catch(IOException e) {
+
+            }
         }*/
 
         //Get write url

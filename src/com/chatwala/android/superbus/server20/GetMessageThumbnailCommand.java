@@ -53,13 +53,15 @@ public class GetMessageThumbnailCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        File thumb = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
+       File thumb = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
 
-        //only get the thumb if it's been cached for more than 5 minutes
-       // if(System.currentTimeMillis()-thumb.lastModified() > 1000*60*5)
+        //only get the thumb if it's been cached for more than 1 minutes
+        if(System.currentTimeMillis()-thumb.lastModified() > 1000*60*1)
        {
+           thumb.setLastModified(System.currentTimeMillis());
             new GetMessageThumbnailRequest(context, message).execute();
-        }
+
+       }
 
     }
 

@@ -1,6 +1,7 @@
 package com.chatwala.android.http.server20;
 
 import android.content.Context;
+import android.os.Message;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.database.ChatwalaMessage;
@@ -9,6 +10,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BaseGetRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.GetMessageFileCommand;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
 import com.j256.ormlite.dao.Dao;
@@ -52,9 +54,12 @@ public class GetMessageThumbnailRequest extends BaseGetRequest
         return true;
     }
 
-    protected HttpResponse makeRequest(BusHttpClient client)
+   protected HttpResponse makeRequest(BusHttpClient client)
     {
-        client.addHeader("If-Modified-Since", message.getImageModifiedSince());
+        if(message.getImageModifiedSince()!=null) {
+            client.addHeader("If-Modified-Since", message.getImageModifiedSince());
+        }
+
         return super.makeRequest(client);
     }
 
@@ -64,6 +69,7 @@ public class GetMessageThumbnailRequest extends BaseGetRequest
         try
         {
             if(response.getStatus()==304) { //nothing has changed
+                Logger.e("304");
                 return;
             }
 

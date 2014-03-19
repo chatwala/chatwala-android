@@ -15,6 +15,7 @@ import com.chatwala.android.AppPrefs;
 import com.chatwala.android.R;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.PutUserProfilePictureCommand;
+import com.chatwala.android.superbus.server20.UploadUserProfilePictureCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 
@@ -96,7 +97,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                 DataProcessor.runProcess(new Runnable() {
                     @Override
                     public void run() {
-                        BusHelper.submitCommandSync(UpdateProfilePicActivity.this, new PutUserProfilePictureCommand(newThumbImage.getPath(), true));
+                        BusHelper.submitCommandSync(UpdateProfilePicActivity.this, new UploadUserProfilePictureCommand(newThumbImage.getPath()));
                     }
                 });
 

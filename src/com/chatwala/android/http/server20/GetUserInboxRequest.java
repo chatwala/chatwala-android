@@ -93,25 +93,35 @@ public class GetUserInboxRequest extends BasePostRequest {
         ArrayList<ChatwalaMessage> messages = chatwalaResponse.getResponseData().getMessages();
         for(final ChatwalaMessage message : messages)
         {
-            /*boolean exists = databaseHelper.getChatwalaMessageDao().idExists(message.getMessageId());
+            boolean exists = databaseHelper.getChatwalaMessageDao().idExists(message.getMessageId());
             if(exists)
             {
                 //If a message was first in the chain, not all of this may be filled out
                 final ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
-                updatedMessage.setRecipientId(message.getRecipientId());
-                updatedMessage.setSenderId(message.getSenderId());
-                updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
-                updatedMessage.setSortId(message.getSortId());
-                updatedMessage.setGroupId(message.getGroupId());
-                updatedMessage.setThreadId(message.getThreadId());
-                updatedMessage.setThreadIndex(message.getThreadIndex());
-                updatedMessage.setReadUrl(message.getReadUrl());
-                updatedMessage.setTimestamp(message.getTimestamp());
-                updatedMessage.setReplyingToMessageId(message.getReplyingToMessageId());
-                messageDao.update(updatedMessage);
+
+                if(!updatedMessage.isWalaDownloaded()) {
+                    DataProcessor.runProcess(new Runnable() {
+                        @Override
+                        public void run() {
+                            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+                        }
+                    });
+                }
+                else {
+                    updatedMessage.setRecipientId(message.getRecipientId());
+                    updatedMessage.setSenderId(message.getSenderId());
+                    updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
+                    updatedMessage.setSortId(message.getSortId());
+                    updatedMessage.setGroupId(message.getGroupId());
+                    updatedMessage.setThreadId(message.getThreadId());
+                    updatedMessage.setThreadIndex(message.getThreadIndex());
+                    updatedMessage.setReadUrl(message.getReadUrl());
+                    updatedMessage.setTimestamp(message.getTimestamp());
+                    updatedMessage.setReplyingToMessageId(message.getReplyingToMessageId());
+                    messageDao.update(updatedMessage);
+                }
             }
-            else*/
-            {
+            else {
                 DataProcessor.runProcess(new Runnable() {
                     @Override
                     public void run() {
@@ -119,6 +129,7 @@ public class GetUserInboxRequest extends BasePostRequest {
                     }
                 });
             }
+
         }
 
         BroadcastSender.makeNewMessagesBroadcast(context);

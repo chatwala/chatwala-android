@@ -71,6 +71,10 @@ public class NewMessageFlowCommand extends SqliteCommand {
     public void callCommand(Context context) throws TransientException, PermanentException {
 
 
+        if(!new File(videoFilePath).exists()) {
+            return;
+        }
+
         if(!startCallSucceeded) {
 
             ChatwalaResponse<ChatwalaMessage> startResponse = (ChatwalaResponse<ChatwalaMessage>) new StartUnknownRecipientMessageRequest(context, newMessageId).execute();

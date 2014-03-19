@@ -75,6 +75,17 @@ public class ChatwalaMessage {
     private String imageModifiedSince;
 
 
+    @DatabaseField
+    private boolean walaDownloaded;
+
+    public boolean isWalaDownloaded() {
+        return walaDownloaded;
+    }
+
+    public void setWalaDownloaded(boolean walaDownloaded) {
+        this.walaDownloaded = walaDownloaded;
+    }
+
     public String getImageModifiedSince() {
         return imageModifiedSince;
     }

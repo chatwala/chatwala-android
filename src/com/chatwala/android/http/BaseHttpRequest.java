@@ -128,7 +128,7 @@ public abstract class BaseHttpRequest<T>
 
         logHttpResponse(httpResponse);
 
-        if (httpResponse.getStatus() == STATUS_OK)
+        if (httpResponse.getStatus() == STATUS_OK || httpResponse.getStatus() == 304)
         {
             try
             {

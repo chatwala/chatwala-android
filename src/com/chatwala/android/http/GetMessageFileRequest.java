@@ -137,6 +137,13 @@ public class GetMessageFileRequest extends BaseGetRequest
 
             //Logger.i("New message metadata " + metadataJson.toString());
             //chatwalaMessage.saveMetadata(databaseHelper);
+            try {
+                chatwalaMessage.setWalaDownloaded(true);
+                chatwalaMessage.populateFromMetaDataJSON(metadataJson);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         else
         {
