@@ -6,6 +6,7 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -39,8 +40,10 @@ public class MessagesLoader extends BaseAsyncLoader<List<ChatwalaMessage>>
             //Checking to see if all these files exist every time the loader triggers is not going to scale well
             //todo: consider either an "image_loaded" column on messages or creating a User table with that and other relevant info. Until we're more solid on how thumbs will work, this will be fine.
             Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
-            List<ChatwalaMessage> messages = messageDao.queryForAll();
-            return messages;
+            QueryBuilder<ChatwalaMessage,String> queryBuilder = messageDao.queryBuilder();
+            queryBuilder.orderBy("timestamp", false);
+            return queryBuilder.query();
+            //return messages;
         }
         catch (SQLException e)
         {
