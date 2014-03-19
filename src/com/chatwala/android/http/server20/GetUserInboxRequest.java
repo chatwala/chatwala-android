@@ -6,6 +6,8 @@ import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.database.OldChatwalaMessage;
+import com.chatwala.android.database.OldDatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BasePostRequest;
 import com.chatwala.android.loaders.BroadcastSender;
@@ -88,6 +90,8 @@ public class GetUserInboxRequest extends BasePostRequest {
     @Override
     protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
     {
+        OldDatabaseHelper oldDatabaseHelper = OldDatabaseHelper.getInstance(context);
+
         Dao<ChatwalaMessage, String> messageDao = databaseHelper.getChatwalaMessageDao();
 
         ArrayList<ChatwalaMessage> messages = chatwalaResponse.getResponseData().getMessages();
@@ -122,12 +126,33 @@ public class GetUserInboxRequest extends BasePostRequest {
                 }
             }
             else {
-                DataProcessor.runProcess(new Runnable() {
-                    @Override
-                    public void run() {
-                        BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+
+                boolean existsInOldDB = oldDatabaseHelper.getChatwalaMessageDao().idExists(message.getMessageId());
+                if(existsInOldDB) {
+                    Dao<OldChatwalaMessage, String> oldMessageDao =  oldDatabaseHelper.getChatwalaMessageDao();
+                    OldChatwalaMessage oldMessage = oldMessageDao.queryForId(message.getMessageId());
+                    if(oldMessage.getMessageState() == OldChatwalaMessage.MessageState.READ) {
+                        message.setMessageState(ChatwalaMessage.MessageState.READ);
                     }
-                });
+                    else if(oldMessage.getMessageState() == OldChatwalaMessage.MessageState.REPLIED) {
+                        message.setMessageState(ChatwalaMessage.MessageState.REPLIED);
+                    }
+                    else if(oldMessage.getMessageState() == OldChatwalaMessage.MessageState.UNREAD) {
+                        message.setMessageState(ChatwalaMessage.MessageState.UNREAD);
+                    }
+                    message.setMessageFile(oldMessage.getMessageFile());
+                    message.setWalaDownloaded(true);
+                    messageDao.create(message);
+                }
+                else {
+                    DataProcessor.runProcess(new Runnable() {
+                        @Override
+                        public void run() {
+                            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+                        }
+                    });
+                }
+
             }
 
         }

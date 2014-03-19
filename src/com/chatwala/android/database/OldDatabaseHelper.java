@@ -18,12 +18,12 @@ import java.sql.SQLException;
  * Time: 12:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DatabaseHelper extends OrmLiteSqliteOpenHelper
+public class OldDatabaseHelper extends OrmLiteSqliteOpenHelper
 {
-    private static final String DATABASE_NAME = "chatwala2.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "chatwala.db";
+    private static final int DATABASE_VERSION = 7;
 
-    private static DatabaseHelper instance;
+    private static OldDatabaseHelper instance;
     private final ChatwalaApplication app;
 
     public static final Class[] allTables = new Class[]
@@ -32,17 +32,17 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
                     MessageMetadata.class
             };
 
-    private DatabaseHelper(Context context)
+    private OldDatabaseHelper(Context context)
     {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         app = (ChatwalaApplication)context.getApplicationContext();
     }
 
-    public static synchronized DatabaseHelper getInstance(Context context)
+    public static synchronized OldDatabaseHelper getInstance(Context context)
     {
         if (instance == null)
         {
-            instance = new DatabaseHelper(context);
+            instance = new OldDatabaseHelper(context);
         }
 
         return instance;
@@ -99,9 +99,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         }
     }
 
-    public Dao<ChatwalaMessage, String> getChatwalaMessageDao() throws SQLException
+    public Dao<OldChatwalaMessage, String> getChatwalaMessageDao() throws SQLException
     {
-        return getDao(ChatwalaMessage.class);
+        return getDao(OldChatwalaMessage.class);
     }
 
     public Dao<MessageMetadata, Integer> getMessageMetadataDao() throws SQLException
