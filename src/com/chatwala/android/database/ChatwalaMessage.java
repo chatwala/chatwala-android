@@ -218,8 +218,9 @@ public class ChatwalaMessage {
         this.setGroupId(message_meta_data.getString("group_id"));
         this.setThreadIndex(message_meta_data.getInt("thread_index"));
         this.setThreadId(message_meta_data.getString("thread_id"));
+        this.setStartRecording(message_meta_data.getDouble("start_recording"));
+        this.setTimestamp(message_meta_data.getLong("timestamp"));
         this.setMessageMetaDataString(message_meta_data.toString(4));
-
     }
 
     public String getFileUrl() {
