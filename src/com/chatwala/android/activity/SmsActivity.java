@@ -240,7 +240,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     return;
                 }
 
-                if(!entry.isSending()) {
+                if(entry.isSending()) {
+                    contactsSentTo.remove(entry.getName() + entry.getValue());
+                    entry.cancelSend();
+                }
+                else {
                     if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
                         entry.setIsSent(true);
                     }
@@ -885,10 +889,10 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     }
                 }
             });
-            int id = Resources.getSystem().getIdentifier("btn_check_holo_light", "drawable", "android");
+            /*int id = Resources.getSystem().getIdentifier("btn_check_holo_light", "drawable", "android");
             if(id != 0) {
                 holder.sentCb.setButtonDrawable(id);
-            }
+            }*/
             holder.sentCb.setChecked(entry.isSentOrSending());
 
             if(entry.isSent()) {
