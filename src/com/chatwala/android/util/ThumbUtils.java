@@ -69,7 +69,7 @@ public class ThumbUtils
 
         if(thumbBitmap == null)
         {
-            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.appicon);
+            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.message_thumb);
         }
         else
         {
@@ -124,7 +124,7 @@ public class ThumbUtils
 
         if(thumbBitmap == null)
         {
-            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.appicon);
+            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.message_thumb);
         }
         else
         {

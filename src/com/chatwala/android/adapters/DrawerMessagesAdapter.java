@@ -95,7 +95,12 @@ public class DrawerMessagesAdapter extends BaseAdapter
         //File thumbImage = MessageDataStore.findUserImageThumbInLocalStore(message.getSenderId());
         File thumbImage = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
         Logger.e(thumbImage.getPath());
-        thumbView.setImageURI(android.net.Uri.fromFile(thumbImage));
+        if(thumbImage.exists()) {
+            thumbView.setImageURI(android.net.Uri.fromFile(thumbImage));
+        }
+        else {
+            thumbView.setImageResource(R.drawable.message_thumb);
+        }
 
         if(message.getTimestamp() != null)
         {
