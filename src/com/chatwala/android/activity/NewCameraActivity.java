@@ -55,6 +55,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -85,6 +86,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private ChatwalaMessage playbackMessage = null;
     private ChatwalaMessageStartInfo messageStartInfo = null;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private Future<ChatwalaMessageStartInfo> messageStartInfoFuture;
     private static final String MESSAGE_READ_URL_EXTRA = "MESSAGE_READ_URL";
     private static final String MESSAGE_ID = "MESSAGE_ID";
     public static final String PENDING_SEND_URL = "PENDING_SEND_URL";
@@ -479,10 +482,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
         else if (hasPendingSendMessage())
         {
-            if(!replyMessageAvailable())
-            {
-                prepManualSend();
-            }
             setAppState(AppState.PreviewLoading);
             if(recordPreviewFile == null)
             {
@@ -604,6 +603,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             MessageOrigin origin = getCurrentMessageOrigin();
             if(origin == MessageOrigin.INITIATOR) {
                 CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress);
+                messageStartInfoFuture = executor.submit(new Callable<ChatwalaMessageStartInfo>() {
+
+                    @Override
+                    public ChatwalaMessageStartInfo call() throws Exception {
+                        return prepManualSend();
+                    }
+                });
             }
             else if(origin == MessageOrigin.LINK) {
                 CWAnalytics.sendReactionStartEvent(fromCenterButtonPress);
@@ -679,7 +685,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                         Logger.e("MO5");
                         if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
-
+                            try {
+                                messageStartInfo = messageStartInfoFuture.get();
+                            }
+                            catch(Exception e) {
+                                Logger.e("Got an exception while waiting for the messageStartInfo", e);
+                                messageStartInfo = null;
+                            }
+                            if(messageStartInfo == null) {
+                                return false;
+                            }
                             Logger.e("MO, messageStartInfo=" + messageStartInfo);
                             final String messageId = messageStartInfo.getMessageId();
 
@@ -1205,10 +1220,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         {
             runWaterSplash();
         }
-        else
-        {
-           prepManualSend();
-        }
 
         setAppState(AppState.LoadingFileCamera);
         hideMessage(topFrameMessage);
@@ -1400,43 +1411,37 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         }
     }
 
-    private void prepManualSend()
+    private ChatwalaMessageStartInfo prepManualSend()
     {
-        DataProcessor.runProcess(new Runnable()
+        int attempts = 0;
+        while (attempts < 3)
         {
-            @Override
-            public void run()
+            try
             {
-                int attempts = 0;
-                while (attempts < 3)
-                {
-                    try
-                    {
 
-                        String messageId = UUID.randomUUID().toString();
-                        ChatwalaResponse<String> response = (ChatwalaResponse<String>) new GetShareUrlFromMessageIdRequest(NewCameraActivity.this, messageId).execute();
+                String messageId = UUID.randomUUID().toString();
+                ChatwalaResponse<String> response = (ChatwalaResponse<String>) new GetShareUrlFromMessageIdRequest(NewCameraActivity.this, messageId).execute();
 
-                        if(response.getResponseData()!=null) {
+                if(response.getResponseData()!=null) {
 
-                            messageStartInfo = new ChatwalaMessageStartInfo();
-                            messageStartInfo.setShareUrl(response.getResponseData());
-                            messageStartInfo.setMessageId(messageId);
-                            break;
-                        }
-
-                    }
-                    catch (TransientException e)
-                    {
-                        Logger.e("MO, Couldn't get message ID", e);
-                    }
-                    catch (PermanentException e)
-                    {
-                        Logger.e("MO, Couldn't get message ID", e);
-                    }
-                    attempts++;
+                    messageStartInfo = new ChatwalaMessageStartInfo();
+                    messageStartInfo.setShareUrl(response.getResponseData());
+                    messageStartInfo.setMessageId(messageId);
+                    return messageStartInfo;
                 }
+
             }
-        });
+            catch (TransientException e)
+            {
+                Logger.e("MO, Couldn't get message ID", e);
+            }
+            catch (PermanentException e)
+            {
+                Logger.e("MO, Couldn't get message ID", e);
+            }
+            attempts++;
+        }
+        return null;
     }
 
     private void sendFacebookPostShare(String messageId) {
