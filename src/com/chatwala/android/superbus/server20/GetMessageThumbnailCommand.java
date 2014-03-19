@@ -56,9 +56,11 @@ public class GetMessageThumbnailCommand extends SqliteCommand
        File thumb = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
 
         //only get the thumb if it's been cached for more than 1 minutes
-        if(System.currentTimeMillis()-thumb.lastModified() > 1000*60*1)
+        if(!thumb.exists() || System.currentTimeMillis()-thumb.lastModified() > 1000*60*1)
        {
-           thumb.setLastModified(System.currentTimeMillis());
+           if(thumb.exists()) {
+                thumb.setLastModified(System.currentTimeMillis());
+           }
             new GetMessageThumbnailRequest(context, message).execute();
 
        }

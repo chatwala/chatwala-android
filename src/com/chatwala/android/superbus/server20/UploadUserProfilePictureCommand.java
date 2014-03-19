@@ -60,11 +60,11 @@ public class UploadUserProfilePictureCommand extends SqliteCommand
         File newFile = MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId());
 
 
-        /*if(newFile.getPath() != currentFile.getPath())  {
+        if(!currentFile.getPath().equals(newFile.getPath())) {
             try {
                 FileOutputStream output = new FileOutputStream(currentFile);
                 FileInputStream input = new FileInputStream(newFile);
-                IOUtils.copy(output, input);
+                IOUtils.copy(input, output);
 
                 input.close();
                 output.close();
@@ -72,7 +72,7 @@ public class UploadUserProfilePictureCommand extends SqliteCommand
             catch(IOException e) {
 
             }
-        }*/
+        }
 
         //Get write url
         ChatwalaResponse<String> response= (ChatwalaResponse<String>) new GetUserPictureUploadURLRequest(context).execute();

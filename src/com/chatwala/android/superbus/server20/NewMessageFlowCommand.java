@@ -85,12 +85,10 @@ public class NewMessageFlowCommand extends SqliteCommand {
         }
 
         if(!thumbSucceeded) {
-            //thumbnail
-            final File thumbFile = ThumbUtils.createThumbFromFirstFrame(context, videoFilePath);
-
             //create first profile picture if needed
             if(!MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId()).exists())
             {
+                final File thumbFile = ThumbUtils.createThumbFromFirstFrame(context, videoFilePath);
                 final Context applicationContext = context.getApplicationContext();
 
                 DataProcessor.runProcess(new Runnable()
