@@ -36,7 +36,7 @@ public class StartReplyMessageRequest extends BasePostRequest {
     protected JSONObject makeBodyJson() throws JSONException, SQLException {
 
         JSONObject bodyJson = new JSONObject();
-        bodyJson.put("sender_id", AppPrefs.getInstance(context).getUserId());
+        bodyJson.put("user_id", AppPrefs.getInstance(context).getUserId());
         bodyJson.put("message_id", messageId);
         bodyJson.put("replying_to_message_id", replyingToMessageId);
         bodyJson.put("start_recording", startRecording);

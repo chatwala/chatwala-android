@@ -671,7 +671,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                                 BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
                             }
                         });
-                        return false;
+                        return true;
                     }
                     else
                     {
