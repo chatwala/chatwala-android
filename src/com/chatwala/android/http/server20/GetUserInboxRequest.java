@@ -2,6 +2,7 @@ package com.chatwala.android.http.server20;
 
 import android.content.Context;
 import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
@@ -10,8 +11,10 @@ import com.chatwala.android.database.OldChatwalaMessage;
 import com.chatwala.android.database.OldDatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BasePostRequest;
+import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.GetMessageFileCommand;
+import com.chatwala.android.util.Logger;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
@@ -142,6 +145,11 @@ public class GetUserInboxRequest extends BasePostRequest {
                     }
                     message.setMessageFile(oldMessage.getMessageFile());
                     message.setWalaDownloaded(true);
+                    try {
+                        new GetMessageThumbnailRequest(context, message).execute();
+                    } catch(Exception e) {
+                        Logger.e("Getting the message thumbnail on migrate failed", e);
+                    }
                     messageDao.create(message);
                 }
                 else {
