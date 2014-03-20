@@ -12,7 +12,8 @@ public enum EnvironmentVariables {
             "http://chatwala.com/?",
             "http://chatwalaprod{shard}.blob.core.windows.net/messages/{message}",
             "UA-46207837-1",
-            "213176338890949"
+            "213176338890949",
+            false
     ),
 
     QA(
@@ -22,7 +23,8 @@ public enum EnvironmentVariables {
             "http://chatwala.com/qa/?",
             "http://chatwalanonprod.blob.core.windows.net/qa-messages/{message}",
             "UA-46207837-4",
-            "213176338890949"
+            "213176338890949",
+            false
     ),
 
     DEV(
@@ -32,7 +34,8 @@ public enum EnvironmentVariables {
             "http://chatwala.com/dev/?",
             "http://chatwalanonprod.blob.core.windows.net/dev-messages/{message}",
             "UA-46207837-3",
-            "213176338890949"
+            "213176338890949",
+            true
     ),
 
     SANDBOX(
@@ -42,7 +45,8 @@ public enum EnvironmentVariables {
             "http://chatwala.com/?",
             "http://chatwalanonprod.blob.core.windows.net/sandbox-messages/{message}",
             "UA-46207837-3",
-            "213176338890949"
+            "213176338890949",
+            true
     );
 
     public static EnvironmentVariables get()
@@ -60,9 +64,10 @@ public enum EnvironmentVariables {
     public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
     private String apiPath, displayString, plistPath, webPath, messageReadUrlTemplate, googleAnalyticsID, facebookAppId;
+    private boolean isDebug;
 
     EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String messageReadUrlTemplate,
-                         String googleAnalyticsID, String facebookAppId)
+                         String googleAnalyticsID, String facebookAppId, boolean isDebug)
     {
         this.apiPath = apiPath;
         this.displayString = displayString;
@@ -71,6 +76,7 @@ public enum EnvironmentVariables {
         this.messageReadUrlTemplate = messageReadUrlTemplate;
         this.googleAnalyticsID = googleAnalyticsID;
         this.facebookAppId = facebookAppId;
+        this.isDebug = isDebug;
     }
 
     public String getApiPath()
@@ -102,4 +108,6 @@ public enum EnvironmentVariables {
     }
 
     public String getFacebookAppId() { return facebookAppId; }
+
+    public boolean isDebug() { return isDebug; }
 }

@@ -333,9 +333,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         cameraFrameRate = CameraUtils.findCameraFrameRate(getContext(), params);
 
         Logger.i("Camera frame rate is " + cameraFrameRate);
-        Logger.logFramerate(cameraFrameRate);
-        Logger.logPreviewDimensions(cameraVideoSize.width, cameraVideoSize.height);
-        Logger.logVideoDimensions(cameraVideoSize.width, cameraVideoSize.height);
+        Logger.setFramerate(cameraFrameRate);
+        Logger.setPreviewDimensions(cameraVideoSize.width, cameraVideoSize.height);
+        Logger.setVideoDimensions(cameraVideoSize.width, cameraVideoSize.height);
 
         params.setPreviewSize(cameraPreviewSize.width, cameraPreviewSize.height);
 

@@ -18,6 +18,7 @@ import com.chatwala.android.activity.KillswitchActivity;
 import com.chatwala.android.activity.SettingsActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.db.DbHelper;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
@@ -65,7 +66,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         CWAnalytics.initAnalytics(this);
 
-        Logger.init((ChatwalaApplication) getApplicationContext(), LOG_TAG, true);
+        DbHelper.initInstance(getApplicationContext());
 
         this.registerActivityLifecycleCallbacks(this);
 

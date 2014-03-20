@@ -1,5 +1,7 @@
 package com.chatwala.android.networking;
 
+import com.chatwala.android.CwResult;
+
 import java.net.HttpURLConnection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -14,7 +16,7 @@ public class ConnectionExecutor {
 
     private final ExecutorService pool;
 
-    private static final int NUM_THREADS=5;
+    private static final int NUM_THREADS = 5;
 
     private ConnectionExecutor() {
         pool = Executors.newFixedThreadPool(NUM_THREADS);
@@ -25,13 +27,13 @@ public class ConnectionExecutor {
         return instance;
     }
 
-    public void execute(final HttpURLConnection connection, final HttpResponseParser parser) {
+    public void execute(final HttpURLConnection connection, final HttpResponseParser<?> parser) {
 
-        Callable<HttpResponseResult> callable = new Callable<HttpResponseResult>() {
+        Callable<CwResult> callable = new Callable<CwResult>() {
             HttpURLConnection conn = connection;
             HttpResponseParser p = parser;
             @Override
-            public HttpResponseResult call() throws Exception {
+            public CwResult<?> call() throws Exception {
                 conn.connect();
                 return p.parse(conn);
             }

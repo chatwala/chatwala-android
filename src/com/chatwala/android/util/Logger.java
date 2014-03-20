@@ -1,23 +1,19 @@
 package com.chatwala.android.util;
 
-import android.content.Context;
 import android.util.Log;
-import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.EnvironmentVariables;
 import com.crashlytics.android.Crashlytics;
-import org.json.JSONObject;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Logger {
-    private static String TAG = "Logger";
-    private static boolean LOG_TO_ANDROID_DEFAULT = false;
-    private static int LOG_MAX_SIZE = 1024 * 512;
-    private static ChatwalaApplication app;
+    private static String TAG = "Chatwala";
+    private static final boolean SHOULD_LOG = EnvironmentVariables.get().isDebug();
+    private static final boolean SHOULD_LOG_DEBUG = false;
+    private static boolean LOG_TO_ANDROID_DEFAULT = true;
+    //private static int LOG_MAX_SIZE = 1024 * 512;
+    //private static ChatwalaApplication app;
 
     public static final String CL_USER_ACTION = "USER_ACTION";
     public static final String CL_MEDIA_RECORDER_STATE = "MEDIA_RECORDER_STATE";
@@ -36,33 +32,25 @@ public class Logger {
 
     private Logger() {}
 
-    public static void init(ChatwalaApplication app) {
+    /*public static void init(ChatwalaApplication app) {
         Logger.app = app;
     }
 
-    public static void init(ChatwalaApplication app, String tag) {
+    public static void init(ChatwalaApplication app, boolean logToAndroidDefault) {
         Logger.app = app;
-        TAG = tag;
-    }
-
-    public static void init(ChatwalaApplication app, String tag, boolean logToAndroidDefault) {
-        Logger.app = app;
-        TAG = tag;
         LOG_TO_ANDROID_DEFAULT = logToAndroidDefault;
     }
 
-    public static void init(ChatwalaApplication app, String tag, int maxLogFileSizeInBytes) {
+    public static void init(ChatwalaApplication app, int maxLogFileSizeInBytes) {
         Logger.app = app;
-        TAG = tag;
         LOG_MAX_SIZE = maxLogFileSizeInBytes;
     }
 
-    public static void init(ChatwalaApplication app, String tag, boolean logToAndroidDefault, int maxLogFileSizeInBytes) {
+    public static void init(ChatwalaApplication app, boolean logToAndroidDefault, int maxLogFileSizeInBytes) {
         Logger.app = app;
-        TAG = tag;
         LOG_TO_ANDROID_DEFAULT = logToAndroidDefault;
         LOG_MAX_SIZE = maxLogFileSizeInBytes;
-    }
+    }*/
 
     private static class LogTask implements Runnable {
         protected String message;
@@ -81,7 +69,7 @@ public class Logger {
 
         @Override
         public void run() {
-            if(logToAndroid) {
+            if((SHOULD_LOG && logToAndroid) || level == Log.ERROR || level == Log.WARN) {
                 logToAndroid(createAndroidMessage(message), t, level);
             }
 
@@ -89,7 +77,7 @@ public class Logger {
                 Crashlytics.logException(t);
             }
 
-            //we're not gonna log to file for now
+            //TODO we're not gonna log to file for now
             /*String message = createMessage();
             if(message == null) {
                 return;
@@ -197,32 +185,34 @@ public class Logger {
         executor.execute(new CrashlyticsLogTask(crashlyticsTag, message, t, level, ste, logToAndroid));
     }
 
-    public static void setTag(String tag) {
-        TAG = tag;
-    }
-
-    public static void setLogToAndroidDefault(boolean logToAndroidDefault) {
-        LOG_TO_ANDROID_DEFAULT = logToAndroidDefault;
-    }
-
     public static void d() {
-        log("", null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+        if(SHOULD_LOG_DEBUG) {
+            log("", null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+        }
     }
 
     public static void d(String message) {
-        log(message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+        if(SHOULD_LOG_DEBUG) {
+            log(message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+        }
     }
 
     public static void d(String message, Throwable t) {
-        log(message, t, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+        if(SHOULD_LOG_DEBUG) {
+            log(message, t, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+        }
     }
 
     public static void d(String message, boolean logToAndroid) {
-        log(message, null, Log.DEBUG, logToAndroid);
+        if(SHOULD_LOG_DEBUG) {
+            log(message, null, Log.DEBUG, logToAndroid);
+        }
     }
 
     public static void d(String message, Throwable t, boolean logToAndroid) {
-        log(message, t, Log.DEBUG, logToAndroid);
+        if(SHOULD_LOG_DEBUG) {
+            log(message, t, Log.DEBUG, logToAndroid);
+        }
     }
 
     public static void e() {
@@ -344,7 +334,7 @@ public class Logger {
         });
     }
 
-    public static void logPreviewDimensions(final int width, final int height) {
+    public static void setPreviewDimensions(final int width, final int height) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -354,7 +344,7 @@ public class Logger {
         });
     }
 
-    public static void logVideoDimensions(final int width, final int height) {
+    public static void setVideoDimensions(final int width, final int height) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -364,7 +354,7 @@ public class Logger {
         });
     }
 
-    public static void logFramerate(final int framerate) {
+    public static void setFramerate(final int framerate) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -373,7 +363,7 @@ public class Logger {
         });
     }
 
-    public static void logShareLink(final String link) {
+    public static void setShareLink(final String link) {
         executor.execute(new Runnable() {
             @Override
             public void run() {

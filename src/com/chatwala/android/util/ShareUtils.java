@@ -140,7 +140,7 @@ public class ShareUtils
     public static String getIdFromIntent(Intent callingIntent)
     {
         String uri = callingIntent.getDataString();
-        Logger.logShareLink(uri);
+        Logger.setShareLink(uri);
         if(uri.startsWith(EnvironmentVariables.WEB_STRING))
             return uri.replace(EnvironmentVariables.WEB_STRING, "");
         else if(uri.startsWith(EnvironmentVariables.ALT_WEB_STRING))
