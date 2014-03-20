@@ -19,10 +19,12 @@ public class RenewWriteUrlForMessageRequest extends BasePostRequest {
 
     private ChatwalaResponse<String> chatwalaResponse=null;
     String messageId;
+    String shardKey;
 
-    public RenewWriteUrlForMessageRequest(Context context, String messageId) {
+    public RenewWriteUrlForMessageRequest(Context context, String messageId, String shardKey) {
         super(context);
         this.messageId= messageId;
+        this.shardKey = shardKey;
 
     }
 
@@ -31,6 +33,7 @@ public class RenewWriteUrlForMessageRequest extends BasePostRequest {
 
         JSONObject bodyJson = new JSONObject();
         bodyJson.put("message_id", messageId);
+        bodyJson.put("shard_key", shardKey);
         return bodyJson;
     }
 
