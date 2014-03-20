@@ -5,18 +5,18 @@ package com.chatwala.android.util;
  */
 public class TimestampUtils
 {
-    public static int HOUR_IN_MINUTES = 60;
-    public static int DAY_IN_HOURS = 24;
-    public static int WEEK_IN_DAYS = 7;
+    public static long HOUR_IN_MINUTES = 60;
+    public static long DAY_IN_HOURS = 24;
+    public static long WEEK_IN_DAYS = 7;
 
-    public static int ONE_MINUTE = 60;
-    public static int ONE_HOUR = ONE_MINUTE * HOUR_IN_MINUTES;
-    public static int ONE_DAY = ONE_HOUR * DAY_IN_HOURS;
-    public static int ONE_WEEK = ONE_DAY * WEEK_IN_DAYS;
+    public static long ONE_MINUTE = 60;
+    public static long ONE_HOUR = ONE_MINUTE * HOUR_IN_MINUTES;
+    public static long ONE_DAY = ONE_HOUR * DAY_IN_HOURS;
+    public static long ONE_WEEK = ONE_DAY * WEEK_IN_DAYS;
 
     public static String formatMessageTimestamp(long messageTimestamp)
     {
-        int secondsSince = (int)(System.currentTimeMillis() - messageTimestamp) / 1000;
+        long secondsSince = (System.currentTimeMillis() - messageTimestamp) / 1000;
 
         if(secondsSince < ONE_MINUTE)
         {
