@@ -79,9 +79,9 @@ public class ReplyFlowCommand extends SqliteCommand {
 
         if(!this.startCallSucceeded) {
             //calculate start recording
-            long startRecordingMillis = Math.round(replyingToMessage.getStartRecording() * 1000d);
-            long chatMessageDuration = videoDuration + NewCameraActivity.VIDEO_PLAYBACK_START_DELAY;
-            double startRecording = ((double) Math.max(chatMessageDuration - startRecordingMillis, 0)) / 1000d;
+            double startRecordingMillis = replyingToMessage.getStartRecording() * 1000d;
+            double chatMessageDuration = videoDuration + NewCameraActivity.VIDEO_PLAYBACK_START_DELAY;
+            double startRecording = Math.max(chatMessageDuration - startRecordingMillis, 0d) / 1000d;
 
             //start
             ChatwalaResponse<ChatwalaMessage> startResponse = (ChatwalaResponse<ChatwalaMessage>) new StartReplyMessageRequest(context, newMessageId, replyingToMessage.getMessageId(), startRecording).execute();
