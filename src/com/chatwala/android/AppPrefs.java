@@ -75,7 +75,9 @@ public class AppPrefs
 
     public String getReferrer() {
         String referrer = mSp.getString(PREF_REFERRER, null);
-        mSp.edit().remove(PREF_REFERRER).apply();
+        if(referrer != null) {
+            mSp.edit().remove(PREF_REFERRER).apply();
+        }
         return referrer;
     }
 

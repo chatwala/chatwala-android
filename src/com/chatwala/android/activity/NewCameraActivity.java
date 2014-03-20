@@ -74,6 +74,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private DeliveryMethod deliveryMethod;
     private Referrer referrer;
+    private Intent referrerIntent;
 
     private String recordCopyOverride;
 
@@ -317,7 +318,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(getAppState() == AppState.ReadyStopped) {
-                setIntent(intent);
+                referrerIntent = intent;
                 Logger.i("Received referrer intent from ReferrerReceiver");
                 findReferrer();
             }
@@ -334,7 +335,6 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                 new IntentFilter(ReferrerReceiver.CW_REFERRER_ACTION));
 
         findReferrer();
-        CWAnalytics.initAnalytics(this);
 
         buttonDelayHandler = new Handler();
 
@@ -400,21 +400,22 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private void findReferrer() {
         String referrerPref = AppPrefs.getInstance(this).getReferrer();
-        if(getIntent().hasExtra(ReferrerReceiver.REFERRER_EXTRA)) {
-            referrer = getIntent().getParcelableExtra(ReferrerReceiver.REFERRER_EXTRA);
+        if(referrerIntent != null && referrerIntent.hasExtra(ReferrerReceiver.REFERRER_EXTRA)) {
+            referrer = referrerIntent.getParcelableExtra(ReferrerReceiver.REFERRER_EXTRA);
+            referrerIntent = null;
         }
         else if(referrerPref != null) {
             referrer = new Referrer(referrerPref);
         }
         else if(getIntent().getData() != null) {
             referrer = new Referrer(getIntent().getData());
-            if(!referrer.isNotReferrer()) {
+            if(referrer.isValid()) {
                 getIntent().setData(null);
             }
         }
 
-        if(referrer != null && !referrer.isNotReferrer()) {
-            CWAnalytics.calculateCategory(referrer);
+        if(referrer != null && referrer.isValid()) {
+            CWAnalytics.sendReferrerReceivedEvent(referrer);
             if(referrer.isFacebookReferrer()) {
                 isFacebookFlow = true;
             }

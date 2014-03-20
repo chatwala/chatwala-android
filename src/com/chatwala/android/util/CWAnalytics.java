@@ -123,7 +123,7 @@ public class CWAnalytics
 
     public static void calculateCategory(Referrer referrer) {
         String oldCategoryString = new String(categoryString==null?"":categoryString);
-        if(referrer != null && !referrer.isNotReferrer()) {
+        if(referrer != null && referrer.isValid()) {
             if(isFirstOpen) {
                 if(referrer.isInstallReferrer()) {
                     if(referrer.isFacebookReferrer()) {
@@ -160,12 +160,11 @@ public class CWAnalytics
         }
     }
 
-    public static void sendReferrerReceivedEvent(Context context, String referrer) {
-        if(tracker == null) {
-            tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
+    public static void sendReferrerReceivedEvent(Referrer referrer) {
+        calculateCategory(referrer);
+        if(referrer != null && referrer.isValid()) {
+            sendEvent(ACTION_REFERRER_RECEIVED, referrer.getReferrerString(), null);
         }
-
-        sendEvent(CATEGORY_REFERRER, ACTION_REFERRER_RECEIVED, referrer, null);
     }
 
     public static void sendAppOpenEvent()
@@ -338,18 +337,6 @@ public class CWAnalytics
         tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
         Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
                 "\n\tCATEGORY:\t" + categoryString +
-                "\n\tACTION:\t" + action +
-                "\n\tLABEL:\t" + labelString +
-                "\n\tVALUE:\t" + valueString);
-    }
-
-    private static void sendEvent(String category, String action, String label, Long value)
-    {
-        String labelString = label != null ? label : LABEL_NO_TAP;
-        String valueString = value != null ? value.toString() : "none";
-        tracker.send(MapBuilder.createEvent(category, action, label, value).build());
-        Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
-                "\n\tCATEGORY:\t" + category +
                 "\n\tACTION:\t" + action +
                 "\n\tLABEL:\t" + labelString +
                 "\n\tVALUE:\t" + valueString);

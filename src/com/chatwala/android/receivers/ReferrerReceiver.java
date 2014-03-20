@@ -26,9 +26,7 @@ public class ReferrerReceiver extends BroadcastReceiver {
                 if(rawReferrer != null) {
                     String referrerStr = URLDecoder.decode(rawReferrer, "UTF-8");
                     Referrer referrer = new Referrer(referrerStr);
-                    if(!referrer.isNotReferrer()) {
-                        Logger.i("Got referrer - " + referrerStr);
-                        CWAnalytics.sendReferrerReceivedEvent(context, referrerStr);
+                    if(referrer.isValid()) {
                         AppPrefs.getInstance(context).putReferrer(referrerStr);
                         Intent referrerIntent = new Intent(CW_REFERRER_ACTION);
                         referrerIntent.putExtra(REFERRER_EXTRA, referrer);

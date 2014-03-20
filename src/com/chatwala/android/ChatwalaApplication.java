@@ -63,6 +63,8 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         Crashlytics.start(this);
 
+        CWAnalytics.initAnalytics(this);
+
         Logger.init((ChatwalaApplication) getApplicationContext(), LOG_TAG, true);
 
         this.registerActivityLifecycleCallbacks(this);

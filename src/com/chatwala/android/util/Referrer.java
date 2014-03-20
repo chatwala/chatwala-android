@@ -46,7 +46,7 @@ public class Referrer implements Parcelable {
     private void parseAdReferrer(Uri adReferrer) {
         this.id = adReferrer.getQueryParameter("id");
         parseReferrerValue(adReferrer.getQueryParameter("referrer"));
-        if(isNotReferrer()) {
+        if(!isValid()) {
             return;
         }
         this.isAdReferrer = true;
@@ -54,7 +54,7 @@ public class Referrer implements Parcelable {
 
     private void parseInstallReferrer(String installReferrer) {
         parseReferrerValue(installReferrer);
-        if(isNotReferrer()) {
+        if(!isValid()) {
             return;
         }
         this.isInstallReferrer = true;
@@ -90,8 +90,8 @@ public class Referrer implements Parcelable {
         return isAdReferrer;
     }
 
-    public boolean isNotReferrer() {
-        return NONE.equals(referrer);
+    public boolean isValid() {
+        return !NONE.equals(referrer);
     }
 
     public boolean isFacebookReferrer() {
@@ -104,6 +104,10 @@ public class Referrer implements Parcelable {
 
     public boolean isCopyReferrer() {
         return COPY.equals(referrer);
+    }
+
+    public String getReferrerString() {
+        return referrer;
     }
 
     public String getValue() {
