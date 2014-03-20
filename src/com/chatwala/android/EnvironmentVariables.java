@@ -6,8 +6,8 @@ package com.chatwala.android;
 public enum EnvironmentVariables {
 
     PROD(
-            "https://chatwala-prodeast-13.azurewebsites.net/",
-            "prodeast_13",
+            "https://chatwala-prodeast-20.azurewebsites.net/",
+            "prodeast_20",
             "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
             "http://chatwala.com/?",
             "http://chatwalaprod{shard}.blob.core.windows.net/messages/{message}",
@@ -16,8 +16,8 @@ public enum EnvironmentVariables {
     ),
 
     QA(
-            "https://chatwala-qa-13.azurewebsites.net/",
-            "qa_13",
+            "https://chatwala-qa-20.azurewebsites.net/",
+            "qa_20",
             "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
             "http://chatwala.com/qa/?",
             "http://chatwalanonprod.blob.core.windows.net/qa-messages/{message}",
@@ -37,7 +37,7 @@ public enum EnvironmentVariables {
 
     SANDBOX(
             "https://chatwala-sandbox-13.azurewebsites.net/",
-            "sandbox_13",
+            "sandbox_20",
             "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/?",
             "http://chatwalanonprod.blob.core.windows.net/sandbox-messages/{message}",
@@ -47,7 +47,7 @@ public enum EnvironmentVariables {
 
     public static EnvironmentVariables get()
     {
-        return EnvironmentVariables.DEV;
+        return EnvironmentVariables.QA;
     }
 
 
