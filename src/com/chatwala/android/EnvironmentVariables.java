@@ -8,7 +8,7 @@ public enum EnvironmentVariables {
     PROD(
             "https://chatwala-prodeast-13.azurewebsites.net/",
             "prodeast_13",
-            "https://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
+            "http://s3.amazonaws.com/chatwala.groundcontrol/defaults1_4.plist",
             "http://chatwala.com/?",
             "UA-46207837-1",
             "213176338890949"
@@ -17,7 +17,7 @@ public enum EnvironmentVariables {
     QA(
             "https://chatwala-qa-13.azurewebsites.net/",
             "qa_13",
-            "https://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
+            "http://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_4.plist",
             "http://chatwala.com/qa/?",
             "UA-46207837-4",
             "213176338890949"
@@ -26,7 +26,7 @@ public enum EnvironmentVariables {
     DEV(
             "https://chatwala-deveast-13.azurewebsites.net/",
             "deveast_13",
-            "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
+            "http://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/dev/?",
             "UA-46207837-3",
             "213176338890949"
@@ -35,7 +35,7 @@ public enum EnvironmentVariables {
     SANDBOX(
             "https://chatwala-sandbox-13.azurewebsites.net/",
             "sandbox_13",
-            "https://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
+            "http://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_4.plist",
             "http://chatwala.com/?",
             "UA-46207837-3",
             "213176338890949"
