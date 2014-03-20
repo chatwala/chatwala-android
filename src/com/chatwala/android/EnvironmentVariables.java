@@ -36,7 +36,7 @@ public enum EnvironmentVariables {
     ),
 
     SANDBOX(
-            "https://chatwala-sandbox-13.azurewebsites.net/",
+            "https://chatwala-sandbox-13.azurewebsites.net/", //leave at 13 for now
             "sandbox_20",
             "http://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_5.plist",
             "http://chatwala.com/?",
