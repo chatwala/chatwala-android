@@ -37,7 +37,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
     private static final int MAX_SMS_MESSAGE_LENGTH = 160;
 
-    private static final int MOST_CONTACTED_CONTACT_LIMIT = 25;
+    private static final int MOST_CONTACTED_CONTACT_LIMIT = 27;
 
     private static final int CONTACTS_LOADER_CODE = 0;
     private static final int CONTACTS_TIME_CONTACTED_LOADER_CODE = 1;
@@ -120,10 +120,14 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     };
 
     private class SendMessageRunnable implements Runnable {
+        private Context appContext;
         private String value;
 
         public SendMessageRunnable(String value) {
             this.value = value;
+            if(SmsActivity.this != null) {
+                appContext = SmsActivity.this.getApplicationContext();
+            }
         }
 
         @Override
@@ -135,8 +139,10 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
             }*/
             String message = smsMessage + ": " + smsMessageUrl;
-            PendingIntent sentIntent = PendingIntent.getBroadcast(SmsActivity.this, hashCode(),
-                    new Intent(SmsActivity.this, SmsSentReceiver.class), 0);
+            PendingIntent sentIntent = null;
+            if(appContext != null) {
+                sentIntent = PendingIntent.getBroadcast(appContext, messagesSent, new Intent(appContext, SmsSentReceiver.class), 0);
+            }
             try {
                 SmsManager.getDefault().sendTextMessage(value, null, message, sentIntent, null);
                 messagesSent++;
@@ -174,7 +180,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         recentsdAdapter = new RecentContactEntryAdapter(new ArrayList<ContactEntry>(), false, mostContactedEntryComparator);
 
         contactsFilter = (EditText) findViewById(R.id.contacts_filter);
-        contactsFilter.setHintTextColor(Color.WHITE);
         contactsFilter.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
@@ -254,6 +259,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         findViewById(R.id.contacts_filter_clear).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                        .hideSoftInputFromWindow(contactsFilter.getWindowToken(), 0);
                 contactsFilter.setText("");
             }
         });
@@ -549,7 +556,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 return "Sent";
             }
             else if(isSending) {
-                return "Sending in " + timeToSend;
+                return "Sending " + timeToSend;
             }
             else {
                 return "";
@@ -831,11 +838,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 convertView = getLayoutInflater().inflate(R.layout.layout_contact_grid, null);
 
                 holder = new RecentContactViewHolder();
-                holder.container = (RelativeLayout) convertView.findViewById(R.id.contact_item_container);
+                holder.overlay = convertView.findViewById(R.id.contact_item_overlay);
                 holder.name = (TextView) convertView.findViewById(R.id.contact_item_name);
                 holder.value = (TextView) convertView.findViewById(R.id.contact_item_number);
                 holder.status = (TextView) convertView.findViewById(R.id.contact_sent_status);
-                holder.check = (ImageView) convertView.findViewById(R.id.contact_sent_check);
+                holder.sentCb = (CheckBox) convertView.findViewById(R.id.contact_sent_cb);
                 holder.image = (ImageView) convertView.findViewById(R.id.contact_item_image);
             }
             else {
@@ -861,17 +868,54 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                 holder.image.setImageResource(R.drawable.default_contact_icon);
             }
 
+            holder.sentCb.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isChecked = ((CheckBox)v).isChecked();
+
+                    if(isChecked) {
+                        if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
+                            entry.setIsSent(true);
+                            notifyDataSetChanged();
+                        }
+                        else {
+                            contactsSentTo.put(entry.getName() + entry.getValue(), true);
+                            entry.startSend();
+                        }
+                    }
+                    else {
+                        contactsSentTo.remove(entry.getName() + entry.getValue());
+                        entry.cancelSend();
+                    }
+                }
+            });
+            /*int id = Resources.getSystem().getIdentifier("btn_check_holo_light", "drawable", "android");
+            if(id != 0) {
+                holder.sentCb.setButtonDrawable(id);
+            }*/
+            holder.sentCb.setChecked(entry.isSentOrSending());
 
             if(entry.isSent()) {
                 holder.status.setVisibility(View.GONE);
-                holder.check.setVisibility(View.VISIBLE);
-                holder.container.setBackgroundResource(R.drawable.contact_sent_gradient);
+                holder.overlay.setBackgroundColor(Color.GRAY);
+                holder.overlay.getBackground().setAlpha(155);
+                holder.overlay.setVisibility(View.VISIBLE);
+                holder.sentCb.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        return true;
+                    }
+                });
             }
             else {
                 holder.status.setVisibility(View.VISIBLE);
-                holder.check.setVisibility(View.GONE);
-                convertView.setBackgroundColor(Color.TRANSPARENT);
-                holder.container.setBackgroundResource(R.drawable.contact_gradient);
+                holder.overlay.setVisibility(View.GONE);
+                holder.sentCb.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        return false;
+                    }
+                });
             }
 
             convertView.setTag(holder);
@@ -889,11 +933,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     }
 
     private static class RecentContactViewHolder {
-        RelativeLayout container;
+        View overlay;
         TextView name;
         TextView value;
         TextView status;
-        ImageView check;
+        CheckBox sentCb;
         ImageView image;
     }
 }
