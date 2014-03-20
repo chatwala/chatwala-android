@@ -26,6 +26,7 @@ import com.chatwala.android.R;
 import com.chatwala.android.SmsSentReceiver;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
+import com.squareup.picasso.Picasso;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -408,6 +409,10 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
             recentsdAdapter = new RecentContactEntryAdapter(mostContactedContacts, true, mostContactedEntryComparator);
             recentsGridView.setAdapter(recentsdAdapter);
+        }
+
+        if(cursor != null && !cursor.isClosed()) {
+            cursor.close();
         }
     }
 
@@ -822,8 +827,12 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     }
 
     private class RecentContactEntryAdapter extends ContactEntryAdapter {
+        Picasso pic;
+
         public RecentContactEntryAdapter(List<ContactEntry> contacts, boolean useFiltered, Comparator<ContactEntry> comparator) {
             super(contacts, useFiltered, comparator);
+
+            pic = Picasso.with(SmsActivity.this);
         }
 
         @Override
@@ -856,17 +865,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             }
             holder.value.setText(entry.getValue());
             holder.status.setText(entry.getSendingStatus());
-            try {
-                if(entry.getImage() != null) {
-                    holder.image.setImageURI(Uri.parse(entry.getImage()));
-                }
-                else {
-                    holder.image.setImageResource(R.drawable.default_contact_icon);
-                }
-            }
-            catch(Exception e) {
-                holder.image.setImageResource(R.drawable.default_contact_icon);
-            }
+            pic.load(entry.getImage())
+                    .error(R.drawable.default_contact_icon)
+                    .placeholder(R.drawable.default_contact_icon)
+                    .noFade()
+                    .into(holder.image);
 
             holder.sentCb.setOnClickListener(new View.OnClickListener() {
                 @Override
