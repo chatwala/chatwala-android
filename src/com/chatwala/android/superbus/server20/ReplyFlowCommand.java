@@ -39,6 +39,7 @@ public class ReplyFlowCommand extends SqliteCommand {
     long videoDuration;
     String writeUrl;
     String messageMetaDataJSONString;
+    String shardKey;
 
     boolean startCallSucceeded=false;
     boolean thumbSucceeded=false;
@@ -86,6 +87,7 @@ public class ReplyFlowCommand extends SqliteCommand {
             //start
             ChatwalaResponse<ChatwalaMessage> startResponse = (ChatwalaResponse<ChatwalaMessage>) new StartReplyMessageRequest(context, newMessageId, replyingToMessage.getMessageId(), startRecording).execute();
             ChatwalaMessage chatwalaMessage = startResponse.getResponseData();
+            shardKey =chatwalaMessage.getShardKey();
             writeUrl = chatwalaMessage.getWriteUrl();
             messageMetaDataJSONString = chatwalaMessage.getMessageMetaDataString();
 
@@ -119,7 +121,7 @@ public class ReplyFlowCommand extends SqliteCommand {
 
 
         if(putCallFailedPreviously) {
-            ChatwalaResponse<String> renewResponse = (ChatwalaResponse<String>) new RenewWriteUrlForMessageRequest(context, newMessageId).execute();
+            ChatwalaResponse<String> renewResponse = (ChatwalaResponse<String>) new RenewWriteUrlForMessageRequest(context, newMessageId, shardKey).execute();
             writeUrl = renewResponse.getResponseData();
         }
 
@@ -132,14 +134,15 @@ public class ReplyFlowCommand extends SqliteCommand {
                 BaseSasPutRequest.putFileToUrl(writeUrl, BaseSasPutRequest.convertFileToBytes(outZip), false);
                 //delete local wala file
                 outZip.delete();
+
             }
             catch(TransientException e) {
                 this.putCallFailedPreviously=true;
                 throw e;
             }
 
-            this.putCallSucceeded=true;
-            this.putCallFailedPreviously=false;
+            //this.putCallSucceeded=true;
+            //this.putCallFailedPreviously=false;
         }
 
 
