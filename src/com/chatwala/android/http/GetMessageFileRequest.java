@@ -151,6 +151,11 @@ public class GetMessageFileRequest extends BaseGetRequest
             chatwalaMessage = existingMessage;
         }
 
+        File thumbnailFile = new File(chatwalaMessage.getThumbnailUrl());
+        if(thumbnailFile.exists()) {
+            thumbnailFile.setLastModified(0);
+        }
+
         chatwalaMessage.setMessageFile(messageFile);
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
         return chatwalaMessage;
