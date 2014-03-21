@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:padding="3dp"
+             android:background="#000">
+
+    <com.chatwala.android.ui.ContactImageView
+            android:id="@+id/contact_item_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"/>
+
+    <RelativeLayout
+            android:id="@+id/contact_item_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/contact_gradient"
+            android:descendantFocusability="blocksDescendants" >
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/whatsapp_transparent_line"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:textColor="#fff"
+                android:text="WhatsApp"/>
+
+        <TextView
+                android:id="@+id/whatsapp_transparent_line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="3dp"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#fff"
+                android:textSize="10sp"
+                android:text="Tap to send"/>
+
+    </RelativeLayout>
+
+</FrameLayout>
