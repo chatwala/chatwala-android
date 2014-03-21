@@ -141,8 +141,8 @@ public class ReplyFlowCommand extends SqliteCommand {
                 throw e;
             }
 
-            //this.putCallSucceeded=true;
-            //this.putCallFailedPreviously=false;
+            this.putCallSucceeded=true;
+            this.putCallFailedPreviously=false;
         }
 
 
