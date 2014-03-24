@@ -9,6 +9,11 @@ import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.Logger;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,6 +27,7 @@ public class AppPrefs
     private static AppPrefs INSTANCE;
     private Application application;
 
+    public static final String PREF_REFERRER = "PREF_REFERRER";
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
     public static final String PREF_FIRST_BUTTON_PRESS = "FIRST_BUTTON_PRESS";
     public static final String PREF_USER_ID = "USER_ID";
@@ -62,6 +68,18 @@ public class AppPrefs
     {
         return mSp;
     }*/
+
+    public void putReferrer(String referrer) {
+        mSp.edit().putString(PREF_REFERRER, referrer).apply();
+    }
+
+    public String getReferrer() {
+        String referrer = mSp.getString(PREF_REFERRER, null);
+        if(referrer != null) {
+            mSp.edit().remove(PREF_REFERRER).apply();
+        }
+        return referrer;
+    }
 
     public int getActionIncrement() {
         int actionIncrement = mSp.getInt(PREF_ACTION_INCREMENT, 0);
