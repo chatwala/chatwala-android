@@ -13,20 +13,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.AppPrefs;
-import com.chatwala.android.CwResult;
+import com.chatwala.android.CWResult;
 import com.chatwala.android.R;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.networking.NetworkManager;
-import com.chatwala.android.networking.Response;
-import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 import com.chatwala.android.superbus.server20.UploadUserProfilePictureCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * Created by matthewdavis on 1/10/14.
@@ -108,13 +104,13 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                     }
                 });
 
-                new AsyncTask<Void, Void, CwResult<Response<JSONObject>>>() {
+                new AsyncTask<Void, Void, CWResult<JSONObject>>() {
                     @Override
-                    protected CwResult<Response<JSONObject>> doInBackground(Void... voids) {
+                    protected CWResult<JSONObject> doInBackground(Void... voids) {
                         Context context = UpdateProfilePicActivity.this;
                         String userId = AppPrefs.getInstance(context).getUserId();
                         try {
-                            return NetworkManager.get().getUserPictureUploadUrl(userId).get();
+                            return NetworkManager.getInstance().getUserPictureUploadUrl(userId).get();
                         }
                         catch(Exception e) {
                             return null;
@@ -122,13 +118,13 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                     }
 
                     @Override
-                    protected void onPostExecute(CwResult<Response<JSONObject>> response) {
+                    protected void onPostExecute(CWResult<JSONObject> response) {
                         if(response != null) {
-                            if(response.isError()) {
+                            if(!response.isSuccess()) {
                                 Toast.makeText(UpdateProfilePicActivity.this, "Got an error " + response.getMessage(), Toast.LENGTH_LONG).show();
                             }
                             else {
-                                Toast.makeText(UpdateProfilePicActivity.this, "response = " + response.getResult().getData().toString(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(UpdateProfilePicActivity.this, "response = " + response.getResult().toString(), Toast.LENGTH_LONG).show();
                             }
                         }
                     }
