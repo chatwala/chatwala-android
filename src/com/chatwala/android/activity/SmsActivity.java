@@ -1,8 +1,11 @@
 package com.chatwala.android.activity;
 
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -24,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.chatwala.android.R;
 import com.chatwala.android.SmsSentReceiver;
+import com.chatwala.android.ui.ContactImageView;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
 import com.squareup.picasso.Picasso;
@@ -45,6 +49,9 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
     private String smsMessageUrl;
     private String smsMessage;
+
+    private boolean whatsappAvailable = false;
+    private Intent waIntent;
 
     private boolean sendAnalyticsBackgroundEvent = true;
 
@@ -175,6 +182,8 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         smsMessageUrl = getIntent().getStringExtra(SMS_MESSAGE_URL_EXTRA);
         smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
 
+        initWhatsapp();
+
         contactsSentTo = new HashMap<String, Boolean>();
 
         contactsAdapter = new ContactEntryAdapter(new ArrayList<ContactEntry>(), true, entryComparator);
@@ -234,6 +243,17 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         recentsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(whatsappAvailable && i == 0) {
+                    if(waIntent != null) {
+                        CWAnalytics.sendWhatsappTappedEvent();
+                        startActivity(waIntent);
+                    }
+                    return;
+                }
+                else {
+                    i--;
+                }
+
                 ContactEntry entry = recentsdAdapter.getItem(i);
                 if(!entry.isContact()) {
                     entry.sendMessage();
@@ -268,6 +288,26 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
         getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, this);
         getSupportLoaderManager().initLoader(CONTACTS_TIME_CONTACTED_LOADER_CODE, null, this);
+    }
+
+    private void initWhatsapp() {
+        waIntent = new Intent(Intent.ACTION_SEND);
+        waIntent.setType("text/plain");
+        waIntent.putExtra(Intent.EXTRA_TEXT, smsMessage + ": " + smsMessageUrl);
+        waIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+
+        PackageManager pm = getApplicationContext().getPackageManager();
+        final List<ResolveInfo> matches = pm.queryIntentActivities(waIntent, 0);
+        for (final ResolveInfo info : matches) {
+            if (info.activityInfo.packageName.startsWith("com.whatsapp"))  {
+                final ComponentName name = new ComponentName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name);
+                waIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                waIntent.setComponent(name);
+                CWAnalytics.sendWhatsappAvailableEvent();
+                whatsappAvailable = true;
+                break;
+            }
+        }
     }
 
     @Override
@@ -349,6 +389,11 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
             Map<String, Boolean> addToRecentsByNumber = new HashMap<String, Boolean>();
             String previousName = null;
 
+            int contactLimit = MOST_CONTACTED_CONTACT_LIMIT;
+            if(whatsappAvailable) {
+                contactLimit--;
+            }
+
             if(cursor.moveToFirst()) {
                 do {
                     try {
@@ -404,7 +449,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                         Logger.e("Exception", e);
                         continue;
                     }
-                } while(cursor.moveToNext() && mostContactedContacts.size() != MOST_CONTACTED_CONTACT_LIMIT);
+                } while(cursor.moveToNext() && mostContactedContacts.size() != contactLimit);
             }
 
             recentsdAdapter = new RecentContactEntryAdapter(mostContactedContacts, true, mostContactedEntryComparator);
@@ -843,14 +888,37 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         }
 
         @Override
+        public int getCount() {
+            int count = super.getCount();
+            if(whatsappAvailable) {
+                count++;
+            }
+            return count;
+        }
+
+        @Override
+        public ContactEntry getItem(int position) {
+            return super.getItem(position);
+        }
+
+        @Override
         public View getView(int i, View convertView, ViewGroup parent) {
+            if(whatsappAvailable && i == 0) {
+                convertView = getLayoutInflater().inflate(R.layout.layout_contact_grid_whatsapp, null);
+                pic.load(R.drawable.whatsapp_logo).noFade().into((ImageView)convertView.findViewById(R.id.contact_item_image));
+                return convertView;
+            }
+            else if(whatsappAvailable && i != 0) {
+                i--;
+            }
+
             final RecentContactViewHolder holder;
 
             if(getLayoutInflater() == null) {
                 setLayoutInflater(SmsActivity.this);
             }
 
-            if(convertView == null) {
+            if(convertView == null || convertView.findViewById(R.id.contact_tile_root) == null) {
                 convertView = getLayoutInflater().inflate(R.layout.layout_contact_grid, null);
 
                 holder = new RecentContactViewHolder();
@@ -902,10 +970,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     }
                 }
             });
-            /*int id = Resources.getSystem().getIdentifier("btn_check_holo_light", "drawable", "android");
-            if(id != 0) {
-                holder.sentCb.setButtonDrawable(id);
-            }*/
             holder.sentCb.setChecked(entry.isSentOrSending());
 
             if(entry.isSent()) {
