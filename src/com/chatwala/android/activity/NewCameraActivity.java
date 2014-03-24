@@ -13,7 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
-import android.util.Log;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -33,8 +33,8 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.PostSubmitMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.receivers.ReferrerReceiver;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
-import com.chatwala.android.superbus.PutMessageFileCommand;
 import com.chatwala.android.superbus.PutMessageFileWithSasCommand;
 import com.chatwala.android.ui.CameraPreviewView;
 import com.chatwala.android.ui.CroppingLayout;
@@ -52,8 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.chatwala.android.http.BaseHttpRequest;
-
 /**
  * Created with IntelliJ IDEA.
  * User: matthewdavis
@@ -63,6 +61,7 @@ import com.chatwala.android.http.BaseHttpRequest;
  */
 public class NewCameraActivity extends BaseNavigationDrawerActivity {
     public static final String INITIATOR_EXTRA = "initiator";
+    private static final int FACEBOOK_DELIVERY_REQUEST_CODE = 1000;
 
     public static final int RECORDING_TIME = 10000;
     public static final int VIDEO_PLAYBACK_START_DELAY = 500;
@@ -73,7 +72,11 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private Handler buttonDelayHandler;
     private View timerButtonContainer;
 
-    DeliveryMethod deliveryMethod;
+    private DeliveryMethod deliveryMethod;
+    private Referrer referrer;
+    private Intent referrerIntent;
+
+    private String recordCopyOverride;
 
     private boolean isFacebookFlow = false;
 
@@ -222,12 +225,17 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     private void startPreview() {
         timerKnob.setVisibility(View.VISIBLE);
         timerKnob.setImageResource(R.drawable.ic_action_send_ios);
-        int messageRes = R.string.send_instructions;
-        if(isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
-            messageRes = R.string.facebook_flow_send_instructions;
-        }
-        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
+        showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, getPreviewCopy());
         CWAnalytics.sendPreviewStartEvent();
+    }
+
+    private String getPreviewCopy() {
+        if(isFacebookFlow || (getCurrentMessageOrigin() == MessageOrigin.INITIATOR && deliveryMethod == DeliveryMethod.FB)) {
+            return getString(R.string.facebook_flow_send_instructions);
+        }
+        else {
+            return getString(R.string.send_instructions);
+        }
     }
 
     private void analyticsTimerReset()
@@ -306,11 +314,27 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         timerKnob.setImageResource(R.drawable.record_stop);
     }
 
+    private BroadcastReceiver referrerIntentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(getAppState() == AppState.ReadyStopped) {
+                referrerIntent = intent;
+                Logger.i("Received referrer intent from ReferrerReceiver");
+                findReferrer();
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         Logger.i("Beginning of onCreate()");
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(referrerIntentReceiver,
+                new IntentFilter(ReferrerReceiver.CW_REFERRER_ACTION));
+
+        findReferrer();
 
         buttonDelayHandler = new Handler();
 
@@ -369,17 +393,39 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
             openDrawer();
         }
 
-        if(getIntent().getData() != null) {
-            if("fb".equals(getIntent().getData().getLastPathSegment())) {
-                CWAnalytics.sendFacebookInitiatorEvent();
-                getIntent().setData(null);
-                isFacebookFlow = true;
-            }
-        }
-
 //        captureOpeningVolume();
 
         Logger.i("End of onCreate()");
+    }
+
+    private void findReferrer() {
+        String referrerPref = AppPrefs.getInstance(this).getReferrer();
+        if(referrerIntent != null && referrerIntent.hasExtra(ReferrerReceiver.REFERRER_EXTRA)) {
+            referrer = referrerIntent.getParcelableExtra(ReferrerReceiver.REFERRER_EXTRA);
+            referrerIntent = null;
+        }
+        else if(referrerPref != null) {
+            referrer = new Referrer(referrerPref);
+        }
+        else if(getIntent().getData() != null) {
+            referrer = new Referrer(getIntent().getData());
+            if(referrer.isValid()) {
+                getIntent().setData(null);
+            }
+        }
+
+        if(referrer != null && referrer.isValid()) {
+            CWAnalytics.sendReferrerReceivedEvent(referrer);
+            if(referrer.isFacebookReferrer()) {
+                isFacebookFlow = true;
+            }
+            /*else if(referrer.isMessageReferrer()) {
+                getIntent().putExtra(MESSAGE_ID, referrer.getValue());
+            }
+            else if(referrer.isCopyReferrer()) {
+                recordCopyOverride = referrer.getValue();
+            }*/
+        }
     }
 
     private void showTutorialIfNeeded() {
@@ -461,7 +507,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
 
         Logger.i();
-        CWAnalytics.setStarterMessage(!replyMessageAvailable());
+        CWAnalytics.setStarterMessage(!replyMessageAvailable(), referrer);
 
         activityActive = true;
         setAppState(AppState.Transition);
@@ -520,6 +566,10 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
         activityActive = false;
 
+        if(referrer != null && referrer.isFacebookReferrer() && getAppState() == AppState.PreviewReady) {
+            closeResultPreview();
+        }
+        referrer = null;
         isFacebookFlow = false;
 
         AppState state = getAppState();
@@ -534,6 +584,16 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 //        resetOpeningVolume();
         tearDownSurface();
 
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        //shouldn't need to handle anything, but unregistering receivers sometimes crashes unexpectedly
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(referrerIntentReceiver);
+        } catch(Exception ignore) {}
     }
 
     @Override
@@ -677,7 +737,13 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
                                 }
                             });
 
-                            CWAnalytics.sendSendMessageEvent(deliveryMethod, (long) recordPreviewCompletionListener.replays);
+                            if(isFacebookFlow) {
+                                CWAnalytics.sendSendMessageEvent(DeliveryMethod.FB, (long) recordPreviewCompletionListener.replays);
+                            }
+                            else {
+                                CWAnalytics.sendSendMessageEvent(deliveryMethod, (long) recordPreviewCompletionListener.replays);
+                            }
+
                             if(isFacebookFlow) {
                                 sendFacebookPostShare(messageId);
                             }
@@ -980,6 +1046,8 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         //TODO get rid of this
         AndroidUtils.isMainThread();
 
+        recordCopyOverride = null;
+
         if(getAppState() == AppState.ReadyStopped) {
             showRecordingCountdown(false);
         }
@@ -1091,14 +1159,22 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         else
         {
             removeWaterSplash();
-            int messageRes = R.string.basic_instructions;
-            if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
-                messageRes = R.string.facebook_flow_instructions;
-            }
-            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, messageRes);
+            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, getRecordCopy());
         }
 
         liveForRecording();
+    }
+
+    private String getRecordCopy() {
+        if(recordCopyOverride != null) {
+            return recordCopyOverride;
+        }
+        else if(isFacebookFlow || deliveryMethod == DeliveryMethod.FB) {
+            return getString(R.string.facebook_flow_instructions);
+        }
+        else {
+            return getString(R.string.basic_instructions);
+        }
     }
 
     private void liveForRecording()
@@ -1440,6 +1516,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         closePreviewOnReturn = true;
 
         startActivity(intent);
+        //startActivityForResult(intent, FACEBOOK_DELIVERY_REQUEST_CODE);
     }
 
     @SuppressWarnings("unchecked")
@@ -1571,7 +1648,24 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         startActivity(i);
     }
 
-    private void showMessage(View messageView, TextView messageViewText, int colorRes, int messageRes)
+    /*@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == FACEBOOK_DELIVERY_REQUEST_CODE) {
+            if(resultCode == RESULT_OK) {
+                CWAnalytics.sendFacebookSendConfirmed();
+            }
+            else if(resultCode == RESULT_CANCELED) {
+                CWAnalytics.sendFacebookSendCanceled();
+            }
+        }
+    }*/
+
+    private void showMessage(View messageView, TextView messageViewText, int colorRes, int messageRes) {
+        showMessage(messageView, messageViewText, colorRes, getString(messageRes));
+    }
+
+    private void showMessage(View messageView, TextView messageViewText, int colorRes, String message)
     {
         if (messageView.getVisibility() != View.GONE)
             return;
@@ -1581,7 +1675,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
         messageView.startAnimation(animation);
         messageView.setBackgroundColor(getResources().getColor(colorRes));
         messageView.setVisibility(View.VISIBLE);
-        messageViewText.setText(messageRes);
+        messageViewText.setText(message);
         messageViewText.setVisibility(View.VISIBLE);
     }
 
