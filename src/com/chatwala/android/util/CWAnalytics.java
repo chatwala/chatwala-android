@@ -58,6 +58,8 @@ public class CWAnalytics
 
     private static String ACTION_RECIPIENT_ADDED = "RECIPIENT_ADDED";
     private static String ACTION_RECENT_ADDED = "RECENT_ADDED";
+    private static String ACTION_WHATSAPP_AVAILABLE = "WHATSAPP_AVAILABLE";
+    private static String ACTION_WHATSAPP_TAPPED = "WHATSAPP_TAPPED";
     private static String ACTION_MESSAGE_SEND_CANCELED = "MESSAGE_SEND_CANCELED";
     private static String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
@@ -296,6 +298,14 @@ public class CWAnalytics
 
     public static void sendRecentAddedEvent() {
         sendEvent(ACTION_RECENT_ADDED, LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendWhatsappAvailableEvent() {
+        sendEvent(ACTION_WHATSAPP_AVAILABLE, LABEL_NO_TAP, null);
+    }
+
+    public static void sendWhatsappTappedEvent() {
+        sendEvent(ACTION_WHATSAPP_TAPPED, LABEL_TAP_BUTTON, null);
     }
 
     public static void sendMessageSendCanceledEvent() {
