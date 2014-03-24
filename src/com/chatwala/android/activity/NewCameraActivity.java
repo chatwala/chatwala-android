@@ -146,7 +146,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
 
     private MessageOrigin getCurrentMessageOrigin() {
         if(incomingMessage != null) {
-            if("recipient_unknown".equals(incomingMessage.getRecipientId())) {
+            if("RECIPIENT_UNKNOWN".equals(incomingMessage.getRecipientId())) {
                 return MessageOrigin.LINK;
             }
             else {
