@@ -289,7 +289,7 @@ public class CWAnalytics
     {
         String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
-        Logger.d("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
+        Logger.i("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
                 "\n\tCATEGORY:\t" + categoryString +
                 "\n\tACTION:\t" + action +
                 "\n\tLABEL:\t" + labelString +

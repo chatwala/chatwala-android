@@ -24,7 +24,7 @@ public enum EnvironmentVariables {
             "http://chatwalanonprod.blob.core.windows.net/qa-messages/{message}",
             "UA-46207837-4",
             "213176338890949",
-            false
+            true
     ),
 
     DEV(
@@ -51,7 +51,7 @@ public enum EnvironmentVariables {
 
     public static EnvironmentVariables get()
     {
-        return EnvironmentVariables.QA;
+        return EnvironmentVariables.DEV;
     }
 
 

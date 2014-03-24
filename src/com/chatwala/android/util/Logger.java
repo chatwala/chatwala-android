@@ -296,7 +296,7 @@ public class Logger {
     }
 
     public static void network(String message) {
-        crashlytics(message, LOG_TO_ANDROID_DEFAULT);
+        log_crashlytics(null, message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT);
     }
 
     public static void crashlytics(String message) {

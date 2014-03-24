@@ -20,6 +20,7 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.db.DbHelper;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
 import com.chatwala.android.util.*;
@@ -57,10 +58,14 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     public static AtomicBoolean isKillswitchShowing;
     public static int numActivities=0;
 
+    public NetworkManager networkManager;
+
     @Override
     public void onCreate()
     {
         super.onCreate();
+
+        networkManager = NetworkManager.attachToApp(this);
 
         Crashlytics.start(this);
 

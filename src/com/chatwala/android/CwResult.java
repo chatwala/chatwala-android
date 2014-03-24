@@ -20,6 +20,16 @@ public class CwResult<T> {
         this.message = initialMessage;
     }
 
+    public CwResult(boolean initialSuccess, boolean isPartialSuccess, String initialMessage) {
+        this.success = initialSuccess;
+        this.partial = isPartialSuccess;
+        this.message = initialMessage;
+    }
+
+    public CwResult(CwResult<?> other) {
+        this(other.isSuccess(), other.isPartial(), other.getMessage());
+    }
+
     public boolean isSuccess() {
         return success;
     }

@@ -80,6 +80,16 @@ public class DbHelper {
         }
     }
 
+    /*package*/ static final ReadOnlyDbWrapper getReadOnlyDbWrapper(DbResult<?> result) {
+        try {
+            return acquireReadOnlyDatabase();
+        }
+        catch(DbAcquisitionException e) {
+            result.setDbAcquisitionFlag();
+            return null;
+        }
+    }
+
     private static final DbWrapper acquireDatabase() throws DbAcquisitionException {
         try {
             getInstance().mutex.acquire();
@@ -89,6 +99,16 @@ public class DbHelper {
         catch (InterruptedException e) {
             Logger.e("The thread waiting for a db was interrupted", e);
             throw new DbAcquisitionException();
+        }
+        catch(Exception e) {
+            Logger.e("There was an error getting the db", e);
+            throw new DbAcquisitionException();
+        }
+    }
+
+    private static final ReadOnlyDbWrapper acquireReadOnlyDatabase() throws DbAcquisitionException {
+        try {
+            return new ReadOnlyDbWrapper(getInstance().myOpenHelperInstance.getReadableDatabase());
         }
         catch(Exception e) {
             Logger.e("There was an error getting the db", e);
