@@ -250,7 +250,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
                     }
                     return;
                 }
-                else {
+                else if(whatsappAvailable && i != 0) {
                     i--;
                 }
 
