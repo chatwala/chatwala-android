@@ -74,9 +74,19 @@ public class ChatwalaMessage {
     @DatabaseField
     private String imageModifiedSince;
 
+    @DatabaseField
+    private String shardKey;
 
     @DatabaseField
     private boolean walaDownloaded;
+
+    public String getShardKey() {
+        return shardKey;
+    }
+
+    public void setShardKey(String shardKey) {
+        this.shardKey = shardKey;
+    }
 
     public boolean isWalaDownloaded() {
         return walaDownloaded;
@@ -220,6 +230,7 @@ public class ChatwalaMessage {
         this.setThreadId(message_meta_data.getString("thread_id"));
         this.setStartRecording(message_meta_data.getDouble("start_recording"));
         this.setTimestamp(message_meta_data.getLong("timestamp"));
+        this.setShardKey(message_meta_data.getString("blob_storage_shard_key"));
         this.setMessageMetaDataString(message_meta_data.toString(4));
     }
 

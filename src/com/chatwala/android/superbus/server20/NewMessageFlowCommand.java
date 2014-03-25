@@ -32,7 +32,7 @@ public class NewMessageFlowCommand extends SqliteCommand {
     String newMessageId;
     String messageMetaDataJSONString;
     String writeUrl;
-
+    String shardKey;
     String videoFilePath;
 
     boolean startCallSucceeded=false;
@@ -80,6 +80,7 @@ public class NewMessageFlowCommand extends SqliteCommand {
             ChatwalaResponse<ChatwalaMessage> startResponse = (ChatwalaResponse<ChatwalaMessage>) new StartUnknownRecipientMessageRequest(context, newMessageId).execute();
             ChatwalaMessage message = startResponse.getResponseData();
             this.writeUrl = message.getWriteUrl();
+            this.shardKey = message.getShardKey();
             this.startCallSucceeded=true;
             this.messageMetaDataJSONString = message.getMessageMetaDataString();
         }
@@ -106,7 +107,7 @@ public class NewMessageFlowCommand extends SqliteCommand {
         }
 
         if(putCallFailedPreviously) {
-            ChatwalaResponse<String> renewResponse = (ChatwalaResponse<String>) new RenewWriteUrlForMessageRequest(context, newMessageId).execute();
+            ChatwalaResponse<String> renewResponse = (ChatwalaResponse<String>) new RenewWriteUrlForMessageRequest(context, newMessageId, shardKey).execute();
             writeUrl = renewResponse.getResponseData();
         }
 

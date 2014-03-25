@@ -1,12 +1,9 @@
 package com.chatwala.android.util;
 
 import android.content.Context;
-import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
-import com.chatwala.android.http.BaseHttpRequest;
-import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.Tracker;
@@ -20,12 +17,18 @@ import com.google.analytics.tracking.android.Tracker;
  */
 public class CWAnalytics
 {
+    private static String CATEGORY_REFERRER = "REFERRER";
     private static String CATEGORY_FIRST_OPEN = "FIRST_OPEN";
     private static String CATEGORY_CONVERSATION_STARTER = "CONVERSATION_STARTER";
     private static String CATEGORY_CONVERSATION_REPLIER = "CONVERSATION_REPLIER";
 
-    private static String ACTION_INSTALL_FROM_FACEBOOK = "INSTALL_FROM_FACEBOOK";
-    private static String ACTION_DEEP_LINK_FROM_FACEBOOK = "DEEP_LINK_FROM_FACEBOOK";
+    private static String CATEGORY_FIRST_OPEN_FACEBOOK = "FIRST_OPEN_FACEBOOK";
+    private static String CATEGORY_FIRST_OPEN_MESSAGE = "FIRST_OPEN_MESSAGE";
+    private static String CATEGORY_FIRST_OPEN_COPY = "FIRST_OPEN_COPY";
+
+    private static String CATEGORY_AD_REFERRER_FACEBOOK = "AD_REFERRER_FACEBOOK";
+
+    private static String ACTION_REFERRER_RECEIVED = "REFERRER_RECEIVED";
 
     private static String ACTION_APP_OPEN = "APP_OPEN";
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
@@ -38,8 +41,6 @@ public class CWAnalytics
     private static String ACTION_SEND_MESSAGE = "SEND_MESSAGE";
     private static String ACTION_START_PREVIEW = "START_PREVIEW";
     private static String ACTION_REDO_MESSAGE = "REDO_MESSAGE";
-    private static String ACTION_SEND_EMAIL = "SEND_EMAIL";
-    private static String ACTION_CANCEL_EMAIL = "CANCEL_EMAIL";
     private static String ACTION_START_REVIEW = "START_REVIEW";
     private static String ACTION_STOP_REVIEW = "STOP_REVIEW";
     private static String ACTION_BACKGROUND_WHILE_REVIEW= "BACKGROUND_WHILE_REVIEW";
@@ -62,6 +63,9 @@ public class CWAnalytics
     private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
     private static String ACTION_MESSAGE_SENT_FAILED = "MESSAGE_SENT_FAILED";
     private static String ACTION_BACKGROUND_WHILE_SMS = "BACKGROUND_WHILE_SMS";
+
+    private static String ACTION_FACEBOOK_SEND_CONFIRMED = "FACEBOOK_SEND_CONFIRMED";
+    private static String ACTION_FACEBOOK_SEND_CANCELED = "FACEBOOK_SEND_CANCELED";
 
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
@@ -88,10 +92,10 @@ public class CWAnalytics
         if(tracker == null) {
             tracker = GoogleAnalytics.getInstance(context).getTracker(EnvironmentVariables.get().getGoogleAnalyticsID());
         }
-        calculateCategory();
+        calculateCategory(null);
     }
 
-    public static void setStarterMessage(Boolean isStarter) {
+    public static void setStarterMessage(Boolean isStarter, Referrer referrer) {
 
        isStarterMessage = isStarter;
 
@@ -100,7 +104,7 @@ public class CWAnalytics
            resetRedos();
            resetActionIncrement();
        }
-       calculateCategory();
+       calculateCategory(referrer);
     }
 
     private static void incrementAction() {
@@ -117,12 +121,49 @@ public class CWAnalytics
         numRedos=0;
     }
 
-    public static void calculateCategory() {
+    public static void calculateCategory(Referrer referrer) {
         String oldCategoryString = new String(categoryString==null?"":categoryString);
-        categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+        if(referrer != null && referrer.isValid()) {
+            if(isFirstOpen) {
+                if(referrer.isInstallReferrer()) {
+                    if(referrer.isFacebookReferrer()) {
+                        categoryString = CATEGORY_FIRST_OPEN_FACEBOOK;
+                    }
+                    else if(referrer.isMessageReferrer()) {
+                        categoryString = CATEGORY_FIRST_OPEN_MESSAGE;
+                    }
+                    else if(referrer.isCopyReferrer()) {
+                        categoryString = CATEGORY_FIRST_OPEN_COPY;
+                    }
+                    else {
+                        categoryString = CATEGORY_FIRST_OPEN;
+                    }
+                }
+            }
+            else {
+                if(referrer.isAdReferrer()) {
+                    if(referrer.isFacebookReferrer()) {
+                        categoryString = CATEGORY_AD_REFERRER_FACEBOOK;
+                    }
+                }
+                else {
+                    categoryString = (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER);
+                }
+            }
+        }
+        else {
+            categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
+        }
 
         if(!categoryString.equals(oldCategoryString)) {
             resetActionIncrement();
+        }
+    }
+
+    public static void sendReferrerReceivedEvent(Referrer referrer) {
+        calculateCategory(referrer);
+        if(referrer != null && referrer.isValid()) {
+            sendEvent(ACTION_REFERRER_RECEIVED, referrer.getReferrerString(), null);
         }
     }
 
@@ -131,15 +172,11 @@ public class CWAnalytics
         sendEvent(ACTION_APP_OPEN, null, null);
     }
 
-    public static void sendFacebookInitiatorEvent() {
-        sendEvent((isFirstOpen ? ACTION_INSTALL_FROM_FACEBOOK : ACTION_DEEP_LINK_FROM_FACEBOOK), LABEL_NO_TAP, null);
-    }
-
     public static void sendAppBackgroundEvent()
     {
         isFirstOpen = false;
         sendEvent(ACTION_APP_BACKGROUND, null, new Long(actionIncrement));
-        calculateCategory();
+        calculateCategory(null);
         incrementAction();
     }
 
@@ -277,6 +314,14 @@ public class CWAnalytics
         sendEvent(ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
     }
 
+    public static void sendFacebookSendConfirmed() {
+        sendEvent(ACTION_FACEBOOK_SEND_CONFIRMED, LABEL_NO_TAP, null);
+    }
+
+    public static void sendFacebookSendCanceled() {
+        sendEvent(ACTION_FACEBOOK_SEND_CANCELED, LABEL_NO_TAP, null);
+    }
+
     public static void sendBackgroundWhileSmsEvent() {
         sendEvent(ACTION_BACKGROUND_WHILE_SMS, LABEL_NO_TAP, null);
     }
@@ -289,11 +334,11 @@ public class CWAnalytics
     {
         String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
+        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
         Logger.i("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
                 "\n\tCATEGORY:\t" + categoryString +
                 "\n\tACTION:\t" + action +
                 "\n\tLABEL:\t" + labelString +
                 "\n\tVALUE:\t" + valueString);
-        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
     }
 }
