@@ -8,11 +8,11 @@ import java.util.concurrent.Semaphore;
 import android.database.sqlite.SQLiteDatabase;
 import com.chatwala.android.util.Logger;
 
-public class DbWrapper {
+public class DBWrapper {
     private SQLiteDatabase db;
     private Semaphore mutex;
 
-    /*package*/ DbWrapper(SQLiteDatabase db, Semaphore mutex) {
+    /*package*/ DBWrapper(SQLiteDatabase db, Semaphore mutex) {
         this.db = db;
         this.mutex = mutex;
     }

@@ -6,10 +6,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.CancellationSignal;
 
-public class ReadOnlyDbWrapper {
+public class ReadOnlyDBWrapper {
     private SQLiteDatabase db;
 
-    /*package*/ ReadOnlyDbWrapper(SQLiteDatabase db) {
+    /*package*/ ReadOnlyDBWrapper(SQLiteDatabase db) {
         this.db = db;
     }
 
