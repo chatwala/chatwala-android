@@ -6,7 +6,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import co.touchlab.android.superbus.*;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
@@ -18,7 +17,9 @@ import com.chatwala.android.activity.KillswitchActivity;
 import com.chatwala.android.activity.SettingsActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.db.DBHelper;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
 import com.chatwala.android.util.*;
@@ -31,7 +32,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -56,16 +56,20 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     public static AtomicBoolean isKillswitchShowing;
     public static int numActivities=0;
 
+    public NetworkManager networkManager;
+
     @Override
     public void onCreate()
     {
         super.onCreate();
 
+        networkManager = NetworkManager.attachToApp(this);
+
         Crashlytics.start(this);
 
         CWAnalytics.initAnalytics(this);
 
-        Logger.init((ChatwalaApplication) getApplicationContext(), LOG_TAG, true);
+        DBHelper.initInstance(getApplicationContext());
 
         this.registerActivityLifecycleCallbacks(this);
 
