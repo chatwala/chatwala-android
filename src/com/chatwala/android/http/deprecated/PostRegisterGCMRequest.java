@@ -1,7 +1,6 @@
 package com.chatwala.android.http.deprecated;
 
 import android.content.Context;
-import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.http.BasePostRequest;
 import com.chatwala.android.util.GCMUtils;

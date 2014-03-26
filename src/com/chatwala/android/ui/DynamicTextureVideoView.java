@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import com.chatwala.android.R;
 import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.util.AndroidUtils;
-import com.chatwala.android.util.Logger;
 
 import java.io.File;
 

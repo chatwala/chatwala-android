@@ -1,7 +1,6 @@
 package com.chatwala.android.superbus.server20;
 
 import android.content.Context;
-import android.os.Message;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
@@ -10,6 +9,7 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.http.server20.GetMessageThumbnailRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.util.MessageDataStore;
+
 import java.io.File;
 
 /**

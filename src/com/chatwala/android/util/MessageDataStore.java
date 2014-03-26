@@ -7,13 +7,11 @@ import android.os.StatFs;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 

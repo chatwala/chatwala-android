@@ -22,8 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**

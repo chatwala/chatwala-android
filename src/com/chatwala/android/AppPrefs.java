@@ -9,11 +9,6 @@ import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CameraUtils;
-import com.chatwala.android.util.Logger;
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

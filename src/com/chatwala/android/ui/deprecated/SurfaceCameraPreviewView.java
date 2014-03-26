@@ -1,12 +1,15 @@
 package com.chatwala.android.ui.deprecated;
 
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.*;
+import android.view.Display;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import com.chatwala.android.R;
 import com.chatwala.android.util.CameraUtils;
 import com.chatwala.android.util.Logger;

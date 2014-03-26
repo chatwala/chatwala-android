@@ -11,17 +11,16 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
-import com.chatwala.android.*;
-import com.chatwala.android.loaders.BroadcastSender;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+import com.chatwala.android.AppPrefs;
+import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.EnvironmentVariables;
+import com.chatwala.android.R;
 import com.chatwala.android.util.Logger;
-import com.chatwala.android.util.MessageDataStore;
-import xmlwise.Plist;
-import xmlwise.XmlParseException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

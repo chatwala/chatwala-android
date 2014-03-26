@@ -9,7 +9,6 @@ import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.util.MessageDataStore;
 
 /**
  * Created with IntelliJ IDEA.

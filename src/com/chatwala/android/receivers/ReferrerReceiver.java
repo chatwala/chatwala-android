@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import com.chatwala.android.AppPrefs;
-import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.Referrer;
 

@@ -1,29 +1,21 @@
 package com.chatwala.android.http.server20;
 
 import android.content.Context;
-import android.os.Message;
-import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.http.BusHttpClient;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BaseGetRequest;
-import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.chatwala.android.util.Logger;
-import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.List;
-
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

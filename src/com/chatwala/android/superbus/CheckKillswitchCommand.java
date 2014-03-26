@@ -7,11 +7,14 @@ import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.EnvironmentVariables;
-import com.chatwala.android.http.BaseHttpRequest;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;

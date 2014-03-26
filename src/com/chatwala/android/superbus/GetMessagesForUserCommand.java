@@ -6,7 +6,6 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.http.GetMessagesForUserRequest;
-import com.chatwala.android.loaders.BroadcastSender;
 
 /**
  * Created with IntelliJ IDEA.

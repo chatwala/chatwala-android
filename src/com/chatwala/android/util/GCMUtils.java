@@ -2,7 +2,6 @@ package com.chatwala.android.util;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;

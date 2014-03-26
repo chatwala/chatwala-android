@@ -1,7 +1,6 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import android.util.Log;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.util.Logger;

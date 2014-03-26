@@ -3,8 +3,8 @@ package com.chatwala.android.ui.dialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
-import com.chatwala.android.activity.BaseChatWalaActivity;
 import com.chatwala.android.R;
+import com.chatwala.android.activity.BaseChatWalaActivity;
 
 import java.util.ArrayList;
 import java.util.List;

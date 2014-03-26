@@ -3,21 +3,13 @@ package com.chatwala.android;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
 import android.os.SystemClock;
-import android.util.Log;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.GetMessagesForUserCommand;
 import com.chatwala.android.superbus.server20.GetUserInboxCommand;
 import com.chatwala.android.util.Logger;
-
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created with IntelliJ IDEA.

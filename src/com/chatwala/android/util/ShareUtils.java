@@ -1,4 +1,5 @@
 package com.chatwala.android.util;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,7 +10,12 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**

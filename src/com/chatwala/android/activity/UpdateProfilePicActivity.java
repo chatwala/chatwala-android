@@ -22,7 +22,10 @@ import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by matthewdavis on 1/10/14.

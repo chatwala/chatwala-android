@@ -1,20 +1,18 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
-import co.touchlab.android.superbus.PermanentException;
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.util.*;
-import com.squareup.picasso.Picasso;
+import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.ThumbUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 
 /**

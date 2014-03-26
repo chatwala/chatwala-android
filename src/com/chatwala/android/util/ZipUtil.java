@@ -1,17 +1,14 @@
 package com.chatwala.android.util;
 
 import android.content.Context;
-import co.touchlab.android.superbus.BusHelper;
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.activity.NewCameraActivity;
-import com.chatwala.android.database.ChatwalaMessage;
-import com.chatwala.android.database.MessageMetadata;
-import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.PutUserProfilePictureCommand;
 import org.apache.commons.io.IOUtils;
-import org.json.JSONException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.chatwala.android.http;
 
 import android.content.Context;
-import android.util.Log;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.util.GCMUtils;
 import com.chatwala.android.util.Logger;

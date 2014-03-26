@@ -1,31 +1,29 @@
 package com.chatwala.android.superbus.server20;
 
 import android.content.Context;
+import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
+import com.chatwala.android.AppPrefs;
+import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BaseSasPutRequest;
 import com.chatwala.android.http.server20.ChatwalaResponse;
+import com.chatwala.android.http.server20.CompleteReplyMessageRequest;
 import com.chatwala.android.http.server20.RenewWriteUrlForMessageRequest;
 import com.chatwala.android.http.server20.StartReplyMessageRequest;
-import com.chatwala.android.http.server20.CompleteReplyMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
-import com.chatwala.android.superbus.PutUserProfilePictureCommand;
-import com.chatwala.android.util.ThumbUtils;
-import com.j256.ormlite.dao.Dao;
-import com.chatwala.android.util.VideoUtils;
-import com.chatwala.android.util.ZipUtil;
-import com.chatwala.android.activity.NewCameraActivity;
 import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.ThumbUtils;
+import com.chatwala.android.util.ZipUtil;
+import com.j256.ormlite.dao.Dao;
+
 import java.io.File;
 import java.sql.SQLException;
-
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.dataops.DataProcessor;
-import co.touchlab.android.superbus.BusHelper;
 
 
 /**

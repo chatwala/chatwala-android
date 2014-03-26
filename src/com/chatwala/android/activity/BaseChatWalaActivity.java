@@ -3,7 +3,6 @@ package com.chatwala.android.activity;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaApplication;

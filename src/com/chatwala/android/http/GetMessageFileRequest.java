@@ -1,29 +1,28 @@
 package com.chatwala.android.http;
 
-import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
-import android.widget.ImageView;
 import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
-import com.chatwala.android.R;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
-import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
-import com.chatwala.android.superbus.GetUserProfilePictureCommand;
-import com.chatwala.android.util.*;
-import com.squareup.picasso.Picasso;
+import com.chatwala.android.superbus.server20.GetMessageThumbnailCommand;
+import com.chatwala.android.util.Logger;
+import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.chatwala.android.superbus.server20.GetMessageThumbnailCommand;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 
 /**

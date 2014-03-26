@@ -1,6 +1,8 @@
 package com.chatwala.android.http.server20;
-import java.util.ArrayList;
+
 import com.chatwala.android.database.ChatwalaMessage;
+
+import java.util.ArrayList;
 
 /**
  * Created by samirahman on 3/16/14.

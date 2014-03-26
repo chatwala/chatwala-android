@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.GetMessagesForUserCommand;
 import com.chatwala.android.superbus.server20.GetUserInboxCommand;
 import com.chatwala.android.util.Logger;
 

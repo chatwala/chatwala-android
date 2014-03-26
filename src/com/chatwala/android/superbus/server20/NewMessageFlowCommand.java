@@ -13,15 +13,13 @@ import com.chatwala.android.http.BaseSasPutRequest;
 import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.http.server20.CompleteUnknownRecipientMessageRequest;
 import com.chatwala.android.http.server20.RenewWriteUrlForMessageRequest;
-import com.chatwala.android.superbus.PutUserProfilePictureCommand;
+import com.chatwala.android.http.server20.StartUnknownRecipientMessageRequest;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
 import com.chatwala.android.util.ZipUtil;
-import com.chatwala.android.util.Logger;
 
 import java.io.File;
-
-import com.chatwala.android.http.server20.StartUnknownRecipientMessageRequest;
 
 
 /**

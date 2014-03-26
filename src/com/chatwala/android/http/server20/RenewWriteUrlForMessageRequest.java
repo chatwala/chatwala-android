@@ -2,8 +2,6 @@ package com.chatwala.android.http.server20;
 
 import android.content.Context;
 import co.touchlab.android.superbus.TransientException;
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.http.BasePostRequest;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;

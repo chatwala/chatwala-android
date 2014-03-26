@@ -1,23 +1,22 @@
 package com.chatwala.android.superbus.server20;
 
 import android.content.Context;
-import android.os.Message;
 import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
 import com.chatwala.android.AppPrefs;
-import com.chatwala.android.http.server20.GetUserPictureUploadURLRequest;
-import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.http.BaseSasPutRequest;
+import com.chatwala.android.http.server20.ChatwalaResponse;
+import com.chatwala.android.http.server20.GetUserPictureUploadURLRequest;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import org.apache.commons.io.IOUtils;
-import com.chatwala.android.util.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.

@@ -4,10 +4,10 @@ import android.content.Context;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.http.BasePostRequest;
+import com.chatwala.android.util.Logger;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.chatwala.android.util.Logger;
 
 import java.sql.SQLException;
 

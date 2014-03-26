@@ -2,8 +2,6 @@ package com.chatwala.android.http;
 
 import android.content.Context;
 import co.touchlab.android.superbus.http.BusHttpClient;
-import com.chatwala.android.util.Logger;
-import com.crashlytics.android.Crashlytics;
 import com.turbomanage.httpclient.HttpResponse;
 
 /**

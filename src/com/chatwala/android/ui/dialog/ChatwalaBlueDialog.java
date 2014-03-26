@@ -6,9 +6,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.chatwala.android.activity.BaseChatWalaActivity;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
+import com.chatwala.android.activity.BaseChatWalaActivity;
 
 import java.util.List;
 
