@@ -730,17 +730,14 @@ public class NewCameraActivity extends DrawerListActivity {
                 protected Boolean doInBackground(Void... params)
                 {
 
-                    Logger.e("MO1");
                     if(replyMessageAvailable() && playbackMessage == null)
                     {
                         try
                         {
-                            Logger.e("MO2");
                             playbackMessage = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao().queryForId(getIntent().getStringExtra(MESSAGE_ID));
                         }
                         catch (Exception e)
                         {
-                            Logger.e("MO2.1");
                             Logger.e("Error loading playback for share", e);
                             //On any exception, just continue on without it.  We probably had a problem with the initial video load and the user started a new conversation
                             playbackMessage = null;
@@ -749,12 +746,10 @@ public class NewCameraActivity extends DrawerListActivity {
 
                     if (playbackMessage != null)
                     {
-                        Logger.e("MO3");
 
                         DataProcessor.runProcess(new Runnable() {
                             @Override
                             public void run() {
-                                Logger.e("MO4");
                                 BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
                             }
                         });
@@ -763,7 +758,6 @@ public class NewCameraActivity extends DrawerListActivity {
                     else
                     {
 
-                        Logger.e("MO5");
                         if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
                             try {
@@ -776,7 +770,6 @@ public class NewCameraActivity extends DrawerListActivity {
                             if(messageStartInfo == null) {
                                 return false;
                             }
-                            Logger.e("MO, messageStartInfo=" + messageStartInfo);
                             final String messageId = messageStartInfo.getMessageId();
 
                             DataProcessor.runProcess(new Runnable()
@@ -1529,13 +1522,9 @@ public class NewCameraActivity extends DrawerListActivity {
 
             }
             catch (TransientException e)
-            {
-                Logger.e("MO, Couldn't get message ID", e);
-            }
+            {}
             catch (PermanentException e)
-            {
-                Logger.e("MO, Couldn't get message ID", e);
-            }
+            {}
             attempts++;
         }
         return null;

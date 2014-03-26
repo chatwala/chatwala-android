@@ -61,7 +61,6 @@ public class GetMessageThumbnailRequest extends BaseGetRequest
         try
         {
             if(response.getStatus()==304) { //nothing has changed
-                Logger.e("304");
                 return;
             }
 

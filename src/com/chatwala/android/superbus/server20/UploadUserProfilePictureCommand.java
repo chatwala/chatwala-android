@@ -76,21 +76,17 @@ public class UploadUserProfilePictureCommand extends SqliteCommand
         //Get write url
         ChatwalaResponse<String> response= (ChatwalaResponse<String>) new GetUserPictureUploadURLRequest(context).execute();
 
-        Logger.e("MO, do we ever get here!!, responsecode=" + response.getResponseCode());
         if(response.getResponseCode()!=1) {
             throw new TransientException();
         }
         String write_url = response.getResponseData();
-        Logger.e("MO, write_url=" + write_url);
 
         //upload ur
         try {
             byte[] bytes = BaseSasPutRequest.convertFileToBytes(currentFile);
             BaseSasPutRequest.putFileToUrl(write_url, bytes, true);
-            Logger.e("MO, user pic uploaded correctly");
         }
         catch(TransientException e) {
-            Logger.e("MO, picture upload failed!" + e);
             throw e;
         }
 
