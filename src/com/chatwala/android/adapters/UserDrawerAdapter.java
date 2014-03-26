@@ -1,6 +1,8 @@
 package com.chatwala.android.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import com.chatwala.android.util.TimestampUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +26,7 @@ public class UserDrawerAdapter extends BaseAdapter {
     private List<DrawerUser> users;
     private Picasso picLoader;
     private LayoutInflater inflater;
+    private ColorDrawable statusPlaceholder = new ColorDrawable(Color.TRANSPARENT);
 
     public UserDrawerAdapter(Context context, List<DrawerUser> users, Picasso picLoader) {
         this.users = users;
@@ -47,12 +51,12 @@ public class UserDrawerAdapter extends BaseAdapter {
     }
 
     public void useNewUsersList(List<DrawerUser> users) {
-        this.users = users;
-        notifyDataSetChanged();
-    }
-
-    public void clearUsers() {
-        users.clear();
+        if(users == null) {
+            this.users = new ArrayList<DrawerUser>(0);
+        }
+        else {
+            this.users = users;
+        }
         notifyDataSetChanged();
     }
 
@@ -85,11 +89,10 @@ public class UserDrawerAdapter extends BaseAdapter {
         holder.timestamp.setText(TimestampUtils.formatMessageTimestamp(user.getTimestamp()));
 
         if(user.isUnread()) {
-            holder.status.setVisibility(View.VISIBLE);
             picLoader.load(R.drawable.unread_icon).into(holder.status);
         }
         else {
-            holder.status.setVisibility(View.GONE);
+            holder.status.setImageDrawable(statusPlaceholder);
         }
 
         convertView.setTag(holder);

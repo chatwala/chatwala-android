@@ -17,6 +17,7 @@ public class DrawerMessage {
         this.senderId = senderId;
         this.timestamp = timestamp;
         this.thumbnailUrl = thumbnailUrl;
+        this.messageState = messageState;
     }
 
     public String getMessageId() {

@@ -1,6 +1,8 @@
 package com.chatwala.android.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import com.chatwala.android.util.TimestampUtils;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +26,7 @@ public class MessageDrawerAdapter extends BaseAdapter {
     private List<DrawerMessage> messages;
     private Picasso picLoader;
     private LayoutInflater inflater;
+    private ColorDrawable statusPlaceholder = new ColorDrawable(Color.TRANSPARENT);
 
     public MessageDrawerAdapter(Context context, List<DrawerMessage> messages, Picasso picLoader) {
         this.messages = messages;
@@ -47,12 +51,12 @@ public class MessageDrawerAdapter extends BaseAdapter {
     }
 
     public void useNewMessagesList(List<DrawerMessage> messages) {
-        this.messages = messages;
-        notifyDataSetChanged();
-    }
-
-    public void clearMessages() {
-        messages.clear();
+        if(messages == null) {
+            this.messages = new ArrayList<DrawerMessage>(0);
+        }
+        else {
+            this.messages = messages;
+        }
         notifyDataSetChanged();
     }
 
@@ -87,15 +91,13 @@ public class MessageDrawerAdapter extends BaseAdapter {
         if(message.getMessageState() != null) {
             switch(message.getMessageState()) {
                 case UNREAD:
-                    holder.status.setVisibility(View.VISIBLE);
                     picLoader.load(R.drawable.unread_icon).into(holder.status);
                     break;
                 case REPLIED:
-                    holder.status.setVisibility(View.VISIBLE);
                     picLoader.load(R.drawable.replied_icon).into(holder.status);
                     break;
                 default:
-                    holder.status.setVisibility(View.GONE);
+                    holder.status.setImageDrawable(statusPlaceholder);
             }
         }
 

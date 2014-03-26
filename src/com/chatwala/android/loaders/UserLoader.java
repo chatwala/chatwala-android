@@ -15,8 +15,22 @@ import java.util.List;
  * Created by Eliezer on 3/25/2014.
  */
 public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
+    private List<DrawerUser> users;
+
     public UserLoader(Context context) {
         super(context);
+        onContentChanged();
+    }
+
+    @Override
+    protected void onStartLoading() {
+        if(users != null) {
+            deliverResult(users);
+        }
+
+        if(users == null || takeContentChanged()) {
+            forceLoad();
+        }
     }
 
     @Override
@@ -27,7 +41,7 @@ public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
             QueryBuilder<ChatwalaMessage,String> raw = messageDao.queryBuilder();
             raw.selectRaw("senderId", "timestamp", "thumbnailUrl", "MAX(timestamp)");
             raw.groupByRaw("senderId");
-            raw.orderByRaw("timestamp");
+            raw.orderByRaw("timestamp DESC");
             for(String[] a : raw.queryRaw().getResults()) {
                 String senderId = a[0];
                 long timestamp = Long.parseLong(a[1]);
@@ -36,7 +50,7 @@ public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
 
                 QueryBuilder<ChatwalaMessage,String> checkUnread = messageDao.queryBuilder();
                 checkUnread.selectRaw("COUNT(messageState)");
-                checkUnread.where().eq("senderId", senderId).eq("messageState", "UNREAD");
+                checkUnread.where().eq("senderId", senderId).and().eq("messageState", ChatwalaMessage.MessageState.UNREAD);
                 if(!checkUnread.queryRawFirst()[0].equals("0")) {
                     isUnread = true;
                 }
@@ -48,5 +62,51 @@ public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
         catch(Exception e) {
             return null;
         }
+    }
+
+    @Override
+    public void deliverResult(List<DrawerUser> users) {
+        if(isReset()) {
+            if(users != null) {
+                onReleaseResources(users);
+            }
+        }
+        List<DrawerUser> oldUsers = this.users;
+        this.users = users;
+
+        if(isStarted()) {
+            super.deliverResult(users);
+        }
+
+        if(oldUsers != null) {
+            onReleaseResources(oldUsers);
+        }
+    }
+
+    @Override
+    protected void onStopLoading() {
+        cancelLoad();
+    }
+
+    @Override
+    public void onCanceled(List<DrawerUser> users) {
+        super.onCanceled(users);
+
+        onReleaseResources(users);
+    }
+
+    @Override
+    protected void onReset() {
+        super.onReset();
+
+        onStopLoading();
+
+        if(users != null) {
+            onReleaseResources(users);
+        }
+    }
+
+    private void onReleaseResources(List<DrawerUser> users) {
+        users = null;
     }
 }

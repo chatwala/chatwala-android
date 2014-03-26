@@ -127,6 +127,8 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                         BusHelper.submitCommandSync(getApplicationContext(), new GetUserInboxCommand());
                     }
                 });
+
+                loadUsers();
             }
 
             @Override
@@ -153,7 +155,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 }
                 else if(messagesListView.getAdapter() == getMessageAdapter()) {
                     DrawerMessage message = getMessageAdapter().getItem(i);
-                    NewCameraActivity.startMeWithId(getApplicationContext(), message.getReadUrl(), message.getMessageId());
+                    NewCameraActivity.startMeWithId(DrawerListActivity.this, message.getReadUrl(), message.getMessageId());
                     finish();
                 }
             }
@@ -181,7 +183,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SettingsActivity.startMe(getApplicationContext());
+                SettingsActivity.startMe(DrawerListActivity.this);
             }
         });
     }
@@ -255,11 +257,11 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         Bundle args = new Bundle();
         args.putString("senderId", senderId);
         if(messagesLoaded) {
-            getLoaderManager().restartLoader(LOAD_MESSAGES_REQUEST_CODE, null, loadMessageCallbacks);
+            getLoaderManager().restartLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
         }
         else {
             messagesLoaded = true;
-            getLoaderManager().initLoader(LOAD_MESSAGES_REQUEST_CODE, null, loadMessageCallbacks);
+            getLoaderManager().initLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
         }
     }
 
@@ -275,9 +277,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         }
 
         @Override
-        public void onLoaderReset(Loader<List<DrawerUser>> listLoader) {
-            getUserAdapter().clearUsers();
-        }
+        public void onLoaderReset(Loader<List<DrawerUser>> listLoader) {}
     };
 
     private LoaderManager.LoaderCallbacks<List<DrawerMessage>> loadMessageCallbacks = new LoaderManager.LoaderCallbacks<List<DrawerMessage>>() {
@@ -292,8 +292,6 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         }
 
         @Override
-        public void onLoaderReset(Loader<List<DrawerMessage>> listLoader) {
-            getMessageAdapter().clearMessages();
-        }
+        public void onLoaderReset(Loader<List<DrawerMessage>> listLoader) {}
     };
 }

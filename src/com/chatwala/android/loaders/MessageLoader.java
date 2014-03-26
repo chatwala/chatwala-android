@@ -12,11 +12,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageLoader extends AsyncTaskLoader<List<DrawerMessage>> {
+    private List<DrawerMessage> messages;
     private String senderId;
 
     public MessageLoader(Context context, String senderId) {
         super(context);
         this.senderId = senderId;
+        onContentChanged();
+    }
+
+    @Override
+    protected void onStartLoading() {
+        if(messages != null) {
+            deliverResult(messages);
+        }
+
+        if(messages == null || takeContentChanged()) {
+            forceLoad();
+        }
     }
 
     @Override
@@ -37,5 +50,51 @@ public class MessageLoader extends AsyncTaskLoader<List<DrawerMessage>> {
         catch(Exception e) {
             return null;
         }
+    }
+
+    @Override
+    public void deliverResult(List<DrawerMessage> messages) {
+        if(isReset()) {
+            if(messages != null) {
+                onReleaseResources(messages);
+            }
+        }
+        List<DrawerMessage> oldMessages = this.messages;
+        this.messages = messages;
+
+        if(isStarted()) {
+            super.deliverResult(messages);
+        }
+
+        if(oldMessages != null) {
+            onReleaseResources(oldMessages);
+        }
+    }
+
+    @Override
+    protected void onStopLoading() {
+        cancelLoad();
+    }
+
+    @Override
+    public void onCanceled(List<DrawerMessage> messages) {
+        super.onCanceled(messages);
+
+        onReleaseResources(messages);
+    }
+
+    @Override
+    protected void onReset() {
+        super.onReset();
+
+        onStopLoading();
+
+        if(messages != null) {
+            onReleaseResources(messages);
+        }
+    }
+
+    private void onReleaseResources(List<DrawerMessage> messages) {
+        messages = null;
     }
 }
