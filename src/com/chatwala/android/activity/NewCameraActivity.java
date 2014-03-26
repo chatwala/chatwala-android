@@ -1,7 +1,13 @@
 package com.chatwala.android.activity;
 
 import android.app.AlertDialog;
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -46,13 +52,23 @@ import com.chatwala.android.ui.CameraPreviewView;
 import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.ui.DynamicTextureVideoView;
 import com.chatwala.android.ui.TimerDial;
-import com.chatwala.android.util.*;
+import com.chatwala.android.util.AndroidUtils;
+import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.Logger;
+import com.chatwala.android.util.MessageDataStore;
+import com.chatwala.android.util.Referrer;
+import com.chatwala.android.util.ShareUtils;
+import com.chatwala.android.util.VideoUtils;
 import com.espian.showcaseview.ShowcaseView;
 import com.espian.showcaseview.targets.ViewTarget;
 import com.j256.ormlite.dao.Dao;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +86,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NewCameraActivity extends BaseNavigationDrawerActivity {
+public class NewCameraActivity extends DrawerListActivity {
     public static final String INITIATOR_EXTRA = "initiator";
     private static final int FACEBOOK_DELIVERY_REQUEST_CODE = 1000;
 
@@ -340,8 +356,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Logger.i("Beginning of onCreate()");
 
@@ -512,8 +527,7 @@ public class NewCameraActivity extends BaseNavigationDrawerActivity {
     }
 
     @Override
-    protected void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
