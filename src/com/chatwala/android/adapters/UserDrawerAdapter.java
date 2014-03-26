@@ -80,7 +80,7 @@ public class UserDrawerAdapter extends BaseAdapter {
 
         File thumbImage = MessageDataStore.findMessageThumbInLocalStore(user.getThumbnailUrl());
         if(thumbImage.exists()) {
-            picLoader.load(thumbImage).into(holder.thumb);
+            picLoader.load(thumbImage).noFade().into(holder.thumb);
         }
         else {
             picLoader.load(R.drawable.message_thumb).into(holder.thumb);
