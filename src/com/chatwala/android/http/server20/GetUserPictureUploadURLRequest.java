@@ -41,8 +41,6 @@ public class GetUserPictureUploadURLRequest extends BasePostRequest {
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException {
         chatwalaResponse = new ChatwalaResponse<String>();
 
-        Logger.e("MO, getUserPictureUploadURl " + response.getBodyAsString());
-
         JSONObject bodyJson = new JSONObject(response.getBodyAsString());
         JSONObject response_code = bodyJson.getJSONObject("response_code");
         String writeUrl = bodyJson.getString("write_url");

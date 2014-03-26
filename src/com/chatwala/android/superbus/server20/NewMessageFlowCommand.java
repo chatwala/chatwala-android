@@ -44,10 +44,8 @@ public class NewMessageFlowCommand extends SqliteCommand {
     public NewMessageFlowCommand() {}
 
     public NewMessageFlowCommand(String newMessageId, String videoFilePath){
-       Logger.e("MO why?!!");
         this.videoFilePath = videoFilePath;
         this.newMessageId=newMessageId;
-        Logger.e("MO why??222");
     }
 
 

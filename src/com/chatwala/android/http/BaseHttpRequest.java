@@ -90,9 +90,6 @@ public abstract class BaseHttpRequest<T>
 
         HttpResponse httpResponse = makeRequest(client);
 
-        Logger.e("MO, url=" + httpResponse.getUrl());
-        Logger.e("MO, body="+ httpResponse.getBodyAsString());
-
         if(httpResponse.getStatus() == STATUS_REDIRECT)
         {
             Logger.i("Call redirected");
@@ -212,7 +209,9 @@ public abstract class BaseHttpRequest<T>
             Logger.i("==================HTTP RESPONSE==================");
             String responseLog = "Response from: " + response.getUrl();
             responseLog += "\n" + response.getHeaders().toString().replaceAll("],", "]\n");
-            responseLog += "\n" + response.getBodyAsString();
+            if(responseLog.contains("application/json")) {
+                responseLog += "\n" + response.getBodyAsString();
+            }
             Logger.i(responseLog);
         } catch(Exception e) {} //nothing to do about this now...probably a bug in their HTTP libraries
     }

@@ -62,7 +62,6 @@ public class DrawerMessageWrapper
     }
 
     public String getThumbnailUrl() {
-        Logger.e("MO, thumbnail url = " + singleMessage.getThumbnailUrl());
         return singleMessage.getThumbnailUrl();
     }
 
