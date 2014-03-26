@@ -41,7 +41,6 @@ public abstract class BasePostRequest<T> extends BaseHttpRequest<T>
         try
         {
            String body = makeBodyJson().toString();
-            Logger.e("MO, getPostData.body= "+ body);
            return body.getBytes("utf-8");
 
         }

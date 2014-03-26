@@ -51,7 +51,6 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected String getResourceURL()
     {
-        Logger.e("CHATWALA MESSAGE READ URL =" + chatwalaMessage.getReadUrl());
         return chatwalaMessage.getReadUrl();
     }
 
