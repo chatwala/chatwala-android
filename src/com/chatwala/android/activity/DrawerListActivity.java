@@ -10,11 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ViewSwitcher;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.R;
@@ -43,6 +46,8 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
     private LinearLayout navigationDrawer;
     private FrameLayout mainContentFrame;
     private ImageView drawerToggleButton;
+    private ViewSwitcher drawerListSwitcher;
+    private ListView usersListView;
     private ListView messagesListView;
 
     private UserDrawerAdapter userAdapter;
@@ -144,24 +149,31 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         userAdapter = new UserDrawerAdapter(getApplicationContext(), new ArrayList<DrawerUser>(0), picLoader);
         messageAdapter = new MessageDrawerAdapter(getApplicationContext(), new ArrayList<DrawerMessage>(0), picLoader);
 
-        messagesListView = (ListView) findViewById(R.id.conversation_list);
+        drawerListSwitcher = (ViewSwitcher) findViewById(R.id.drawer_list_switcher);
+        drawerListSwitcher.setDisplayedChild(1);
+
+        usersListView = (ListView) findViewById(R.id.users_list);
+        usersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int i, long l) {
+                DrawerUser user = getUserAdapter().getItem(i);
+                loadMessages(user.getSenderId());
+                slideLists();
+            }
+        });
+        usersListView.setAdapter(userAdapter);
+        loadUsers();
+
+        messagesListView = (ListView) findViewById(R.id.messages_list);
         messagesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int i, long l) {
-                if(messagesListView.getAdapter() == getUserAdapter()) {
-                    DrawerUser user = getUserAdapter().getItem(i);
-                    loadMessages(user.getSenderId());
-                    messagesListView.setAdapter(getMessageAdapter());
-                }
-                else if(messagesListView.getAdapter() == getMessageAdapter()) {
-                    DrawerMessage message = getMessageAdapter().getItem(i);
-                    NewCameraActivity.startMeWithId(DrawerListActivity.this, message.getReadUrl(), message.getMessageId());
-                    finish();
-                }
+                DrawerMessage message = getMessageAdapter().getItem(i);
+                NewCameraActivity.startMeWithId(DrawerListActivity.this, message.getReadUrl(), message.getMessageId());
+                finish();
             }
         });
-        messagesListView.setAdapter(userAdapter);
-        loadUsers();
+        messagesListView.setAdapter(messageAdapter);
 
         addButton = (ImageView)findViewById(R.id.add_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +188,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             @Override
             public void onClick(View v) {
                 loadUsers();
+                slideLists();
             }
         });
 
@@ -186,6 +199,35 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 SettingsActivity.startMe(DrawerListActivity.this);
             }
         });
+    }
+
+    private void slideLists() {
+        if(drawerListSwitcher.getCurrentView() == null) {
+            return;
+        }
+
+        if(drawerListSwitcher.getCurrentView().findViewById(R.id.users_list) != null) {
+            TranslateAnimation out = new TranslateAnimation(0, drawerListSwitcher.getWidth(), 0, 0);
+            out.setInterpolator(new AccelerateInterpolator());
+            out.setDuration(400);
+            TranslateAnimation in = new TranslateAnimation(-drawerListSwitcher.getWidth(), 0, 0, 0);
+            in.setInterpolator(new AccelerateInterpolator());
+            in.setDuration(400);
+            drawerListSwitcher.setInAnimation(in);
+            drawerListSwitcher.setOutAnimation(out);
+            drawerListSwitcher.showPrevious();
+        }
+        else {
+            TranslateAnimation out = new TranslateAnimation(0, -drawerListSwitcher.getWidth(), 0, 0);
+            out.setInterpolator(new AccelerateInterpolator());
+            out.setDuration(400);
+            TranslateAnimation in = new TranslateAnimation(drawerListSwitcher.getWidth(), 0, 0, 0);
+            in.setInterpolator(new AccelerateInterpolator());
+            in.setDuration(400);
+            drawerListSwitcher.setInAnimation(in);
+            drawerListSwitcher.setOutAnimation(out);
+            drawerListSwitcher.showNext();
+        }
     }
 
     @Override
