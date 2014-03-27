@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
@@ -187,6 +186,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             @Override
             public void onClick(View v) {
                 loadUsers();
+                getMessageAdapter().clearMessages();
                 slideLists();
             }
         });
@@ -207,10 +207,8 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
 
         if(drawerListSwitcher.getCurrentView().findViewById(R.id.users_list) != null) {
             TranslateAnimation out = new TranslateAnimation(0, -drawerListSwitcher.getWidth(), 0, 0);
-            out.setInterpolator(new AccelerateInterpolator());
             out.setDuration(400);
             TranslateAnimation in = new TranslateAnimation(drawerListSwitcher.getWidth(), 0, 0, 0);
-            in.setInterpolator(new AccelerateInterpolator());
             in.setDuration(400);
             drawerListSwitcher.setInAnimation(in);
             drawerListSwitcher.setOutAnimation(out);
@@ -218,10 +216,8 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         }
         else {
             TranslateAnimation out = new TranslateAnimation(0, drawerListSwitcher.getWidth(), 0, 0);
-            out.setInterpolator(new AccelerateInterpolator());
             out.setDuration(400);
             TranslateAnimation in = new TranslateAnimation(-drawerListSwitcher.getWidth(), 0, 0, 0);
-            in.setInterpolator(new AccelerateInterpolator());
             in.setDuration(400);
             drawerListSwitcher.setInAnimation(in);
             drawerListSwitcher.setOutAnimation(out);
@@ -329,7 +325,12 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
 
         @Override
         public void onLoadFinished(Loader<List<DrawerMessage>> listLoader, List<DrawerMessage> drawerMessages) {
-            setMessageAdapterList(drawerMessages);
+            if(drawerMessages.size() == 1) {
+                NewCameraActivity.startMeWithId(DrawerListActivity.this, drawerMessages.get(0).getReadUrl(), drawerMessages.get(0).getMessageId());
+            }
+            else {
+                setMessageAdapterList(drawerMessages);
+            }
         }
 
         @Override

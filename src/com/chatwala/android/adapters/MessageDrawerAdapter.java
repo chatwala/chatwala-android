@@ -60,6 +60,11 @@ public class MessageDrawerAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public void clearMessages() {
+        messages = new ArrayList<DrawerMessage>(0);
+        notifyDataSetChanged();
+    }
+
     @Override
     public View getView(int i, View convertView, ViewGroup parent) {
         final ViewHolder holder;
