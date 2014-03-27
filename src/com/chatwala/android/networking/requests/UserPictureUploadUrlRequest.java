@@ -1,7 +1,9 @@
 package com.chatwala.android.networking.requests;
 
+import android.content.Context;
 import com.chatwala.android.CWResult;
 import com.chatwala.android.EnvironmentVariables;
+import com.chatwala.android.networking.NetworkCallable;
 import com.chatwala.android.networking.NetworkLogger;
 import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.networking.Request;
@@ -27,6 +29,11 @@ public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, J
 
     private String getUrl() {
         return EnvironmentVariables.get().getApiPath() + "user/postUserProfilePicture";
+    }
+
+    @Override
+    public NetworkCallable<HttpURLConnection, JSONObject> getCallable(Context context, int numRetries) {
+        return new NetworkCallable<HttpURLConnection, JSONObject>(context, this, numRetries);
     }
 
     @Override

@@ -46,8 +46,7 @@ public class NetworkManager {
     }
 
     public Future<CWResult<JSONObject>> getUserPictureUploadUrl(String userId) {
-        return getQueue().submit(new NetworkCallable<HttpURLConnection, JSONObject>(
-                getApp(), new UserPictureUploadUrlRequest(userId), 3));
+        return getQueue().submit(new UserPictureUploadUrlRequest(userId).getCallable(getApp(), 3));
     }
 
     public void setChatwalaHeaders(HttpURLConnection client) {
