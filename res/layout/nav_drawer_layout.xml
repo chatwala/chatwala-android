@@ -35,34 +35,6 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-            <LinearLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="72dip"
-                    android:orientation="horizontal">
-                <ImageView
-                        android:id="@+id/drawer_back_button"
-                        android:layout_width="0dip"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:src="@drawable/ic_action_back"
-                        android:paddingTop="15dip"
-                        android:paddingBottom="15dip"
-                        android:background="@drawable/drawer_button"/>
-
-            </LinearLayout>
-
-                <ListView
-                        android:id="@+id/messages_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
                 <LinearLayout
                         android:layout_width="fill_parent"
                         android:layout_height="72dip"
@@ -81,6 +53,34 @@
 
                 <ListView
                         android:id="@+id/users_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+            <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="72dip"
+                    android:orientation="horizontal">
+                <ImageView
+                        android:id="@+id/drawer_back_button"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_action_back"
+                        android:paddingTop="15dip"
+                        android:paddingBottom="15dip"
+                        android:background="@drawable/drawer_button"/>
+
+            </LinearLayout>
+
+                <ListView
+                        android:id="@+id/messages_list"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
 

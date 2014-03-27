@@ -150,7 +150,6 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         messageAdapter = new MessageDrawerAdapter(getApplicationContext(), new ArrayList<DrawerMessage>(0), picLoader);
 
         drawerListSwitcher = (ViewSwitcher) findViewById(R.id.drawer_list_switcher);
-        drawerListSwitcher.setDisplayedChild(1);
 
         usersListView = (ListView) findViewById(R.id.users_list);
         usersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -207,17 +206,6 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         }
 
         if(drawerListSwitcher.getCurrentView().findViewById(R.id.users_list) != null) {
-            TranslateAnimation out = new TranslateAnimation(0, drawerListSwitcher.getWidth(), 0, 0);
-            out.setInterpolator(new AccelerateInterpolator());
-            out.setDuration(400);
-            TranslateAnimation in = new TranslateAnimation(-drawerListSwitcher.getWidth(), 0, 0, 0);
-            in.setInterpolator(new AccelerateInterpolator());
-            in.setDuration(400);
-            drawerListSwitcher.setInAnimation(in);
-            drawerListSwitcher.setOutAnimation(out);
-            drawerListSwitcher.showPrevious();
-        }
-        else {
             TranslateAnimation out = new TranslateAnimation(0, -drawerListSwitcher.getWidth(), 0, 0);
             out.setInterpolator(new AccelerateInterpolator());
             out.setDuration(400);
@@ -227,6 +215,17 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             drawerListSwitcher.setInAnimation(in);
             drawerListSwitcher.setOutAnimation(out);
             drawerListSwitcher.showNext();
+        }
+        else {
+            TranslateAnimation out = new TranslateAnimation(0, drawerListSwitcher.getWidth(), 0, 0);
+            out.setInterpolator(new AccelerateInterpolator());
+            out.setDuration(400);
+            TranslateAnimation in = new TranslateAnimation(-drawerListSwitcher.getWidth(), 0, 0, 0);
+            in.setInterpolator(new AccelerateInterpolator());
+            in.setDuration(400);
+            drawerListSwitcher.setInAnimation(in);
+            drawerListSwitcher.setOutAnimation(out);
+            drawerListSwitcher.showPrevious();
         }
     }
 
