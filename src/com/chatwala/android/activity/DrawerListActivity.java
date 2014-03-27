@@ -14,8 +14,8 @@ import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.ViewSwitcher;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaNotificationManager;
@@ -42,7 +42,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
     private static final int LOAD_MESSAGES_REQUEST_CODE = 1;
 
     private DrawerLayout drawerLayout;
-    private LinearLayout navigationDrawer;
+    private RelativeLayout navigationDrawer;
     private FrameLayout mainContentFrame;
     private ImageView drawerToggleButton;
     private ViewSwitcher drawerListSwitcher;
@@ -67,7 +67,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.nav_drawer_layout);
-        navigationDrawer = (LinearLayout)findViewById(R.id.navigation_drawer);
+        navigationDrawer = (RelativeLayout)findViewById(R.id.navigation_drawer);
 
         drawerToggleButton = (ImageView)findViewById(R.id.drawer_toggle_button);
         drawerToggleButton.setOnClickListener(new View.OnClickListener() {
