@@ -1,9 +1,14 @@
 package com.chatwala.android.activity;
 
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
 import android.view.View;
@@ -25,6 +30,7 @@ import com.chatwala.android.adapters.UserDrawerAdapter;
 import com.chatwala.android.database.DrawerMessage;
 import com.chatwala.android.database.DrawerUser;
 import com.chatwala.android.dataops.DataProcessor;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.loaders.MessageLoader;
 import com.chatwala.android.loaders.UserLoader;
 import com.chatwala.android.superbus.server20.GetUserInboxCommand;
@@ -57,6 +63,23 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
     private ImageView backButton;
 
     private Picasso picLoader;
+
+    private enum DrawerState {
+        USERS, MESSAGES
+    }
+    private DrawerState drawerState = DrawerState.USERS;
+
+    private BroadcastReceiver newMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(drawerState == DrawerState.USERS) {
+                loadUsers();
+            }
+            else if(drawerState == DrawerState.MESSAGES) {
+                loadMessages();
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -198,6 +221,9 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 SettingsActivity.startMe(DrawerListActivity.this);
             }
         });
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(newMessageReceiver,
+                new IntentFilter(new IntentFilter(BroadcastSender.NEW_MESSAGES_BROADCAST)));
     }
 
     private void slideLists() {
@@ -205,7 +231,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             return;
         }
 
-        if(drawerListSwitcher.getCurrentView().findViewById(R.id.users_list) != null) {
+        if(drawerState == DrawerState.USERS) {
             TranslateAnimation out = new TranslateAnimation(0, -drawerListSwitcher.getWidth(), 0, 0);
             out.setDuration(400);
             TranslateAnimation in = new TranslateAnimation(drawerListSwitcher.getWidth(), 0, 0, 0);
@@ -213,8 +239,9 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             drawerListSwitcher.setInAnimation(in);
             drawerListSwitcher.setOutAnimation(out);
             drawerListSwitcher.showNext();
+            drawerState = DrawerState.MESSAGES;
         }
-        else {
+        else if(drawerState == DrawerState.MESSAGES) {
             TranslateAnimation out = new TranslateAnimation(0, drawerListSwitcher.getWidth(), 0, 0);
             out.setDuration(400);
             TranslateAnimation in = new TranslateAnimation(-drawerListSwitcher.getWidth(), 0, 0, 0);
@@ -222,6 +249,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             drawerListSwitcher.setInAnimation(in);
             drawerListSwitcher.setOutAnimation(out);
             drawerListSwitcher.showPrevious();
+            drawerState = DrawerState.USERS;
         }
     }
 
@@ -229,6 +257,17 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
     public void onResume() {
         super.onResume();
         drawerToggleButton.bringToFront();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        //sometimes throws exceptions even though it shouldn't
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(newMessageReceiver);
+        }
+        catch(Exception ignore) {}
     }
 
     protected void setMainContent(View v) {
@@ -280,6 +319,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
 
     private boolean usersLoaded = false;
     private void loadUsers() {
+        currentSenderId = null;
         if(usersLoaded) {
             getLoaderManager().restartLoader(LOAD_USERS_REQUEST_CODE, null, loadUserCallbacks);
         }
@@ -289,10 +329,18 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         }
     }
 
+    private String currentSenderId;
     private boolean messagesLoaded = false;
+    private void loadMessages() {
+        if(currentSenderId != null) {
+            loadMessages(currentSenderId);
+        }
+    }
+
     private void loadMessages(String senderId) {
         Bundle args = new Bundle();
         args.putString("senderId", senderId);
+        currentSenderId = senderId;
         if(messagesLoaded) {
             getLoaderManager().restartLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
         }
@@ -327,6 +375,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         public void onLoadFinished(Loader<List<DrawerMessage>> listLoader, List<DrawerMessage> drawerMessages) {
             if(drawerMessages.size() == 1) {
                 NewCameraActivity.startMeWithId(DrawerListActivity.this, drawerMessages.get(0).getReadUrl(), drawerMessages.get(0).getMessageId());
+                finish();
             }
             else {
                 setMessageAdapterList(drawerMessages);

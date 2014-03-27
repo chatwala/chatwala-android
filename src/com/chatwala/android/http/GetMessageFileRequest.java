@@ -7,9 +7,9 @@ import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
+import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.superbus.server20.GetMessageThumbnailCommand;
-import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
@@ -156,6 +156,9 @@ public class GetMessageFileRequest extends BaseGetRequest
 
         chatwalaMessage.setMessageFile(messageFile);
         databaseHelper.getChatwalaMessageDao().createOrUpdate(chatwalaMessage);
+
+        BroadcastSender.makeNewMessagesBroadcast(context);
+
         return chatwalaMessage;
     }
 

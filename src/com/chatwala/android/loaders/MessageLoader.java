@@ -38,7 +38,7 @@ public class MessageLoader extends AsyncTaskLoader<List<DrawerMessage>> {
             List<DrawerMessage> messages = new ArrayList<DrawerMessage>();
             Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
             QueryBuilder<ChatwalaMessage,String> queryBuilder = messageDao.queryBuilder();
-            queryBuilder.where().eq("senderId", senderId);
+            queryBuilder.where().eq("senderId", senderId).and().eq("walaDownloaded", true);
             queryBuilder.orderBy("timestamp", false);
             List<ChatwalaMessage> cwMessages = queryBuilder.query();
             for(ChatwalaMessage message : cwMessages) {

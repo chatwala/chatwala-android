@@ -48,9 +48,18 @@ public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
                 String thumbnailUrl = a[2];
                 boolean isUnread = false;
 
+                QueryBuilder<ChatwalaMessage,String> checkWalasDownloaded = messageDao.queryBuilder();
+                checkWalasDownloaded.selectRaw("COUNT(walaDownloaded)");
+                checkWalasDownloaded.where().eq("senderId", senderId).and()
+                        .eq("walaDownloaded", true);
+                if(checkWalasDownloaded.queryRawFirst()[0].equals("0")) {
+                    continue;
+                }
+
                 QueryBuilder<ChatwalaMessage,String> checkUnread = messageDao.queryBuilder();
                 checkUnread.selectRaw("COUNT(messageState)");
-                checkUnread.where().eq("senderId", senderId).and().eq("messageState", ChatwalaMessage.MessageState.UNREAD);
+                checkUnread.where().eq("senderId", senderId).and()
+                                    .eq("messageState", ChatwalaMessage.MessageState.UNREAD);
                 if(!checkUnread.queryRawFirst()[0].equals("0")) {
                     isUnread = true;
                 }
