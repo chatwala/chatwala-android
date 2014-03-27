@@ -54,7 +54,7 @@ public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, J
         client.setRequestProperty("Content-Type", "application/json");
         NetworkManager.getInstance().setChatwalaHeaders(client);
 
-        NetworkLogger.logHttpRequest(client, getUrl());
+        NetworkLogger.logHttpRequest(client, getUrl(), request.toString());
 
         try {
             PrintWriter out = new PrintWriter(new BufferedOutputStream(client.getOutputStream()));

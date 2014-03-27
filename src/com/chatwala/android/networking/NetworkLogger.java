@@ -9,10 +9,11 @@ import java.net.HttpURLConnection;
  * Created by Eliezer on 3/24/2014.
  */
 public class NetworkLogger {
-    public static void logHttpRequest(HttpURLConnection client, String url) {
+    public static void logHttpRequest(HttpURLConnection client, String url, String data) {
         Logger.i("==================HTTP REQUEST==================");
         Logger.network("Request to: " + url +
-                "\n" + client.getRequestProperties().toString().replaceAll("],", "]\n"));
+                "\n" + client.getRequestProperties().toString().replaceAll("],", "]\n") +
+                "\n Sending " + data);
     }
 
     public static void logHttpResponse(HttpURLConnection client, String url, CWResult<?> response) {
