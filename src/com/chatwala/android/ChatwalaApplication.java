@@ -6,8 +6,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
-import co.touchlab.android.superbus.*;
+import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.CommandPurgePolicy;
+import co.touchlab.android.superbus.ForegroundNotificationManager;
+import co.touchlab.android.superbus.StorageException;
+import co.touchlab.android.superbus.SuperbusEventListener;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
 import co.touchlab.android.superbus.provider.PersistedApplication;
@@ -21,7 +24,10 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
-import com.chatwala.android.util.*;
+import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.GCMUtils;
+import com.chatwala.android.util.Logger;
+import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import xmlwise.Plist;
 import xmlwise.XmlParseException;
@@ -31,7 +37,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created with IntelliJ IDEA.
