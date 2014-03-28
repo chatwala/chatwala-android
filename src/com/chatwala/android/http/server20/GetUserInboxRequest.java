@@ -142,8 +142,10 @@ public class GetUserInboxRequest extends BasePostRequest {
                     else if(oldMessage.getMessageState() == OldChatwalaMessage.MessageState.UNREAD) {
                         message.setMessageState(ChatwalaMessage.MessageState.UNREAD);
                     }
-                    message.setMessageFile(oldMessage.getMessageFile());
-                    message.setWalaDownloaded(true);
+                    if(oldMessage.getMessageFile() != null) {
+                        message.setMessageFile(oldMessage.getMessageFile());
+                        message.setWalaDownloaded(true);
+                    }
                     try {
                         new GetMessageThumbnailRequest(context, message).execute();
                     } catch(Exception e) {

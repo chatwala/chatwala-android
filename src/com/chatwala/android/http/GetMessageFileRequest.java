@@ -136,7 +136,6 @@ public class GetMessageFileRequest extends BaseGetRequest
             //Logger.i("New message metadata " + metadataJson.toString());
             //chatwalaMessage.saveMetadata(databaseHelper);
             try {
-                chatwalaMessage.setWalaDownloaded(true);
                 chatwalaMessage.populateFromMetaDataJSON(metadataJson);
 
             } catch (JSONException e) {
@@ -148,6 +147,8 @@ public class GetMessageFileRequest extends BaseGetRequest
             ChatwalaMessage existingMessage = databaseHelper.getChatwalaMessageDao().queryForId(chatwalaMessage.getMessageId());
             chatwalaMessage = existingMessage;
         }
+
+        chatwalaMessage.setWalaDownloaded(true);
 
         File thumbnailFile = new File(chatwalaMessage.getThumbnailUrl());
         if(thumbnailFile.exists()) {
