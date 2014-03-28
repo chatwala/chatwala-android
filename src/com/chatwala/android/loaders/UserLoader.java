@@ -39,7 +39,7 @@ public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
             List<DrawerUser> messages = new ArrayList<DrawerUser>();
             Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
             QueryBuilder<ChatwalaMessage,String> raw = messageDao.queryBuilder();
-            raw.selectRaw("senderId", "timestamp", "thumbnailUrl", "MAX(timestamp)");
+            raw.selectRaw("senderId", "timestamp", "userThumbnailUrl", "MAX(timestamp)");
             raw.groupByRaw("senderId");
             raw.orderByRaw("timestamp DESC");
             for(String[] a : raw.queryRaw().getResults()) {

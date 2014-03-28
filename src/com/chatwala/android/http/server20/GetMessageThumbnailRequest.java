@@ -70,7 +70,7 @@ public class GetMessageThumbnailRequest extends BaseGetRequest
                 lastModified = headers.get("Last-Modified").get(0);
             }
 
-            ThumbUtils.createThumbForMessage(context, response.getBody(), message.getThumbnailUrl());
+            ThumbUtils.storeThumbForMessage(context, response.getBody(), message.getThumbnailUrl());
         }
         catch (FileNotFoundException e)
         {

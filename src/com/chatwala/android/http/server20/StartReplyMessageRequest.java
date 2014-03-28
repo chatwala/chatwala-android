@@ -60,6 +60,7 @@ public class StartReplyMessageRequest extends BasePostRequest {
         ChatwalaMessage currentMessage = new ChatwalaMessage();
         currentMessage.populateFromMetaDataJSON(message_meta_data);
         currentMessage.setWriteUrl(bodyJson.getString("write_url"));
+        currentMessage.setThumbnailWriteUrl(bodyJson.getString("message_thumbnail_write_url"));
         currentMessage.setMessageMetaDataString(message_meta_data.toString(4));
 
         chatwalaResponse.setResponseData(currentMessage);

@@ -35,12 +35,16 @@ public class ChatwalaMessage {
     private String thumbnailUrl;
 
     @DatabaseField
+    private String userThumbnailUrl;
+
+    @DatabaseField
     private String shareUrl;
 
     @DatabaseField
     private String readUrl;
 
     private String writeUrl;
+    private String thumbnailWriteUrl;
 
     @DatabaseField
     private long threadIndex;
@@ -161,6 +165,14 @@ public class ChatwalaMessage {
         this.thumbnailUrl = thumbnailUrl;
     }
 
+    public String getUserThumbnailUrl() {
+        return userThumbnailUrl;
+    }
+
+    public void setUserThumbnailUrl(String userThumbnailUrl) {
+        this.userThumbnailUrl = userThumbnailUrl;
+    }
+
     public String getShareUrl() {
         return shareUrl;
     }
@@ -217,11 +229,20 @@ public class ChatwalaMessage {
         this.writeUrl = writeUrl;
     }
 
+    public String getThumbnailWriteUrl() {
+        return thumbnailWriteUrl;
+    }
+
+    public void setThumbnailWriteUrl(String thumbnailWriteUrl) {
+        this.thumbnailWriteUrl = thumbnailWriteUrl;
+    }
+
     public void populateFromMetaDataJSON(JSONObject message_meta_data) throws JSONException{
         this.setMessageId(message_meta_data.getString("message_id"));
         this.setRecipientId(message_meta_data.getString("recipient_id"));
         this.setSenderId(message_meta_data.getString("sender_id"));
         this.setThumbnailUrl(message_meta_data.getString("thumbnail_url"));
+        this.setUserThumbnailUrl(message_meta_data.getString("user_thumbnail_url"));
         this.setUrl(message_meta_data.getString("read_url"));
         this.setReadUrl(message_meta_data.getString("read_url"));
         this.setShareUrl(message_meta_data.getString("share_url"));

@@ -2,11 +2,14 @@ package com.chatwala.android.networking;
 
 import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
-import com.chatwala.android.networking.requests.UserPictureUploadUrlRequest;
+import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.networking.requests.PutMessageThumbnailRequest;
+import com.chatwala.android.networking.requests.RenewMessageThumbnailWriteUrl;
 import com.chatwala.android.util.Logger;
-import org.json.JSONObject;
 
+import java.io.File;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -45,8 +48,12 @@ public class NetworkManager {
         return Singleton.instance;
     }
 
-    public Future<CWResult<JSONObject>> getUserPictureUploadUrl(String userId) {
-        return getQueue().submit(new UserPictureUploadUrlRequest(userId).getCallable(getApp(), 3));
+    public Future<CWResult<Boolean>> putMessageThumbnail(URL writeUrl, File thumbnail) {
+        return getQueue().submit(new PutMessageThumbnailRequest(writeUrl, thumbnail).getCallable(getApp(), 0));
+    }
+
+    public Future<CWResult<URL>> getMessageThumbnailWriteUrl(final ChatwalaMessage message) {
+        return getQueue().submit(new RenewMessageThumbnailWriteUrl(message.getMessageId(), message.getShardKey()).getCallable(getApp(), 0));
     }
 
     public void setChatwalaHeaders(HttpURLConnection client) {

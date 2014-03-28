@@ -18,26 +18,28 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Created by Eliezer on 3/24/2014.
+ * Created by Eliezer on 3/27/2014.
  */
-public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, JSONObject> {
-    private String userId;
+public class RenewMessageThumbnailWriteUrl implements Request<HttpURLConnection, URL> {
+    private String messageId;
+    private String shardKey;
 
-    public UserPictureUploadUrlRequest(String userId) {
-        this.userId = userId;
+    public RenewMessageThumbnailWriteUrl(String messageId, String shardKey) {
+        this.messageId = messageId;
+        this.shardKey = shardKey;
     }
 
     private String getUrl() {
-        return EnvironmentVariables.get().getApiPath() + "user/postUserProfilePicture";
+        return EnvironmentVariables.get().getApiPath() + "messages/renewWriteUrlForMessageThumbnail";
     }
 
     @Override
-    public NetworkCallable<HttpURLConnection, JSONObject> getCallable(Context context, int numRetries) {
-        return new NetworkCallable<HttpURLConnection, JSONObject>(context, this, numRetries);
+    public NetworkCallable<HttpURLConnection, URL> getCallable(Context context, int numRetries) {
+        return new NetworkCallable<HttpURLConnection, URL>(context, this, 0);
     }
 
     @Override
-    public HttpURLConnection getConnection() throws Exception {
+    public HttpURLConnection getConnection(boolean isRetry) throws Exception {
         HttpURLConnection client = (HttpURLConnection) new URL(getUrl()).openConnection();
         client.setDoInput(true);
         client.setDoOutput(true); //sets method to POST
@@ -48,7 +50,8 @@ public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, J
     public CWResult<Boolean> makeRequest(HttpURLConnection client) throws Exception {
         CWResult<Boolean> result = new CWResult<Boolean>();
         JSONObject request = new JSONObject();
-        request.put("user_id", userId);
+        request.put("message_id", messageId);
+        request.put("shard_key", shardKey);
 
         client.setFixedLengthStreamingMode(request.toString().getBytes().length);
         client.setRequestProperty("Content-Type", "application/json");
@@ -71,7 +74,7 @@ public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, J
     }
 
     @Override
-    public CWResult<JSONObject> parseResponse(HttpURLConnection client) throws Exception {
+    public CWResult<URL> parseResponse(HttpURLConnection client) throws Exception {
         StringBuilder responseBuilder = new StringBuilder();
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -81,7 +84,9 @@ public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, J
             }
             in.close();
 
-            CWResult<JSONObject> response = new CWResult<JSONObject>().setSuccess(new JSONObject(responseBuilder.toString()));
+            JSONObject responseBody = new JSONObject(responseBuilder.toString());
+            CWResult<URL> response = new CWResult<URL>().setSuccess(new URL(responseBody.getString("write_url")));
+
             NetworkLogger.logHttpResponse(client, getUrl(), response);
             return response;
         }
@@ -98,6 +103,6 @@ public class UserPictureUploadUrlRequest implements Request<HttpURLConnection, J
 
     @Override
     public String getGenericErrorMessage() {
-        return "There was an error uploading the profile picture.";
+        return "There was an error uploading the message thumbnail.";
     }
 }

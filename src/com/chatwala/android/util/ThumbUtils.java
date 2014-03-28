@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.R;
+import com.chatwala.android.database.ChatwalaMessage;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -58,8 +59,42 @@ public class ThumbUtils
         return file;
     }
 
+    public static File createThumbForMessage(Context context, ChatwalaMessage message) {
+        Bitmap frame = VideoUtils.createVideoFrame(message.getMessageFile().getAbsolutePath(), 1);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        frame.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] toReturn = stream.toByteArray();
 
-    public static void createThumbForMessage(Context context, byte[] imageBytes, String url) throws IOException {
+        InputStream is = new ByteArrayInputStream(stream.toByteArray());
+        File file = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
+        try
+        {
+            FileOutputStream os = new FileOutputStream(file);
+
+
+            final byte[] buffer = new byte[1024];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                os.write(buffer, 0, read);
+            }
+
+            os.close();
+            is.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return file;
+    }
+
+
+    public static void storeThumbForMessage(Context context, byte[] imageBytes, String url) throws IOException {
         File tempFile = MessageDataStore.findMessageThumbTempPathInLocalStore(url);
         File thumbFile = MessageDataStore.findMessageThumbInLocalStore(url);
         //write to temp file

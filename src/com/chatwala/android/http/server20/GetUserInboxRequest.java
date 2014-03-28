@@ -116,6 +116,7 @@ public class GetUserInboxRequest extends BasePostRequest {
                     updatedMessage.setRecipientId(message.getRecipientId());
                     updatedMessage.setSenderId(message.getSenderId());
                     updatedMessage.setThumbnailUrl(message.getThumbnailUrl());
+                    updatedMessage.setUserThumbnailUrl(message.getUserThumbnailUrl());
                     updatedMessage.setSortId(message.getSortId());
                     updatedMessage.setGroupId(message.getGroupId());
                     updatedMessage.setThreadId(message.getThreadId());

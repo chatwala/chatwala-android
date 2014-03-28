@@ -28,9 +28,9 @@ public class NetworkCallable<TClient, TResponse> implements Callable<CWResult<TR
         }
 
         TClient client = null;
-        for(int i = 0; i < numRetries; i++) {
+        for(int i = 0; i <= numRetries; i++) {
             try {
-                client = request.getConnection();
+                client = request.getConnection(i > 0);
                 if(client == null) {
                     throw new NullPointerException("The request client cannot be null");
                 }

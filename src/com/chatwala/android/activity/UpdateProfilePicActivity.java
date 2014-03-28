@@ -3,7 +3,6 @@ package com.chatwala.android.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.MenuItem;
@@ -13,14 +12,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.AppPrefs;
-import com.chatwala.android.CWResult;
 import com.chatwala.android.R;
 import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.superbus.server20.UploadUserProfilePictureCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -106,33 +102,6 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
                         BusHelper.submitCommandSync(UpdateProfilePicActivity.this, new UploadUserProfilePictureCommand(newThumbImage.getPath()));
                     }
                 });
-
-                new AsyncTask<Void, Void, CWResult<JSONObject>>() {
-                    @Override
-                    protected CWResult<JSONObject> doInBackground(Void... voids) {
-                        Context context = UpdateProfilePicActivity.this;
-                        String userId = AppPrefs.getInstance(context).getUserId();
-                        try {
-                            return NetworkManager.getInstance().getUserPictureUploadUrl(userId).get();
-                        }
-                        catch(Exception e) {
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(CWResult<JSONObject> response) {
-                        if(response != null) {
-                            if(!response.isSuccess()) {
-                                Toast.makeText(UpdateProfilePicActivity.this, "Got an error " + response.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                            else {
-                                Toast.makeText(UpdateProfilePicActivity.this, "response = " + response.getResult().toString(), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    }
-
-                }.execute();
 
                 Toast.makeText(UpdateProfilePicActivity.this, "Profile updated!", Toast.LENGTH_LONG).show();
             }

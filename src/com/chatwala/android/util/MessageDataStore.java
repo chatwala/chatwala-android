@@ -9,9 +9,7 @@ import com.chatwala.android.ChatwalaApplication;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -173,11 +171,8 @@ public class MessageDataStore
             String shadStr = byteArrayToHexString(shad);
             return new File(tempDir, shadStr + PNG_FILE_EXTENSION);
         }
-        catch(NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        catch(java.io.UnsupportedEncodingException e) {
-            e.printStackTrace();
+        catch(Exception e) {
+            Logger.e("Couldn't find the message thumb temp in for " + url);
         }
         return new File(tempDir, "error.png");
 
@@ -190,11 +185,8 @@ public class MessageDataStore
             String shadStr = byteArrayToHexString(shad);
             return new File(thumbnailsDir, shadStr + PNG_FILE_EXTENSION);
         }
-        catch(NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        catch(UnsupportedEncodingException e) {
-            e.printStackTrace();
+        catch(Exception e) {
+            Logger.e("Couldn't find the message thumb for " + url);
         }
         return new File(thumbnailsDir, "error.png");
 

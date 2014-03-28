@@ -23,6 +23,7 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.db.DBHelper;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
@@ -64,6 +65,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     public static int numActivities=0;
 
     public NetworkManager networkManager;
+    public MessageManager messageManager;
 
     @Override
     public void onCreate()
@@ -71,6 +73,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         super.onCreate();
 
         networkManager = NetworkManager.attachToApp(this);
+        messageManager = MessageManager.attachToApp(this);
 
         Crashlytics.start(this);
 

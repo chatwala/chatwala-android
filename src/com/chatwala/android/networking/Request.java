@@ -9,7 +9,7 @@ import com.chatwala.android.CWResult;
 public interface Request<TClient, TResponse> {
     public NetworkCallable<TClient, TResponse> getCallable(Context context, int numRetries);
 
-    public TClient getConnection() throws Exception;
+    public TClient getConnection(boolean isRetry) throws Exception;
 
     public CWResult<Boolean> makeRequest(TClient client) throws Exception;
 

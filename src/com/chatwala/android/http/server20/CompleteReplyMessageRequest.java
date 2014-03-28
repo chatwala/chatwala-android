@@ -3,12 +3,18 @@ package com.chatwala.android.http.server20;
 import android.content.Context;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.http.BasePostRequest;
+import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.util.Logger;
+import com.chatwala.android.util.ThumbUtils;
+import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.net.URL;
 import java.sql.SQLException;
 
 /**
@@ -46,6 +52,19 @@ public class CompleteReplyMessageRequest  extends BasePostRequest {
 
         chatwalaResponse.setResponseCode(response_code.getInt("code"));
         chatwalaResponse.setResponseMessage(response_code.getString("message"));
+
+        Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(context).getChatwalaMessageDao();
+        ChatwalaMessage message = messageDao.queryForId(message_id);
+        if(message != null) {
+            try {
+                URL messageThumbnailUrl = new URL(message.getThumbnailWriteUrl());
+                File messageThumbFile = ThumbUtils.createThumbForMessage(context, message);
+                MessageManager.getInstance().uploadMessageThumbnail(messageThumbnailUrl, message, messageThumbFile);
+            }
+            catch (Exception e) {
+                //eat it?
+            }
+        }
     }
 
     protected ChatwalaResponse<ChatwalaMessage> getReturnValue()
