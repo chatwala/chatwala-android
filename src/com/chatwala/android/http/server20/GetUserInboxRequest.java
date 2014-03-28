@@ -2,7 +2,6 @@ package com.chatwala.android.http.server20;
 
 import android.content.Context;
 import co.touchlab.android.superbus.BusHelper;
-import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.database.ChatwalaMessage;
@@ -11,18 +10,17 @@ import com.chatwala.android.database.OldChatwalaMessage;
 import com.chatwala.android.database.OldDatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.BasePostRequest;
-import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.chatwala.android.util.Logger;
 import com.j256.ormlite.dao.Dao;
 import com.turbomanage.httpclient.HttpResponse;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
-import java.util.ArrayList;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
  * Created by samirahman on 3/11/14.
@@ -143,8 +141,10 @@ public class GetUserInboxRequest extends BasePostRequest {
                     else if(oldMessage.getMessageState() == OldChatwalaMessage.MessageState.UNREAD) {
                         message.setMessageState(ChatwalaMessage.MessageState.UNREAD);
                     }
-                    message.setMessageFile(oldMessage.getMessageFile());
-                    message.setWalaDownloaded(true);
+                    if(oldMessage.getMessageFile() != null) {
+                        message.setMessageFile(oldMessage.getMessageFile());
+                        message.setWalaDownloaded(true);
+                    }
                     try {
                         new GetMessageThumbnailRequest(context, message).execute();
                     } catch(Exception e) {

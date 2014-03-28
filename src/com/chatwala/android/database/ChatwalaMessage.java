@@ -271,8 +271,10 @@ public class ChatwalaMessage {
     }
 
     public void setMessageFile(File messageFile) {
-        this.messageFile = messageFile;
-        this.fileUrl = messageFile.getAbsolutePath();
+        if(messageFile != null) {
+            this.messageFile = messageFile;
+            this.fileUrl = messageFile.getAbsolutePath();
+        }
     }
 
     public void clearMessageFile() {

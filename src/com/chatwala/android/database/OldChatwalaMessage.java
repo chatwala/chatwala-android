@@ -135,16 +135,18 @@ public class OldChatwalaMessage
 
     public File getMessageFile()
     {
-        if(messageFile == null && fileUrl != null)
-        {
-            File temp = new File(fileUrl);
-            if(temp.exists())
-            {
-                messageFile = temp;
+        try {
+            if (messageFile == null && fileUrl != null) {
+                File temp = new File(fileUrl);
+                if (temp.exists()) {
+                    messageFile = temp;
+                }
             }
+            return messageFile;
         }
-
-        return messageFile;
+        catch(Exception e) {
+            return null;
+        }
     }
 
     public String getMessageFileUrl()
