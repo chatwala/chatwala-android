@@ -373,13 +373,7 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
 
         @Override
         public void onLoadFinished(Loader<List<DrawerMessage>> listLoader, List<DrawerMessage> drawerMessages) {
-            if(drawerMessages.size() == 1) {
-                NewCameraActivity.startMeWithId(DrawerListActivity.this, drawerMessages.get(0).getReadUrl(), drawerMessages.get(0).getMessageId());
-                finish();
-            }
-            else {
-                setMessageAdapterList(drawerMessages);
-            }
+            setMessageAdapterList(drawerMessages);
         }
 
         @Override
