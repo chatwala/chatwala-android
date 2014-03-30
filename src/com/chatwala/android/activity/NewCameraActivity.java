@@ -1433,6 +1433,7 @@ public class NewCameraActivity extends DrawerListActivity {
                 {
                     readUrl = ShareUtils.getReadUrlFromShareUrl(getIntent().getData());
                     playbackMessageId = ShareUtils.getMessageIdFromShareUrl(getIntent().getData());
+                    new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
                 }
 
                 Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao();
@@ -1457,8 +1458,6 @@ public class NewCameraActivity extends DrawerListActivity {
                     messageDao.update(playbackMessage);
                     BroadcastSender.makeNewMessagesBroadcast(NewCameraActivity.this);
                 }
-
-                new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
 
                 return playbackMessage;
             }

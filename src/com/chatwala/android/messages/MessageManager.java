@@ -4,9 +4,9 @@ import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.networking.NetworkManager;
+import com.chatwala.android.networking.requests.PutMessageThumbnailRequest;
 
 import java.io.File;
-import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,25 +46,13 @@ public class MessageManager {
         return Singleton.instance;
     }
 
-    public Future<CWResult<Boolean>> uploadMessageThumbnail(final URL writeUrl, final ChatwalaMessage message, final File thumbnailFile) {
+    public Future<CWResult<Boolean>> uploadMessageThumbnail(final ChatwalaMessage message, final File thumbnailFile) {
         return getQueue().submit(new Callable<CWResult<Boolean>>() {
             @Override
             public CWResult<Boolean> call() throws Exception {
                 NetworkManager networkManager = NetworkManager.getInstance();
-                Future<CWResult<Boolean>> success;
-                success = networkManager.putMessageThumbnail(writeUrl, thumbnailFile);
-                if(!success.get().isSuccess()) { //we need to get a new write url
-                    CWResult<URL> getWriteUrlResult = networkManager.getMessageThumbnailWriteUrl(message).get();
-                    if(getWriteUrlResult.isSuccess()) {
-                        return networkManager.putMessageThumbnail(getWriteUrlResult.getResult(), thumbnailFile).get();
-                    }
-                    else {
-                        return new CWResult<Boolean>(getWriteUrlResult);
-                    }
-                }
-                else {
-                    return success.get();
-                }
+                return networkManager.postToQueue(
+                        new PutMessageThumbnailRequest(getApp(), message, thumbnailFile).getCallable(getApp(), 3)).get();
             }
         });
     }

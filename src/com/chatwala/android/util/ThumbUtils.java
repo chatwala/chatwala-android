@@ -7,7 +7,6 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.R;
-import com.chatwala.android.database.ChatwalaMessage;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -59,42 +58,16 @@ public class ThumbUtils
         return file;
     }
 
-    public static File createThumbForMessage(Context context, ChatwalaMessage message) {
-        Bitmap frame = VideoUtils.createVideoFrame(message.getMessageFile().getAbsolutePath(), 1);
+    public static File createThumbForMessage(Context context, String videoFilePath, String messageThumbnailUrl) throws IOException {
+        Bitmap frame = VideoUtils.createVideoFrame(videoFilePath, 1);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         frame.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] toReturn = stream.toByteArray();
 
-        InputStream is = new ByteArrayInputStream(stream.toByteArray());
-        File file = MessageDataStore.findMessageThumbInLocalStore(message.getThumbnailUrl());
-        try
-        {
-            FileOutputStream os = new FileOutputStream(file);
-
-
-            final byte[] buffer = new byte[1024];
-            int read;
-            while ((read = is.read(buffer)) != -1) {
-                os.write(buffer, 0, read);
-            }
-
-            os.close();
-            is.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        return file;
+        return storeThumbForMessage(context, toReturn, messageThumbnailUrl);
     }
 
-
-    public static void storeThumbForMessage(Context context, byte[] imageBytes, String url) throws IOException {
+    public static File storeThumbForMessage(Context context, byte[] imageBytes, String url) throws IOException {
         File tempFile = MessageDataStore.findMessageThumbTempPathInLocalStore(url);
         File thumbFile = MessageDataStore.findMessageThumbInLocalStore(url);
         //write to temp file
@@ -152,8 +125,71 @@ public class ThumbUtils
 
         thumbBitmap.recycle();
         thumbBitmap = null;
+
+        return thumbFile;
     }
 
+    public static File storeThumbForUser(Context context, byte[] imageBytes, String url) throws IOException {
+        File tempFile = MessageDataStore.findMessageUserThumbTempPathInLocalStore(url);
+        File thumbFile = MessageDataStore.findMessageUserThumbPathInLocalStore(url);
+        //write to temp file
+        InputStream is = new ByteArrayInputStream(imageBytes);
+        FileOutputStream os = new FileOutputStream(tempFile);
+        IOUtils.copy(is, os);
+        os.close();
+        is.close();
+
+        Bitmap thumbBitmap = BitmapFactory.decodeFile(tempFile.getPath());
+
+        if(thumbBitmap == null)
+        {
+            thumbBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.message_thumb);
+        }
+        else
+        {
+            Logger.d("Thumb width: " + thumbBitmap.getWidth() + "; thumb height: " + thumbBitmap.getHeight());
+
+            thumbBitmap = rotateBitmap(tempFile, thumbBitmap);
+
+            //don't need the temp file anymore
+            tempFile.delete();
+
+            float thumbWidth = context.getResources().getDimension(R.dimen.thumb_width);
+            float thumbHeight = context.getResources().getDimension(R.dimen.thumb_height);
+            float idealRatio = thumbHeight/thumbWidth;
+            int idealY = (int)((float)thumbBitmap.getWidth() * idealRatio);
+            if(thumbBitmap.getHeight() < idealY)
+            {
+                idealY = thumbBitmap.getHeight();
+            }
+
+            Logger.d("Thumb ratio: " + idealRatio + "; thumb ideal height: " + idealY);
+
+            int yMid = thumbBitmap.getHeight()/2;
+            thumbBitmap = thumbBitmap.createBitmap(thumbBitmap, 0, yMid - (idealY/2), thumbBitmap.getWidth(), idealY);
+        }
+
+        try
+        {
+            FileOutputStream out = new FileOutputStream(thumbFile);
+            thumbBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        thumbBitmap.recycle();
+        thumbBitmap = null;
+
+        return thumbFile;
+    }
 
     public static void createThumbForUserImage(Context context, String userId)
     {

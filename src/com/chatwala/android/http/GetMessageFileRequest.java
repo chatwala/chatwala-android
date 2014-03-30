@@ -10,6 +10,7 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.superbus.server20.GetMessageThumbnailCommand;
+import com.chatwala.android.superbus.server20.GetMessageUserThumbnailCommand;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ZipUtil;
 import com.turbomanage.httpclient.HttpResponse;
@@ -172,6 +173,7 @@ public class GetMessageFileRequest extends BaseGetRequest
     @Override
     protected void makeAssociatedRequests() throws PermanentException, TransientException
     {
+        BusHelper.submitCommandSync(context, new GetMessageUserThumbnailCommand(chatwalaMessage));
         BusHelper.submitCommandSync(context, new GetMessageThumbnailCommand(chatwalaMessage));
         BusHelper.submitCommandSync(context, new ClearStoreCommand());
     }

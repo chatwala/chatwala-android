@@ -164,6 +164,34 @@ public class MessageDataStore
         return new File(usersDir, THUMB_FILE_PREFIX + id + PNG_FILE_EXTENSION);
     }
 
+    public static File findMessageUserThumbTempPathInLocalStore(String url) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] shad= md.digest(url.getBytes("UTF-8"));
+            String shadStr = byteArrayToHexString(shad);
+            return new File(tempDir, shadStr + PNG_FILE_EXTENSION);
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't find the message user thumb temp in for " + url);
+        }
+        return new File(tempDir, "error.png");
+
+    }
+
+    public static File findMessageUserThumbPathInLocalStore(String url) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] shad= md.digest(url.getBytes("UTF-8"));
+            String shadStr = byteArrayToHexString(shad);
+            return new File(thumbnailsDir, shadStr + PNG_FILE_EXTENSION);
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't find the message user thumb for " + url);
+        }
+        return new File(thumbnailsDir, "error.png");
+
+    }
+
     public static File findMessageThumbTempPathInLocalStore(String url) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");

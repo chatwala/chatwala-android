@@ -78,7 +78,7 @@ public class UserDrawerAdapter extends BaseAdapter {
 
         final DrawerUser user = getItem(i);
 
-        File thumbImage = MessageDataStore.findMessageThumbInLocalStore(user.getThumbnailUrl());
+        File thumbImage = MessageDataStore.findMessageUserThumbPathInLocalStore(user.getThumbnailUrl());
         if(thumbImage.exists()) {
             picLoader.load(thumbImage).noFade().into(holder.thumb);
         }

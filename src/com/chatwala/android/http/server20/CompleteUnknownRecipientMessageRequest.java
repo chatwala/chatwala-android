@@ -4,14 +4,10 @@ import android.content.Context;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.http.BasePostRequest;
-import com.chatwala.android.messages.MessageManager;
-import com.chatwala.android.util.ThumbUtils;
 import com.turbomanage.httpclient.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.net.URL;
 import java.sql.SQLException;
 
 /**
@@ -57,19 +53,10 @@ public class CompleteUnknownRecipientMessageRequest extends BasePostRequest {
         currentMessage.setThumbnailUrl(message_meta_data.getString("thumbnail_url"));
         currentMessage.setUserThumbnailUrl(message_meta_data.getString("user_thumbnail_url"));
         currentMessage.setUrl(message_meta_data.getString("read_url"));
+        currentMessage.setShardKey(message_meta_data.getString("blob_storage_shard_key"));
         currentMessage.setMessageMetaDataString(message_meta_data.toString(4));
 
         chatwalaResponse.setResponseData(currentMessage);
-
-        try {
-            URL messageThumbnailUrl = new URL(currentMessage.getThumbnailWriteUrl());
-            File messageThumbFile = ThumbUtils.createThumbForMessage(context, currentMessage);
-            MessageManager.getInstance().uploadMessageThumbnail(messageThumbnailUrl, currentMessage, messageThumbFile);
-        }
-        catch (Exception e) {
-            //eat it?
-        }
-
     }
     protected ChatwalaResponse<ChatwalaMessage> getReturnValue()
     {

@@ -21,7 +21,7 @@ public class NetworkLogger {
         StringBuilder sb = new StringBuilder()
                 .append("Response from: ").append(url)
                 .append("\n").append(client.getHeaderFields().toString().replaceAll("],", "]\n"));
-        if(client.getContentType().contains("application/json") && response.getResult() != null) {
+        if(client.getContentType() != null && client.getContentType().contains("application/json") && response.getResult() != null) {
             sb.append("\n").append(response.getResult().toString());
         }
         Logger.i(sb.toString());

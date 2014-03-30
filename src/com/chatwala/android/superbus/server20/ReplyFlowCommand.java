@@ -17,6 +17,8 @@ import com.chatwala.android.http.server20.CompleteReplyMessageRequest;
 import com.chatwala.android.http.server20.RenewWriteUrlForMessageRequest;
 import com.chatwala.android.http.server20.StartReplyMessageRequest;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.messages.MessageManager;
+import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
 import com.chatwala.android.util.ZipUtil;
@@ -32,6 +34,7 @@ import java.sql.SQLException;
 public class ReplyFlowCommand extends SqliteCommand {
 
     ChatwalaMessage replyingToMessage;
+    ChatwalaMessage messageFromStartReply;
     String newMessageId;
     String videoFilePath;
     long videoDuration;
@@ -84,10 +87,10 @@ public class ReplyFlowCommand extends SqliteCommand {
 
             //start
             ChatwalaResponse<ChatwalaMessage> startResponse = (ChatwalaResponse<ChatwalaMessage>) new StartReplyMessageRequest(context, newMessageId, replyingToMessage.getMessageId(), startRecording).execute();
-            ChatwalaMessage chatwalaMessage = startResponse.getResponseData();
-            shardKey =chatwalaMessage.getShardKey();
-            writeUrl = chatwalaMessage.getWriteUrl();
-            messageMetaDataJSONString = chatwalaMessage.getMessageMetaDataString();
+            messageFromStartReply = startResponse.getResponseData();
+            shardKey =messageFromStartReply.getShardKey();
+            writeUrl = messageFromStartReply.getWriteUrl();
+            messageMetaDataJSONString = messageFromStartReply.getMessageMetaDataString();
 
             if(startResponse.getResponseCode()!=1) {
                 throw new TransientException();
@@ -150,6 +153,14 @@ public class ReplyFlowCommand extends SqliteCommand {
 
             if(completeResponse.getResponseCode()!=1) {
                 throw new TransientException();
+            }
+
+            try {
+                File messageThumbFile = ThumbUtils.createThumbForMessage(context, videoFilePath, messageFromStartReply.getThumbnailUrl());
+                MessageManager.getInstance().uploadMessageThumbnail(messageFromStartReply, messageThumbFile);
+            }
+            catch (Exception e) {
+                Logger.e("Couldn't upload the message thumb", e);
             }
 
             //no longer need the video file, delete it

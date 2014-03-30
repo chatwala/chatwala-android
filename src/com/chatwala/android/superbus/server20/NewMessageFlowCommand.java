@@ -14,6 +14,7 @@ import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.http.server20.CompleteUnknownRecipientMessageRequest;
 import com.chatwala.android.http.server20.RenewWriteUrlForMessageRequest;
 import com.chatwala.android.http.server20.StartUnknownRecipientMessageRequest;
+import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.ThumbUtils;
@@ -132,6 +133,14 @@ public class NewMessageFlowCommand extends SqliteCommand {
 
             if(completeResponse.getResponseCode()!=1) {
                 throw new TransientException();
+            }
+
+            try {
+                File messageThumbFile = ThumbUtils.createThumbForMessage(context, videoFilePath, completeResponse.getResponseData().getThumbnailUrl());
+                MessageManager.getInstance().uploadMessageThumbnail(completeResponse.getResponseData(), messageThumbFile);
+            }
+            catch (Exception e) {
+                Logger.e("Couldn't upload the message thumb", e);
             }
 
             //no longer need the video file, delete it

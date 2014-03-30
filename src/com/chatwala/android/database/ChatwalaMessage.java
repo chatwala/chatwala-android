@@ -44,7 +44,6 @@ public class ChatwalaMessage {
     private String readUrl;
 
     private String writeUrl;
-    private String thumbnailWriteUrl;
 
     @DatabaseField
     private long threadIndex;
@@ -227,14 +226,6 @@ public class ChatwalaMessage {
 
     public void setWriteUrl(String writeUrl) {
         this.writeUrl = writeUrl;
-    }
-
-    public String getThumbnailWriteUrl() {
-        return thumbnailWriteUrl;
-    }
-
-    public void setThumbnailWriteUrl(String thumbnailWriteUrl) {
-        this.thumbnailWriteUrl = thumbnailWriteUrl;
     }
 
     public void populateFromMetaDataJSON(JSONObject message_meta_data) throws JSONException{
