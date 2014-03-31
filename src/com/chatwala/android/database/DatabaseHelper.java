@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import co.touchlab.android.superbus.provider.sqlite.AbstractSqlitePersistenceProvider;
 import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.util.Logger;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
@@ -71,22 +72,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
-        /*try
-        {
-            dropTables(connectionSource);
-            ((AbstractSqlitePersistenceProvider) (app.getProvider())).dropTables(db);
-            onCreate(db, connectionSource);
-        } catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }*/
-
         try {
             Dao<ChatwalaMessage, String> messageDao = getChatwalaMessageDao();
             messageDao.executeRaw("ALTER TABLE 'message' ADD COLUMN userThumbnailUrl VARCHAR");
         }
         catch(Exception e) {
-
+            Logger.e("Got an error while updating the database", e);
         }
     }
 

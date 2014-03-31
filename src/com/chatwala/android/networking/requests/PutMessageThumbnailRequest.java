@@ -65,7 +65,7 @@ public class PutMessageThumbnailRequest implements Request<HttpURLConnection, Bo
         client.setRequestProperty("Content-Type", "image/png");
         client.setRequestProperty("Content-Length", Long.toString(thumbnailFile.length()));
 
-        NetworkLogger.logHttpRequest(client, getUrl().toString(), "<message_thumbnail_binary>");
+        NetworkLogger.logHttpRequest(client, writeUrl.toString(), "<message_thumbnail_binary>");
 
         try {
             BufferedOutputStream out = new BufferedOutputStream(client.getOutputStream());
