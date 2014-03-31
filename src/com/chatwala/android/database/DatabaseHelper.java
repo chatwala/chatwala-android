@@ -21,7 +21,7 @@ import java.sql.SQLException;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 {
     private static final String DATABASE_NAME = "chatwala2.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static DatabaseHelper instance;
     private final ChatwalaApplication app;
@@ -70,9 +70,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
      * the various data to match the new version number.
      */
     @Override
-    public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion)
-    {
-        try
+    public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
+        /*try
         {
             dropTables(connectionSource);
             ((AbstractSqlitePersistenceProvider) (app.getProvider())).dropTables(db);
@@ -80,6 +79,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         } catch (SQLException e)
         {
             throw new RuntimeException(e);
+        }*/
+
+        try {
+            Dao<ChatwalaMessage, String> messageDao = getChatwalaMessageDao();
+            messageDao.executeRaw("ALTER TABLE 'message' ADD COLUMN userThumbnailUrl VARCHAR");
+        }
+        catch(Exception e) {
+
         }
     }
 
