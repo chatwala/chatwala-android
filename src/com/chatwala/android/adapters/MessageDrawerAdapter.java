@@ -88,7 +88,13 @@ public class MessageDrawerAdapter extends BaseAdapter {
             picLoader.load(thumbImage).noFade().into(holder.thumb);
         }
         else {
-            picLoader.load(R.drawable.message_thumb).into(holder.thumb);
+            thumbImage = MessageDataStore.findMessageUserThumbPathInLocalStore(message.getUserThumbnailUrl());
+            if(thumbImage.exists()) {
+                picLoader.load(thumbImage).noFade().into(holder.thumb);
+            }
+            else {
+                picLoader.load(R.drawable.message_thumb).into(holder.thumb);
+            }
         }
 
         holder.timestamp.setText(TimestampUtils.formatMessageTimestamp(message.getTimestamp()));

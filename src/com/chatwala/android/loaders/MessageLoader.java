@@ -43,7 +43,7 @@ public class MessageLoader extends AsyncTaskLoader<List<DrawerMessage>> {
             List<ChatwalaMessage> cwMessages = queryBuilder.query();
             for(ChatwalaMessage message : cwMessages) {
                 messages.add(new DrawerMessage(message.getMessageId(), message.getReadUrl(), message.getSenderId(),
-                        message.getTimestamp(), message.getThumbnailUrl(), message.getMessageState()));
+                        message.getTimestamp(), message.getThumbnailUrl(), message.getUserThumbnailUrl(), message.getMessageState()));
             }
             return messages;
         }
