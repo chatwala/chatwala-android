@@ -51,6 +51,9 @@ public class GetUserInboxRequest extends BasePostRequest {
     protected void parseResponse(HttpResponse response) throws JSONException, SQLException, TransientException {
         chatwalaResponse = new ChatwalaResponse<ChatwalaMessagePage>();
 
+        if(response.getBodyAsString()==null) {
+            throw new TransientException();
+        }
         JSONObject bodyJson = new JSONObject(response.getBodyAsString());
         JSONObject response_code = bodyJson.getJSONObject("response_code");
         JSONArray messages = bodyJson.getJSONArray("messages");
