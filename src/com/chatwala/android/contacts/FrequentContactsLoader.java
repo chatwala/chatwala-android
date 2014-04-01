@@ -1,7 +1,9 @@
 package com.chatwala.android.contacts;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.ContactsContract;
 import android.support.v4.content.AsyncTaskLoader;
 import android.telephony.PhoneNumberUtils;
@@ -19,8 +21,19 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
     private List<ContactEntry> contacts;
     private int howManyContactsToLoad;
 
+    @SuppressLint("InlinedApi")
+    private static final String LAST_TIME_CONTACTED = (isApi18OrGreater() ?
+            ContactsContract.CommonDataKinds.Phone.LAST_TIME_CONTACTED : ContactsContract.CommonDataKinds.Phone.LAST_TIME_CONTACTED);
+    @SuppressLint("InlinedApi")
+    private static final String TIMES_CONTACTED = (isApi18OrGreater() ?
+            ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED : ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED);
+
+    private static final boolean isApi18OrGreater() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+    }
+
     private String[] projection = new String[] {ContactsContract.CommonDataKinds.Phone._ID,
-            ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED,
+            TIMES_CONTACTED,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
             ContactsContract.CommonDataKinds.Phone.TYPE,
@@ -43,21 +56,22 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
         }
     }
 
+    private static final long THIRTY_DAYS_MS = 2592000000L;
     @Override
     public List<ContactEntry> loadInBackground() {
         Cursor cursor = null;
         try {
             cursor = getContext().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     projection,
-                    ContactsContract.CommonDataKinds.Phone.HAS_PHONE_NUMBER + "=1",
+                    ContactsContract.CommonDataKinds.Phone.HAS_PHONE_NUMBER + "=1 AND " +
+                            LAST_TIME_CONTACTED + " >= " + (System.currentTimeMillis() - THIRTY_DAYS_MS),
                     null,
-                    ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED + " DESC, " +
-                            ContactsContract.CommonDataKinds.Phone.LAST_TIME_CONTACTED + " ASC");
+                    TIMES_CONTACTED + " DESC, " + LAST_TIME_CONTACTED + " ASC");
 
             contacts = new ArrayList<ContactEntry>(howManyContactsToLoad);
             Map<String, FrequentContactEntry> nonMobileRecentContacts = new HashMap<String, FrequentContactEntry>();
             Map<String, Boolean> addToRecents = new HashMap<String, Boolean>();
-            Map<String, Boolean> addToRecentsByNumber = new HashMap<String, Boolean>();
+            Map<String, String> addToRecentsByNumber = new HashMap<String, String>();
             String previousName = null;
 
             if(cursor != null) {
@@ -66,20 +80,21 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                         try {
                             String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                             String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                            String normalizedValue = PhoneNumberUtils.extractNetworkPortion(value);
+                            String normalizedValue = PhoneNumberUtils.extractNetworkPortion(value).replace("+", "").trim();
                             if (normalizedValue.startsWith("1") && normalizedValue.length() > 1) {
                                 normalizedValue = normalizedValue.substring(1);
                             }
                             String type = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE));
                             String image = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
-                            int timesContacted = cursor.getInt(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TIMES_CONTACTED));
+                            int timesContacted = cursor.getInt(cursor.getColumnIndexOrThrow(TIMES_CONTACTED));
                             type = getTypeString(type);
 
                             if (previousName == null) {
                                 previousName = name;
                             }
 
-                            if (addToRecentsByNumber.containsKey(normalizedValue)) {
+                            if (addToRecentsByNumber.containsKey(normalizedValue) &&
+                                    PhoneNumberUtils.compare(normalizedValue, addToRecentsByNumber.get(normalizedValue))) {
                                 continue;
                             }
 
@@ -91,7 +106,7 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                                         FrequentContactEntry previousNameEntry = nonMobileRecentContacts.get(previousName);
                                         String normalizedPreviousValue = PhoneNumberUtils.extractNetworkPortion(previousNameEntry.getValue());
                                         if (!addToRecentsByNumber.containsKey(normalizedPreviousValue)) {
-                                            addToRecentsByNumber.put(normalizedPreviousValue, false); //don't use this number again
+                                            addToRecentsByNumber.put(normalizedPreviousValue, previousNameEntry.getValue()); //don't use this number again
                                             contacts.add(previousNameEntry);
                                             if (contacts.size() == howManyContactsToLoad) {
                                                 break;
@@ -106,7 +121,7 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                                 }
                             } else {
                                 addToRecents.put(name, false); //we have mobile; don't add any non-mobile
-                                addToRecentsByNumber.put(normalizedValue, false); //don't use this number again
+                                addToRecentsByNumber.put(normalizedValue, value); //don't use this number again
                                 contacts.add(new FrequentContactEntry(name, value, type, image, timesContacted, true));
                             }
                         } catch (Exception e) {
