@@ -67,20 +67,20 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
     public void onLoadFinished(Loader<List<ContactEntry>> contactEntryLoader, List<ContactEntry> contacts) {
         if(contacts == null) {
             CWAnalytics.sendTopContactsLoadedEvent(0);
-            startNewCameraActivity(false);
+            startNewCameraActivity();
         }
 
         CWAnalytics.sendTopContactsLoadedEvent(contacts.size());
 
         if(contacts.size() == 0) {
-            startNewCameraActivity(false);
+            startNewCameraActivity();
         }
 
         adapter = new TopContactsAdapter(TopContactsActivity.this, contacts, false, new TopContactsAdapter.TopContactsEventListener() {
             @Override
             public void onContactRemoved(int contactsLeft) {
                 if(contactsLeft == 0) {
-                    startNewCameraActivity(false);
+                    startNewCameraActivity();
                     return;
                 }
                 else if(contactsLeft == 1) {
@@ -99,7 +99,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
             @Override
             public void onSend() {
                 CWAnalytics.sendTapNextEvent(true, adapter.getList().size());
-                startNewCameraActivity(true);
+                startNewCameraActivity();
             }
         });
         topContactsGrid.setAdapter(adapter);
@@ -108,7 +108,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
             @Override
             public void onClick(View view) {
                 CWAnalytics.sendTapNextEvent(false, adapter.getList().size());
-                startNewCameraActivity(true);
+                startNewCameraActivity();
             }
         });
 
@@ -116,7 +116,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
             @Override
             public void onClick(View view) {
                 CWAnalytics.sendTapNextEvent(false, adapter.getList().size());
-                startNewCameraActivity(true);
+                startNewCameraActivity();
             }
         });
     }
@@ -126,11 +126,9 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         //do nothing
     }
 
-    private void startNewCameraActivity(boolean attachContactsToSendTo) {
+    private void startNewCameraActivity() {
         Intent i = new Intent(TopContactsActivity.this, NewCameraActivity.class);
-        if(attachContactsToSendTo) {
-            i.putStringArrayListExtra(TOP_CONTACTS_LIST_EXTRA, adapter.getContactsToSendTo());
-        }
+        i.putStringArrayListExtra(TOP_CONTACTS_LIST_EXTRA, adapter.getContactsToSendTo());
         startActivity(i);
         finish();
     }

@@ -367,7 +367,8 @@ public class NewCameraActivity extends DrawerListActivity {
         if(!getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA)) {
             if(!AppPrefs.getInstance(this).wasTopContactsShown() ||
                     (AppPrefs.getInstance(this).getDeliveryMethod() == DeliveryMethod.TOP_CONTACTS &&
-                    getIntent().getData() == null)) {
+                    getIntent().getData() == null && !getIntent().hasExtra(OPEN_DRAWER) &&
+                    !getIntent().hasExtra(MESSAGE_ID))) {
                 startActivity(new Intent(this, TopContactsActivity.class));
                 AppPrefs.getInstance(this).setTopContactsShown(true);
                 finish();
@@ -548,7 +549,8 @@ public class NewCameraActivity extends DrawerListActivity {
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
         shouldShowPreview = AppPrefs.getInstance(this).getPrefShowPreview();
         deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
-        if(getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA)) {
+        if(getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA) &&
+                getIntent().getStringArrayListExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA).size() > 0) {
             topContactsList = getIntent().getStringArrayListExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA);
             getIntent().removeExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA);
             deliveryMethod = DeliveryMethod.TOP_CONTACTS;
