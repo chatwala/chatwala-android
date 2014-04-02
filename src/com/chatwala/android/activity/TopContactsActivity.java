@@ -16,6 +16,7 @@ import com.chatwala.android.R;
 import com.chatwala.android.contacts.ContactEntry;
 import com.chatwala.android.contacts.FrequentContactsLoader;
 import com.chatwala.android.contacts.TopContactsAdapter;
+import com.chatwala.android.util.CWAnalytics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,13 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
     @Override
     public void onLoadFinished(Loader<List<ContactEntry>> contactEntryLoader, List<ContactEntry> contacts) {
+        if(contacts == null) {
+            CWAnalytics.sendTopContactsLoadedEvent(0);
+            startNewCameraActivity(false);
+        }
+
+        CWAnalytics.sendTopContactsLoadedEvent(contacts.size());
+
         if(contacts.size() == 0) {
             startNewCameraActivity(false);
         }
@@ -90,6 +98,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
             @Override
             public void onSend() {
+                CWAnalytics.sendTapNextEvent(true, adapter.getList().size());
                 startNewCameraActivity(true);
             }
         });
@@ -98,6 +107,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         findViewById(R.id.top_contacts_top_text).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                CWAnalytics.sendTapNextEvent(false, adapter.getList().size());
                 startNewCameraActivity(true);
             }
         });
@@ -105,6 +115,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         findViewById(R.id.top_contacts_bottom_text).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                CWAnalytics.sendTapNextEvent(false, adapter.getList().size());
                 startNewCameraActivity(true);
             }
         });

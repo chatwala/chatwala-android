@@ -684,7 +684,11 @@ public class NewCameraActivity extends DrawerListActivity {
         }
     }
 
-    private void triggerButtonAction(boolean fromCenterButtonPress)
+    private void triggerButtonAction(boolean fromCenterButtonPress) {
+        triggerButtonAction(fromCenterButtonPress, false);
+    }
+
+    private void triggerButtonAction(boolean fromCenterButtonPress, boolean autoStarted)
     {
         AppState state = getAppState();
         Logger.logUserAction("Timer button pressed in state: " + state.name());
@@ -712,7 +716,7 @@ public class NewCameraActivity extends DrawerListActivity {
         {
             MessageOrigin origin = getCurrentMessageOrigin();
             if(origin == MessageOrigin.INITIATOR) {
-                CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress);
+                CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress, autoStarted);
                 messageStartInfoFuture = executor.submit(new Callable<ChatwalaMessageStartInfo>() {
 
                     @Override
@@ -1866,7 +1870,7 @@ public class NewCameraActivity extends DrawerListActivity {
 
                     if (!isCountdownValid() || getAppState() != AppState.ReadyStopped) {
                         if(!isCountdownValid()) {
-                            triggerButtonAction(false);
+                            triggerButtonAction(false, true);
                         }
                         bottomFrameMessageText.removeCallbacks(this);
                     }
