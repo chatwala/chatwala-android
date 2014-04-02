@@ -60,15 +60,18 @@ public class FrequentContactsAdapter extends ContactsAdapter {
         }
         holder.value.setText(entry.getValue());
         holder.status.setText(entry.getSendingStatus());
-        try{
+
+        try {
             pic.load(entry.getImage())
                     .error(R.drawable.default_contact_icon)
                     .placeholder(R.drawable.default_contact_icon)
                     .noFade()
                     .into(holder.image);
-        }catch(Exception e){
-            Logger.e("error loading the contacts image",e);
         }
+        catch(Exception e){
+            Logger.e("Error loading the contacts image", e);
+        }
+
         holder.sentCb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="10dp"
+              android:background="@color/app_background">
+
+    <LinearLayout
+            android:id="@+id/top_contacts_top_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/top_contacts_header1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textStyle="bold"
+                android:textColor="#33B5E5"
+                android:text="Welcome to Chatwala"/>
+
+        <TextView
+                android:id="@+id/top_contacts_header2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:textColor="#000"
+                android:text="A new way to have conversations.\nTap to get started!"/>
+
+    </LinearLayout>
+
+    <GridView
+            android:id="@+id/top_contacts_grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/top_contacts_top_text"
+            android:layout_above="@+id/top_contacts_bottom_text"
+            android:layout_centerInParent="true"
+            android:columnWidth="90dp"
+            android:numColumns="3"
+            android:verticalSpacing="5dp"
+            android:horizontalSpacing="5dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"/>
+
+    <LinearLayout
+            android:id="@+id/top_contacts_bottom_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
+
+        <TextView
+                android:id="@+id/top_contacts_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textColor="#000"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

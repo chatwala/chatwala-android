@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CWButton">
+        <attr name="cw_button_size" format="dimension" />
+        <attr name="cw_button_text" format="string" />
+        <attr name="cw_button_drawable" format="integer" />
+    </declare-styleable>
+</resources>

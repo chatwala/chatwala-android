@@ -13,6 +13,12 @@
     <string name="facebook_flow_instructions">Start a conversation with your Facebook friends. Their reactions will appear here.</string>
     <string name="facebook_flow_send_instructions">Tap to post this to Facebook and see your friends react.</string>
 
+    <string name="top_contacts_bottom_text">Here are your %d most contacted friends. Tap next to record and send them a video sms.</string>
+    <string name="top_contacts_bottom_text_singular">Here is your most contacted friend. Tap next to record and send them a video sms.</string>
+    <string name="top_contacts_pre_recording_text">Recording in...%d\nYour friends will react here.\n\n(tip: smile big)</string>
+    <string name="top_contacts_recording_text">Recording...%d\n\n(tip: say Hi)</string>
+    <string name="top_contacts_sending_text">Sending in...%d\n\n(tip: say Let\'s Chatwala Baby!)</string>
+
     <string name="recording_countdown">Recording...%d</string>
     <string name="recording_reply_countdown">Recording your reply...%d</string>
     <string name="sending_reply_countdown">Sending reply in...%d</string>
