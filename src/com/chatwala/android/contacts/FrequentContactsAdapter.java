@@ -88,7 +88,6 @@ public class FrequentContactsAdapter extends ContactsAdapter {
         holder.sentCb.setChecked(entry.isSentOrSending());
 
         if(entry.isSent()) {
-            holder.status.setVisibility(View.GONE);
             holder.overlay.setBackgroundColor(Color.GRAY);
             holder.overlay.getBackground().setAlpha(155);
             holder.overlay.setVisibility(View.VISIBLE);
@@ -100,7 +99,6 @@ public class FrequentContactsAdapter extends ContactsAdapter {
             });
         }
         else {
-            holder.status.setVisibility(View.VISIBLE);
             holder.overlay.setVisibility(View.GONE);
             holder.sentCb.setOnTouchListener(new View.OnTouchListener() {
                 @Override
