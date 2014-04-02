@@ -1315,50 +1315,68 @@ public class NewCameraActivity extends DrawerListActivity {
         hideMessage(topFrameMessage);
         hideMessage(bottomFrameMessage);
         Logger.i("Starting createSurface work");
-        cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
-        {
-            @Override
-            public void surfaceReady()
+        try {
+            cameraPreviewView = new CameraPreviewView(NewCameraActivity.this, new CameraPreviewView.CameraPreviewCallback()
             {
-                previewSurfaceReady();
-            }
-
-            @Override
-            public void recordingStarted()
-            {
-                if (incomingMessage == null)
-                    setAppState(AppState.Recording);
-                else
-                    setAppState(AppState.PlaybackRecording);
-                if (messageVideoView != null)
+                @Override
+                public void surfaceReady()
                 {
-                    hideMessage(topFrameMessage);
-                    new Handler().postDelayed(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            try
-                            {
-                                messageVideoView.start();
-                            }
-                            catch (Exception e)
-                            {
-                                //Whoops
-                            }
-                        }
-                    }, VIDEO_PLAYBACK_START_DELAY);
+                    previewSurfaceReady();
                 }
 
-                heartbeatTimer.endPause();
-            }
+                @Override
+                public void recordingStarted()
+                {
+                    if (incomingMessage == null)
+                        setAppState(AppState.Recording);
+                    else
+                        setAppState(AppState.PlaybackRecording);
+                    if (messageVideoView != null)
+                    {
+                        hideMessage(topFrameMessage);
+                        new Handler().postDelayed(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                try
+                                {
+                                    messageVideoView.start();
+                                }
+                                catch (Exception e)
+                                {
+                                    //Whoops
+                                }
+                            }
+                        }, VIDEO_PLAYBACK_START_DELAY);
+                    }
 
-            @Override
-            public void recordingDone(File videoFile)
-            {
-                showResultPreview(videoFile);
-            }
-        });
+                    heartbeatTimer.endPause();
+                }
+
+                @Override
+                public void recordingDone(File videoFile)
+                {
+                    showResultPreview(videoFile);
+                }
+            });
+        }
+        catch(Exception e) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Cannot connect to camera")
+                    .setMessage("There was a problem using your camera. Please restart your device.")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                        }
+                    })
+                    .create()
+            .show();
+            return;
+        }
+
         cameraPreviewContainer.addView(cameraPreviewView);
         Logger.i("cameraPreviewView added to our layout");
     }
