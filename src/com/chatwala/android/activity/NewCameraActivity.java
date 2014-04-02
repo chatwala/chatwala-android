@@ -560,6 +560,7 @@ public class NewCameraActivity extends DrawerListActivity {
             if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
                 deliveryMethod = DeliveryMethod.CWSMS;
             }
+            topContactsList = null;
         }
 
         Logger.i();
@@ -1179,6 +1180,13 @@ public class NewCameraActivity extends DrawerListActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         setAppState(AppState.ReadyStopped, true);
+                        if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                            deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
+                            if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                                deliveryMethod = DeliveryMethod.CWSMS;
+                            }
+                            topContactsList = null;
+                        }
                         tearDownSurface();
                         createSurface();
                     }

@@ -24,6 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_marginLeft="3dp"
+                android:padding="5dp"
                 android:textAppearance="?android:textAppearanceMedium"
                 android:textColor="#55ffffff"
                 android:text="X"/>

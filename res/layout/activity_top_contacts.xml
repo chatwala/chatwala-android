@@ -27,9 +27,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:textAppearance="?android:textAppearanceMedium"
+                android:textAppearance="?android:textAppearanceLarge"
                 android:textColor="#000"
-                android:text="A new way to have conversations.\nTap to get started!"/>
+                android:text="A new way to have conversations."/>
 
     </LinearLayout>
 
