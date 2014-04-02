@@ -18,16 +18,14 @@
             android:background="@drawable/contact_gradient"
             android:descendantFocusability="blocksDescendants" >
 
-        <TextView
-                android:id="@+id/contact_x_out"
+        <CheckBox
+                android:id="@+id/contact_check"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginLeft="3dp"
-                android:padding="5dp"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:textColor="#55ffffff"
-                android:text="X"/>
+                android:layout_alignParentRight="true"
+                android:scaleX="1.25"
+                android:scaleY="1.25"
+                android:checked="true"/>
 
         <TextView
                 android:id="@+id/contact_item_name"

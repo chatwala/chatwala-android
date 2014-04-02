@@ -1,36 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:cw="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:padding="10dp"
+              android:paddingLeft="10dp"
+              android:paddingRight="10dp"
+              android:paddingBottom="10dp"
               android:background="@color/app_background"
               android:orientation="vertical">
 
     <LinearLayout
-            android:id="@+id/top_contacts_top_text"
+            android:id="@+id/top_contacts_top"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight=".25"
+            android:layout_weight=".15"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
         <TextView
-                android:id="@+id/top_contacts_header1"
+                android:id="@+id/top_contacts_header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:textAppearanceLarge"
                 android:textStyle="bold"
-                android:textColor="#33B5E5"
-                android:text="Welcome to Chatwala"/>
-
-        <TextView
-                android:id="@+id/top_contacts_header2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:textAppearance="?android:textAppearanceLarge"
                 android:textColor="#000"
-                android:text="A new way to have conversations."/>
+                android:text="@string/top_contacts_header_text"/>
 
     </LinearLayout>
 
@@ -48,18 +43,19 @@
             android:layout_gravity="center"/>
 
     <LinearLayout
-            android:id="@+id/top_contacts_bottom_text"
+            android:id="@+id/top_contacts_bottom"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".25"
-            android:layout_gravity="bottom">
+            android:gravity="center">
 
-        <TextView
-                android:id="@+id/top_contacts_count"
+        <com.chatwala.android.ui.CWButton
+                android:id="@+id/top_contacts_start_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:textAppearanceLarge"
-                android:textColor="#000"/>
+                cw:cw_button_drawable="@drawable/ic_action_send_ios"
+                cw:cw_button_size="100dp"/>
 
     </LinearLayout>
 
