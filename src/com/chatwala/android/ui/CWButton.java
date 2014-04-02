@@ -3,6 +3,7 @@ package com.chatwala.android.ui;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -40,7 +41,7 @@ public class CWButton extends FrameLayout {
     private void init(Context context, AttributeSet attrs) {
         int defaultOuterSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
         int outerOvalSize;
-        int drawableRes = -1;
+        Drawable drawableRes = null;
         String text = null;
 
         if(attrs == null) {
@@ -50,7 +51,7 @@ public class CWButton extends FrameLayout {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CWButton);
             if(a != null) {
                 outerOvalSize = a.getDimensionPixelSize(R.styleable.CWButton_cw_button_size, 100);
-                drawableRes = a.getInt(R.styleable.CWButton_cw_button_drawable, -1);
+                drawableRes = a.getDrawable(R.styleable.CWButton_cw_button_drawable);
                 text = a.getString(R.styleable.CWButton_cw_button_text);
             }
             else {
@@ -60,9 +61,10 @@ public class CWButton extends FrameLayout {
 
         View transparentOval = new View(context);
         View modifiableView;
-        if(drawableRes > -1) {
+        if(drawableRes != null) {
             modifiableView = new ImageView(context);
-            ((ImageView) modifiableView).setImageResource(drawableRes);
+            ((ImageView) modifiableView).setImageDrawable(drawableRes);
+            ((ImageView) modifiableView).setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         }
         else if(text != null) {
             modifiableView = new TextView(context);

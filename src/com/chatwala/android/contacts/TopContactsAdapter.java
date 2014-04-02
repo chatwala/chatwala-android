@@ -3,10 +3,11 @@ package com.chatwala.android.contacts;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.chatwala.android.R;
-import com.chatwala.android.ui.CWButton;
 import com.chatwala.android.util.Logger;
 import com.squareup.picasso.Picasso;
 
@@ -17,6 +18,7 @@ import java.util.List;
  * Created by Eliezer on 4/1/2014.
  */
 public class TopContactsAdapter extends ContactsAdapter {
+    private ArrayList<String> contactsToSendTo;
     private Picasso pic;
 
     public interface TopContactsEventListener {
@@ -36,19 +38,15 @@ public class TopContactsAdapter extends ContactsAdapter {
             Logger.e("Couldn't load Picasso for the top contacts adapter", e);
         }
         this.listener = listener;
-    }
 
-    @Override
-    public int getCount() {
-        return 9;
+        contactsToSendTo = new ArrayList<String>(contacts.size());
+        for(ContactEntry contact : contacts) {
+            contactsToSendTo.add(contact.getValue());
+        }
     }
 
     public ArrayList<String> getContactsToSendTo() {
-        ArrayList<String> contacts = new ArrayList<String>(getList().size());
-        for(ContactEntry contact : getList()) {
-            contacts.add(contact.getValue());
-        }
-        return contacts;
+        return contactsToSendTo;
     }
 
     @Override
@@ -59,46 +57,18 @@ public class TopContactsAdapter extends ContactsAdapter {
             setLayoutInflater(getContext());
         }
 
-        if(i == 4) {
-            convertView = getLayoutInflater().inflate(R.layout.layout_top_contacts_cw_button, null);
-            if(convertView == null) {
-                convertView = new CWButton(getContext());
-            }
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (listener != null) {
-                        listener.onSend();
-                    }
-                }
-            });
-            convertView.setTag(null);
-            return convertView;
-        }
-        else if(i > 4) {
-            i--;
-        }
-
-        if(convertView == null || convertView.getTag() == null) {
+        if(convertView == null) {
             convertView = getLayoutInflater().inflate(R.layout.layout_top_contacts_grid, null);
 
             holder = new ViewHolder();
             holder.overlay = convertView.findViewById(R.id.contact_item_overlay);
             holder.name = (TextView) convertView.findViewById(R.id.contact_item_name);
             holder.value = (TextView) convertView.findViewById(R.id.contact_item_number);
-            holder.xOut = (TextView) convertView.findViewById(R.id.contact_x_out);
+            holder.check = (CheckBox) convertView.findViewById(R.id.contact_check);
             holder.image = (ImageView) convertView.findViewById(R.id.contact_item_image);
         }
         else {
             holder = (ViewHolder) convertView.getTag();
-        }
-
-        if(i >= getList().size()) {
-            convertView.setVisibility(View.GONE);
-            return convertView;
-        }
-        else {
-            convertView.setVisibility(View.VISIBLE);
         }
 
         final ContactEntry entry = getItem(i);
@@ -119,13 +89,15 @@ public class TopContactsAdapter extends ContactsAdapter {
             Logger.e("Error loading the contacts image", e);
         }
 
-        holder.xOut.setOnClickListener(new View.OnClickListener() {
+        holder.check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                remove(entry);
-
-                if(listener != null) {
-                    listener.onContactRemoved(getList().size());
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked) {
+                    contactsToSendTo.add(entry.getValue());
+                }
+                else {
+                    contactsToSendTo.remove(entry.getValue());
+                    listener.onContactRemoved(contactsToSendTo.size());
                 }
             }
         });
@@ -138,7 +110,7 @@ public class TopContactsAdapter extends ContactsAdapter {
         View overlay;
         TextView name;
         TextView value;
-        TextView xOut;
+        CheckBox check;
         ImageView image;
     }
 }
