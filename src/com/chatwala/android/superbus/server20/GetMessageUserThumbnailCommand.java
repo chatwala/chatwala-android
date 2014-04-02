@@ -34,7 +34,7 @@ public class GetMessageUserThumbnailCommand extends SqliteCommand {
     @Override
     public boolean same(Command command)
     {
-        if(command instanceof GetMessageThumbnailCommand)
+        if(command instanceof GetMessageUserThumbnailCommand)
         {
             if(message.getMessageId().equals(((GetMessageUserThumbnailCommand) command).getMessage().getMessageId()))
             {

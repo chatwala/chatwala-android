@@ -1,5 +1,6 @@
 package com.chatwala.android.database;
 
+import com.chatwala.android.util.Logger;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.json.JSONException;
@@ -229,21 +230,28 @@ public class ChatwalaMessage {
     }
 
     public void populateFromMetaDataJSON(JSONObject message_meta_data) throws JSONException{
-        this.setMessageId(message_meta_data.getString("message_id"));
-        this.setRecipientId(message_meta_data.getString("recipient_id"));
-        this.setSenderId(message_meta_data.getString("sender_id"));
-        this.setThumbnailUrl(message_meta_data.getString("thumbnail_url"));
-        this.setUserThumbnailUrl(message_meta_data.getString("user_thumbnail_url"));
-        this.setUrl(message_meta_data.getString("read_url"));
-        this.setReadUrl(message_meta_data.getString("read_url"));
-        this.setShareUrl(message_meta_data.getString("share_url"));
-        this.setGroupId(message_meta_data.getString("group_id"));
-        this.setThreadIndex(message_meta_data.getInt("thread_index"));
-        this.setThreadId(message_meta_data.getString("thread_id"));
-        this.setStartRecording(message_meta_data.getDouble("start_recording"));
-        this.setTimestamp(message_meta_data.getLong("timestamp"));
-        this.setShardKey(message_meta_data.getString("blob_storage_shard_key"));
-        this.setMessageMetaDataString(message_meta_data.toString(4));
+        try {
+            this.setMessageId(message_meta_data.getString("message_id"));
+            this.setRecipientId(message_meta_data.getString("recipient_id"));
+            this.setSenderId(message_meta_data.getString("sender_id"));
+            this.setThumbnailUrl(message_meta_data.getString("thumbnail_url"));
+            this.setThreadIndex(message_meta_data.getInt("thread_index"));
+            this.setThreadId(message_meta_data.getString("thread_id"));
+            this.setStartRecording(message_meta_data.getDouble("start_recording"));
+            this.setTimestamp(message_meta_data.getLong("timestamp"));
+            this.setShardKey(message_meta_data.getString("blob_storage_shard_key"));
+            this.setUrl(message_meta_data.getString("read_url"));
+            this.setReadUrl(message_meta_data.getString("read_url"));
+            this.setGroupId(message_meta_data.getString("group_id"));
+            this.setUserThumbnailUrl(message_meta_data.optString("user_thumbnail_url", getThumbnailUrl()));
+            this.setShareUrl(message_meta_data.optString("share_url", ""));
+        }
+        catch(Exception e) {
+            Logger.e("Got error while trying to parse old wala file (messageId = " + getMessageId(), e);
+        }
+        finally {
+            this.setMessageMetaDataString(message_meta_data.toString(4));
+        }
     }
 
     public String getFileUrl() {
