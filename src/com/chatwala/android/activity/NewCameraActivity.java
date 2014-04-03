@@ -1483,6 +1483,9 @@ public class NewCameraActivity extends DrawerListActivity {
                 {
                     readUrl = ShareUtils.getReadUrlFromShareUrl(getIntent().getData());
                     playbackMessageId = ShareUtils.getMessageIdFromShareUrl(getIntent().getData());
+                    if(readUrl == null || playbackMessageId == null) {
+                        return null;
+                    }
                     new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
                 }
 
