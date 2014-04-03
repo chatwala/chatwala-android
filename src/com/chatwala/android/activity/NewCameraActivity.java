@@ -1159,14 +1159,16 @@ public class NewCameraActivity extends DrawerListActivity {
             CWAnalytics.sendStopPressedEvent(analyticsDuration());
         }
 
-        if(buttonPress && ((getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) ||
-                                deliveryMethod == DeliveryMethod.TOP_CONTACTS)) {
-            cameraPreviewView.stopRecording();
-            showSendOrCancelAlert();
-        }
-        else {
-            setAppState(AppState.PreviewLoading, buttonPress);
-            cameraPreviewView.stopRecording();
+        if(cameraPreviewView != null) {
+            if(buttonPress && ((getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) ||
+                    deliveryMethod == DeliveryMethod.TOP_CONTACTS)) {
+                cameraPreviewView.stopRecording();
+                showSendOrCancelAlert();
+            }
+            else {
+                setAppState(AppState.PreviewLoading, buttonPress);
+                cameraPreviewView.stopRecording();
+            }
         }
     }
 
