@@ -71,7 +71,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -631,7 +630,9 @@ public class NewCameraActivity extends DrawerListActivity {
 
         if (state == AppState.PlaybackRecording || state == AppState.Recording)
         {
-            cameraPreviewView.abortRecording();
+            if(cameraPreviewView != null) {
+                cameraPreviewView.abortRecording();
+            }
         }
 
         setAppState(AppState.Off);
@@ -1316,9 +1317,9 @@ public class NewCameraActivity extends DrawerListActivity {
                 }
                 return VideoUtils.findMetadata(params[0]);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                Logger.e("Got an IOException while getting the video metadata", e);
+                Logger.e("Got an Exception while getting the video metadata", e);
                 return null;
             }
 
@@ -1457,13 +1458,16 @@ public class NewCameraActivity extends DrawerListActivity {
         if (recordPreviewVideoView != null)
             recordPreviewVideoView.pause();
 
-        cameraPreviewContainer.removeAllViews();
-        if (cameraPreviewView != null)
-        {
-            cameraPreviewView.releaseResources();
-            cameraPreviewView = null;
+        if(cameraPreviewContainer != null) {
+            cameraPreviewContainer.removeAllViews();
+            if (cameraPreviewView != null) {
+                cameraPreviewView.releaseResources();
+                cameraPreviewView = null;
+            }
         }
-        videoViewContainer.removeAllViews();
+        if(videoViewContainer != null) {
+            videoViewContainer.removeAllViews();
+        }
         messageVideoView = null;
         findViewById(R.id.recordPreviewClick).setOnClickListener(null);
         Logger.i("End of tearDownSurface");
@@ -1518,26 +1522,8 @@ public class NewCameraActivity extends DrawerListActivity {
 
                 return playbackMessage;
             }
-            catch (TransientException e)
-            {
-                chatMessageVideoMetadata = null;
-                playbackMessage = null;
-                return null;
-            }
-            catch (PermanentException e)
-            {
-                chatMessageVideoMetadata = null;
-                playbackMessage = null;
-                return null;
-            }
-            catch (IOException e)
-            {
-                chatMessageVideoMetadata = null;
-                playbackMessage = null;
-                return null;
-            }
-            catch (SQLException e)
-            {
+            catch (Exception e) {
+                Logger.e("Got an Exception while loading a message", e);
                 chatMessageVideoMetadata = null;
                 playbackMessage = null;
                 return null;
