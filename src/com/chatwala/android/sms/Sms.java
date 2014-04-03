@@ -2,6 +2,7 @@ package com.chatwala.android.sms;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.chatwala.android.util.CWAnalytics;
 
 /**
  * Created by Eliezer on 4/3/2014.
@@ -15,14 +16,11 @@ public class Sms implements Parcelable {
     private String analyticsCategory;
     private int numRetries;
 
-    public Sms(String number, String messageUrl, String analyticsCategory) {
-        this.number = number;
-        this.message = SmsManager.DEFAULT_MESSAGE;
-        this.messageUrl = messageUrl;
-        this.analyticsCategory = analyticsCategory;
-        this.numRetries = 0; //this ctor should never be used for a retry
+    public Sms(String number, String messageUrl) {
+        this(number, SmsManager.DEFAULT_MESSAGE, messageUrl);
     }
-    public Sms(String number, String message, String messageUrl, String analyticsCategory) {
+
+    public Sms(String number, String message, String messageUrl) {
         this.number = number;
         if(message != null && !message.trim().isEmpty()) {
             this.message = setMessage(message, messageUrl);
@@ -31,7 +29,7 @@ public class Sms implements Parcelable {
             this.message = SmsManager.DEFAULT_MESSAGE;
         }
         this.messageUrl = messageUrl;
-        this.analyticsCategory = analyticsCategory;
+        this.analyticsCategory = CWAnalytics.getCategory();
         this.numRetries = 0; //this ctor should never be used for a retry
     }
 

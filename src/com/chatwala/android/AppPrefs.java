@@ -42,6 +42,8 @@ public class AppPrefs
     public static final String PREF_FEEDBACK_MESSAGE_COUNT = "PREF_FEEDBACK_MESSAGE_COUNT";
     public static final String PREF_ACTION_INCREMENT = "PREF_ACTION_INCREMENT";
 
+    public static final String PREF_SHOWED_TOP_CONTACTS = "SHOWED_TOP_CONTACT";
+
     public static synchronized AppPrefs getInstance(Context context)
     {
         if (INSTANCE == null)
@@ -90,7 +92,9 @@ public class AppPrefs
     {
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         if(firstOpen) {
-            mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, false).apply();
+            mSp.edit()
+                    .putBoolean(PREF_FIRST_BUTTON_PRESS, false)
+                    .putBoolean(PREF_SHOWED_TOP_CONTACTS, false).apply();
             setDeliveryMethod(DeliveryMethod.CWSMS);
         }
         else {
@@ -109,6 +113,14 @@ public class AppPrefs
         }
         mSp.edit().putBoolean(PREF_FIRST_OPEN, false).apply();
         return firstOpen;
+    }
+
+    public boolean wasTopContactsShown() {
+        return mSp.getBoolean(PREF_SHOWED_TOP_CONTACTS, true);
+    }
+
+    public void setTopContactsShown(boolean topContactsShown) {
+        mSp.edit().putBoolean(PREF_SHOWED_TOP_CONTACTS, topContactsShown).apply();
     }
 
     public boolean wasFirstButtonPressed() {
@@ -222,8 +234,11 @@ public class AppPrefs
         else if(method == 2) {
             return DeliveryMethod.EMAIL;
         }
-        else {
+        else if(method == 3) {
             return DeliveryMethod.FB;
+        }
+        else {
+            return DeliveryMethod.TOP_CONTACTS;
         }
     }
 
