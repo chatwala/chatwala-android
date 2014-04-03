@@ -1577,7 +1577,7 @@ public class NewCameraActivity extends DrawerListActivity {
         gmailIntent.setData(mailtoUri);
         gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
         //gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
-        gmailIntent.putExtra(Intent.EXTRA_TEXT, "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + messageLink);
+        gmailIntent.putExtra(Intent.EXTRA_TEXT, "Hey, I sent you a video message on Chatwala:\n\n" + messageLink);
 
         try
         {
@@ -1597,7 +1597,7 @@ public class NewCameraActivity extends DrawerListActivity {
             intent.setData(mailtoUri);
             intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
             //intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
-            intent.putExtra(Intent.EXTRA_TEXT, "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + messageLink);
+            intent.putExtra(Intent.EXTRA_TEXT, "Hey, I sent you a video message on Chatwala:\n\n" + messageLink);
 
             startActivity(Intent.createChooser(intent, "Send email..."));
         }

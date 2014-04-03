@@ -1,8 +1,6 @@
 package com.chatwala.android.activity;
 
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -14,7 +12,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.telephony.PhoneNumberUtils;
-import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -36,7 +33,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.chatwala.android.R;
-import com.chatwala.android.SmsSentReceiver;
+import com.chatwala.android.sms.Sms;
+import com.chatwala.android.sms.SmsManager;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
 import com.squareup.picasso.Picasso;
@@ -48,14 +46,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SmsActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String SMS_MESSAGE_URL_EXTRA = "sms_message_url";
     public static final String SMS_MESSAGE_EXTRA = "sms_message";
-
-    private static final int MAX_SMS_MESSAGE_LENGTH = 160;
 
     private static final int MOST_CONTACTED_CONTACT_LIMIT = 27;
 
@@ -63,12 +57,9 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     private static final int CONTACTS_TIME_CONTACTED_LOADER_CODE = 1;
 
     private String smsMessageUrl;
-    private String smsMessage;
+    private String smsMessage = null;
 
     private boolean sendAnalyticsBackgroundEvent = true;
-
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
-    private int messagesSent = 0;
 
     private Map<String, Boolean> contactsSentTo;
 
@@ -139,41 +130,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         }
     };
 
-    private class SendMessageRunnable implements Runnable {
-        private Context appContext;
-        private String value;
-
-        public SendMessageRunnable(String value) {
-            this.value = value;
-            if(SmsActivity.this != null) {
-                appContext = SmsActivity.this.getApplicationContext();
-            }
-        }
-
-        @Override
-        public void run() {
-            //this isn't needed unless we allow for custom messages
-            /*String messageUrlWithPrefix = ": " + smsMessageUrl;
-            int maxMessageSize = MAX_SMS_MESSAGE_LENGTH - messageUrlWithPrefix.length();
-            if(smsMessage.length() > maxMessageSize) {
-                smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
-            }*/
-            String message = smsMessage + ": " + smsMessageUrl;
-            PendingIntent sentIntent = null;
-            if(appContext != null) {
-                sentIntent = PendingIntent.getBroadcast(appContext, messagesSent, new Intent(appContext, SmsSentReceiver.class), 0);
-            }
-            try {
-                SmsManager.getDefault().sendTextMessage(value, null, message, sentIntent, null);
-                messagesSent++;
-            }
-            catch(Exception e) {
-                Logger.e("There was an exception while sending SMS(s)", e);
-                CWAnalytics.sendMessageSentFailedEvent();
-            }
-        }
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,16 +139,19 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
 
         setContentView(R.layout.activity_sms);
 
-        if(!getIntent().hasExtra(SMS_MESSAGE_URL_EXTRA) || !getIntent().hasExtra(SMS_MESSAGE_EXTRA)) {
+        if(getIntent().hasExtra(SMS_MESSAGE_URL_EXTRA)) {
+            smsMessageUrl = getIntent().getStringExtra(SMS_MESSAGE_URL_EXTRA);
+        }
+        else {
             finish();
             return;
+        }
+        if(getIntent().hasExtra(SMS_MESSAGE_EXTRA)) {
+            smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
         }
 
         //Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         //((TextView)findViewById(R.id.sms_copy)).setTypeface(fontDemi);
-
-        smsMessageUrl = getIntent().getStringExtra(SMS_MESSAGE_URL_EXTRA);
-        smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
 
         contactsSentTo = new HashMap<String, Boolean>();
 
@@ -300,10 +259,6 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
     @Override
     public void onStop() {
         super.onStop();
-
-        if(messagesSent > 0) {
-            CWAnalytics.sendMessageSentEvent(messagesSent);
-        }
 
         finish();
 
@@ -594,7 +549,7 @@ public class SmsActivity extends FragmentActivity implements LoaderManager.Loade
         private void sendMessage() {
             isSending = false;
             isSent = true;
-            executor.execute(new SendMessageRunnable(getValue()));
+            SmsManager.getInstance().sendSms(new Sms(getValue(), smsMessage, smsMessageUrl, CWAnalytics.getCategory()));
         }
 
         public int hashCode() {

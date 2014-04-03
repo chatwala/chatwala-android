@@ -96,6 +96,13 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name="com.chatwala.android.sms.SmsRetryReceiver"
+                  android:exported="false">
+            <intent-filter>
+                <action android:name="com.chatwala.android.SMS_RETRY"/>
+            </intent-filter>
+        </receiver>
+
         <receiver android:name="com.chatwala.android.SmsSentReceiver"
                   android:exported="false">
             <intent-filter>

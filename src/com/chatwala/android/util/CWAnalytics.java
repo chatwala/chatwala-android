@@ -160,6 +160,10 @@ public class CWAnalytics
         }
     }
 
+    public static String getCategory() {
+        return categoryString;
+    }
+
     public static void sendReferrerReceivedEvent(Referrer referrer) {
         calculateCategory(referrer);
         if(referrer != null && referrer.isValid()) {
@@ -302,16 +306,20 @@ public class CWAnalytics
         sendEvent(ACTION_MESSAGE_SEND_CANCELED, LABEL_TAP_SCREEN, null);
     }
 
-    public static void sendMessageSentEvent(long numRecipients) {
-        sendEvent(ACTION_MESSAGE_SENT, LABEL_TAP_BUTTON, numRecipients);
+    public static void sendMessageSentEvent(String category) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT, LABEL_TAP_BUTTON, null);
     }
 
-    public static void sendMessageSentConfirmedEvent() {
-        sendEvent(ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, null);
+    public static void sendMessageSentConfirmedEvent(String category) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, null);
     }
 
-    public static void sendMessageSentFailedEvent() {
-        sendEvent(ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
+    public static void sendMessageSentRetryEvent(String category, int numRetries) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, (long) numRetries);
+    }
+
+    public static void sendMessageSentFailedEvent(String category) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
     }
 
     public static void sendFacebookSendConfirmed() {
@@ -330,8 +338,19 @@ public class CWAnalytics
         sendEvent(ACTION_BACK_PRESSED, LABEL_TAP_BUTTON, null);
     }
 
-    private static void sendEvent(String action, String label, Long value)
-    {
+    private static void sendEvent(String action, String label, Long value) {
+        String labelString = label != null ? label : LABEL_NO_TAP;
+        String valueString = value != null ? value.toString() : "none";
+        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
+        Logger.i("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
+                "\n\tCATEGORY:\t" + categoryString +
+                "\n\tACTION:\t" + action +
+                "\n\tLABEL:\t" + labelString +
+                "\n\tVALUE:\t" + valueString);
+    }
+
+    private static void sendSmsEvent(String category, String action, String label, Long value) {
+        String categoryString = category != null ? category : "SMS_CATEGORY_FAILED";
         String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
         tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
