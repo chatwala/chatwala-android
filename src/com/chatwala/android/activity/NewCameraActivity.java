@@ -1672,6 +1672,7 @@ public class NewCameraActivity extends DrawerListActivity {
         for (String contact : topContactsList) {
             SmsManager.getInstance().sendSms(new Sms(contact, messageLink));
         }
+        CWAnalytics.sendTopContactsSentEvent(topContactsList.size());
     }
 
     private void sendSms(final String messageId)

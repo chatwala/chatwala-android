@@ -36,6 +36,7 @@ public class CWAnalytics
     private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
     private static String ACTION_TOP_CONTACTS_LOADED = "TOP_CONTACTS_LOADED";
     private static String ACTION_TAP_NEXT = "TAP_NEXT";
+    private static String ACTION_TOP_CONTACTS_SENT = "TOP_CONTACTS_SENT";
     private static String ACTION_START_RECORDING = "START_RECORDING";
     private static String ACTION_STOP_RECORDING = "STOP_RECORDING";
     private static String ACTION_BACKGROUND_WHILE_RECORDING = "BACKGROUND_WHILE_RECORDING";
@@ -193,6 +194,10 @@ public class CWAnalytics
 
     public static void sendTapNextEvent(boolean buttonTapped, int numContacts) {
         sendEvent(ACTION_TAP_NEXT, (buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN), (long) numContacts);
+    }
+
+    public static void sendTopContactsSentEvent(int numContacts) {
+        sendEvent(ACTION_TOP_CONTACTS_SENT, null, (long) numContacts);
     }
 
     public static void sendDrawerOpened() {
