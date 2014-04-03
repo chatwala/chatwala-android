@@ -17,19 +17,21 @@ public class SmsSentReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if(intent.hasExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA)) {
             Sms sms = intent.getParcelableExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA);
-            if(sms != null) {
-                switch(getResultCode()) {
-                    case Activity.RESULT_OK:
-                        if(sms != null) {
-
-                        }
+            switch(getResultCode()) {
+                case Activity.RESULT_OK:
+                    if (sms != null) {
                         CWAnalytics.sendMessageSentConfirmedEvent(sms.getAnalyticsCategory());
-                        break;
-                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                    case SmsManager.RESULT_ERROR_NO_SERVICE:
-                    case SmsManager.RESULT_ERROR_NULL_PDU:
-                    case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        if(sms.canRetry()) {
+                    } else {
+                        CWAnalytics.sendMessageSentConfirmedEvent(null);
+                    }
+                    break;
+                case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                case SmsManager.RESULT_ERROR_NO_SERVICE:
+                case SmsManager.RESULT_ERROR_NULL_PDU:
+                case SmsManager.RESULT_ERROR_RADIO_OFF:
+                default:
+                    if (sms != null) {
+                        if (sms.canRetry()) {
                             long millisecondsToRetryIn = sms.retry();
                             Intent smsRetryIntent = new Intent(com.chatwala.android.sms.SmsManager.SMS_RETRY_ACTION);
                             smsRetryIntent.putExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA, sms);
@@ -41,10 +43,10 @@ public class SmsSentReceiver extends BroadcastReceiver {
                         else {
                             CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
                         }
-                }
-            }
-            else {
-                CWAnalytics.sendMessageSentFailedEvent(null, false);
+                    }
+                    else {
+                        CWAnalytics.sendMessageSentFailedEvent(null, false);
+                    }
             }
         }
     }

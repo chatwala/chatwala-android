@@ -369,7 +369,7 @@ public class CWAnalytics
     }
 
     private static void sendSmsEvent(String category, String action, String label, Long value) {
-        String categoryString = category != null ? category : "SMS_CATEGORY_FAILED";
+        String categoryString = category != null ? category : "SMS_CATEGORY";
         String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
         tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
