@@ -15,7 +15,6 @@ import com.chatwala.android.R;
 import com.chatwala.android.contacts.ContactEntry;
 import com.chatwala.android.contacts.FrequentContactsLoader;
 import com.chatwala.android.contacts.TopContactsAdapter;
-import com.chatwala.android.ui.CWButton;
 import com.chatwala.android.util.CWAnalytics;
 
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
     private TopContactsAdapter adapter;
     private GridView topContactsGrid;
-    private CWButton startButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +45,6 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         adapter = new TopContactsAdapter(this, new ArrayList<ContactEntry>(0), false, null);
         topContactsGrid.setAdapter(adapter);
 
-        startButton = (CWButton) findViewById(R.id.top_contacts_start_button);
         Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         ((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
     }
@@ -104,7 +101,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         findViewById(R.id.top_contacts_start_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CWAnalytics.sendTapNextEvent(false, adapter.getContactsToSendTo().size());
+                CWAnalytics.sendTapNextEvent(true, adapter.getContactsToSendTo().size());
                 startNewCameraActivity();
             }
         });
