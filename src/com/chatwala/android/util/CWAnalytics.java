@@ -75,6 +75,9 @@ public class CWAnalytics
     private static String LABEL_AUTO_START = "AUTO_START";
     private static String LABEL_NO_TAP = "NO_TAP";
 
+    private static String LABEL_FAILED_IMMEDIATELY = "FAILED_IMMEDIATELY";
+    private static String LABEL_FAILED_RETRIES = "FAILED_RETRIES";
+
     private static Boolean isStarterMessage= false;
     private static String categoryString = null;
     //private static EasyTracker easyTracker = null;
@@ -334,8 +337,8 @@ public class CWAnalytics
         sendSmsEvent(category, ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, (long) numRetries);
     }
 
-    public static void sendMessageSentFailedEvent(String category) {
-        sendSmsEvent(category, ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
+    public static void sendMessageSentFailedEvent(String category, boolean failedImmediately) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_FAILED, (failedImmediately ? LABEL_FAILED_IMMEDIATELY : LABEL_FAILED_RETRIES), null);
     }
 
     public static void sendFacebookSendConfirmed() {

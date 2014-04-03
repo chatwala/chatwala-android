@@ -1,4 +1,4 @@
-package com.chatwala.android;
+package com.chatwala.android.sms;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsManager;
-import com.chatwala.android.sms.Sms;
 import com.chatwala.android.util.CWAnalytics;
 
 /**
@@ -40,12 +39,12 @@ public class SmsSentReceiver extends BroadcastReceiver {
                             CWAnalytics.sendMessageSentRetryEvent(sms.getAnalyticsCategory(), sms.getNumRetries());
                         }
                         else {
-                            CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory());
+                            CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
                         }
                 }
             }
             else {
-                CWAnalytics.sendMessageSentFailedEvent(null);
+                CWAnalytics.sendMessageSentFailedEvent(null, false);
             }
         }
     }

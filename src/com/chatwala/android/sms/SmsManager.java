@@ -3,7 +3,6 @@ package com.chatwala.android.sms;
 import android.app.PendingIntent;
 import android.content.Intent;
 import com.chatwala.android.ChatwalaApplication;
-import com.chatwala.android.SmsSentReceiver;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
 
@@ -66,7 +65,7 @@ public class SmsManager {
                 }
                 catch(Exception e) {
                     Logger.e("There was an exception while sending SMS(s)", e);
-                    CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory());
+                    CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), true);
                 }
             }
         });

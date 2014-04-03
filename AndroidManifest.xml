@@ -101,14 +101,14 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.chatwala.android.sms.SmsRetryReceiver"
+        <receiver android:name=".sms.SmsRetryReceiver"
                   android:exported="false">
             <intent-filter>
                 <action android:name="com.chatwala.android.SMS_RETRY"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.chatwala.android.SmsSentReceiver"
+        <receiver android:name=".sms.SmsSentReceiver"
                   android:exported="false">
             <intent-filter>
                 <action android:name="com.chatwala.android.SMS_SENT"/>
