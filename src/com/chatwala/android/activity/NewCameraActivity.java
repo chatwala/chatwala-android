@@ -785,7 +785,9 @@ public class NewCameraActivity extends DrawerListActivity {
                         DataProcessor.runProcess(new Runnable() {
                             @Override
                             public void run() {
-                                BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
+                                if(recordPreviewFile != null) {
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
+                                }
                             }
                         });
                         return true;
@@ -812,7 +814,9 @@ public class NewCameraActivity extends DrawerListActivity {
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new NewMessageFlowCommand(messageId, recordPreviewFile.getPath()));
+                                    if(recordPreviewFile != null) {
+                                        BusHelper.submitCommandSync(NewCameraActivity.this, new NewMessageFlowCommand(messageId, recordPreviewFile.getPath()));
+                                    }
                                 }
                             });
 
