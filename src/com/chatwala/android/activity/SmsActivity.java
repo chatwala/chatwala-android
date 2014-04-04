@@ -4,17 +4,19 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.chatwala.android.R;
 import com.chatwala.android.contacts.ContactEntry;
 import com.chatwala.android.contacts.ContactsAdapter;
@@ -33,6 +35,7 @@ import java.util.Map;
 public class SmsActivity extends FragmentActivity {
     public static final String SMS_MESSAGE_URL_EXTRA = "sms_message_url";
     public static final String SMS_MESSAGE_EXTRA = "sms_message";
+    public static final String COMING_FROM_TOP_CONTACTS_EXTRA = "coming_from_top_contacts";
 
     private static final int MOST_CONTACTED_CONTACT_LIMIT = 27;
 
@@ -53,12 +56,16 @@ public class SmsActivity extends FragmentActivity {
     private ContactsAdapter contactsAdapter;
     private FrequentContactsAdapter recentsdAdapter;
 
+    private boolean cameFromTopContactsFlow;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         setContentView(R.layout.activity_sms);
 
@@ -71,6 +78,24 @@ public class SmsActivity extends FragmentActivity {
         }
         if(getIntent().hasExtra(SMS_MESSAGE_EXTRA)) {
             smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
+        }
+
+        if(getIntent().hasExtra(COMING_FROM_TOP_CONTACTS_EXTRA)) {
+            cameFromTopContactsFlow = true;
+        }
+
+        if(cameFromTopContactsFlow) {
+            getActionBar().setTitle("Message Sent");
+            getIntent().removeExtra(COMING_FROM_TOP_CONTACTS_EXTRA);
+            findViewById(R.id.contacts_custom_copy).setVisibility(View.VISIBLE);
+            findViewById(R.id.contacts_filter_container).setVisibility(View.GONE);
+            findViewById(R.id.recent_contacts_lbl).setVisibility(View.GONE);
+            ((TextView) findViewById(R.id.contacts_custom_copy)).setText("Tap friends to send them the message too.");
+        }
+        else {
+            findViewById(R.id.contacts_custom_copy).setVisibility(View.GONE);
+            findViewById(R.id.contacts_filter_container).setVisibility(View.VISIBLE);
+            findViewById(R.id.recent_contacts_lbl).setVisibility(View.VISIBLE);
         }
 
         //Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
@@ -192,6 +217,17 @@ public class SmsActivity extends FragmentActivity {
         getSupportLoaderManager().initLoader(CONTACTS_TIME_CONTACTED_LOADER_CODE, null, frequentlyContactsCallbacks);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            NavUtils.navigateUpFromSameTask(this);
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void setContactsAdapterItemCheckedChangeListener() {
         contactsAdapter.setOnItemCheckedChangeListener(new ContactsAdapter.OnItemCheckedChangeListener() {
             @Override
@@ -293,7 +329,9 @@ public class SmsActivity extends FragmentActivity {
     public void onStop() {
         super.onStop();
 
-        finish();
+        if(!isFinishing()) {
+            finish();
+        }
 
         if(sendAnalyticsBackgroundEvent) {
             CWAnalytics.sendBackgroundWhileSmsEvent();

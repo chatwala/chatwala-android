@@ -922,8 +922,9 @@ public class NewCameraActivity extends DrawerListActivity {
                     else {
                         if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
                             deliveryMethod = DeliveryMethod.CWSMS;
-                            tearDownSurface();
-                            createSurface();
+                            //TODO HAD TO TAKE THIS OUT BECAUSE OF LINE 1675...IF WE REVERT PUT THIS BACK IN
+                            //tearDownSurface();
+                            //createSurface();
                         }
                     }
                 }
@@ -1668,6 +1669,11 @@ public class NewCameraActivity extends DrawerListActivity {
             SmsManager.getInstance().sendSms(new Sms(contact, messageLink));
         }
         CWAnalytics.sendTopContactsSentEvent(topContactsList.size());
+        closePreviewOnReturn = true;
+        Intent i = new Intent(this, SmsActivity.class);
+        i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
+        i.putExtra(SmsActivity.COMING_FROM_TOP_CONTACTS_EXTRA, true);
+        startActivity(i); //TODO WE HAD TO TAKE OUT THE TEARDOWN...CREATE OR WE CRASH WHEN WE COME BACK LINE 925
     }
 
     private void sendSms(final String messageId)
@@ -1749,11 +1755,9 @@ public class NewCameraActivity extends DrawerListActivity {
     {
         //String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
         String messageLink = messageStartInfo.getShareUrl();
-        String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
         i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
-        i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);
         startActivity(i);
     }
 
