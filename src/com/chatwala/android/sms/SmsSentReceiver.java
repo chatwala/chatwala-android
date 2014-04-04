@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.telephony.SmsManager;
 import com.chatwala.android.util.CWAnalytics;
 
+import java.util.Date;
+
 /**
  * Created by Eliezer on 3/4/14.
  */
@@ -37,8 +39,7 @@ public class SmsSentReceiver extends BroadcastReceiver {
                             smsRetryIntent.putExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA, sms);
                             PendingIntent smsRetryPendingIntent = PendingIntent.getBroadcast(context, sms.hashCode(), smsRetryIntent, 0);
                             AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, millisecondsToRetryIn, smsRetryPendingIntent);
-                            CWAnalytics.sendMessageSentRetryEvent(sms.getAnalyticsCategory(), sms.getNumRetries());
+                            am.set(AlarmManager.RTC_WAKEUP, new Date().getTime() + millisecondsToRetryIn, smsRetryPendingIntent);
                         }
                         else {
                             CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);

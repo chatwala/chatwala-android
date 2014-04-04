@@ -81,7 +81,7 @@ public class Sms implements Parcelable {
     }
 
     public boolean canRetry() {
-        return numRetries < ALLOWED_RETRIES;
+        return numRetries < ALLOWED_RETRIES - 1;
     }
 
     public long retry() {

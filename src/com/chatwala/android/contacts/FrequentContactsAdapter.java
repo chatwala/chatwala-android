@@ -20,8 +20,8 @@ import java.util.List;
 public class FrequentContactsAdapter extends ContactsAdapter {
     private Picasso pic;
 
-    public FrequentContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered) {
-        super(context, contacts, useFiltered);
+    public FrequentContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered, OnContactActionListener listener) {
+        super(context, contacts, useFiltered, listener);
         try {
             pic = Picasso.with(getContext());
         }
@@ -53,16 +53,35 @@ public class FrequentContactsAdapter extends ContactsAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        final ContactEntry entry = getItem(i);
-        String[] names = entry.getName().split(" ");
+        final ContactEntry contact = getItem(i);
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(getOnContactActionListener() != null) {
+                    if(contact.isSending()) {
+                        getOnContactActionListener().onSendCanceled(contact);
+                    }
+                    else if(!contact.isSent()) {
+                        getOnContactActionListener().onStartSend(contact);
+                    }
+                    else {
+                        contact.setIsSent(true);
+                        notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+
+        String[] names = contact.getName().split(" ");
         if(names.length > 0) {
             holder.name.setText(names[0]);
         }
-        holder.value.setText(entry.getValue());
-        holder.status.setText(entry.getSendingStatus());
+        holder.value.setText(contact.getValue());
+        holder.status.setText(contact.getSendingStatus());
 
         try {
-            pic.load(entry.getImage())
+            pic.load(contact.getImage())
                     .error(R.drawable.default_contact_icon)
                     .placeholder(R.drawable.default_contact_icon)
                     .noFade()
@@ -76,8 +95,8 @@ public class FrequentContactsAdapter extends ContactsAdapter {
             @Override
             public void onClick(View v) {
                 boolean isChecked = ((CheckBox)v).isChecked();
-                if(getItemCheckedChangeListener() != null) {
-                    getItemCheckedChangeListener().onItemCheckedChanged(entry, isChecked);
+                if(getOnContactActionListener() != null) {
+                    getOnContactActionListener().onItemCheckedChange(contact, isChecked);
                 }
             }
         });
@@ -85,9 +104,9 @@ public class FrequentContactsAdapter extends ContactsAdapter {
             if(id != 0) {
                 holder.sentCb.setButtonDrawable(id);
             }*/
-        holder.sentCb.setChecked(entry.isSentOrSending());
+        holder.sentCb.setChecked(contact.isSentOrSending());
 
-        if(entry.isSent()) {
+        if(contact.isSent()) {
             holder.overlay.setBackgroundColor(Color.GRAY);
             holder.overlay.getBackground().setAlpha(155);
             holder.overlay.setVisibility(View.VISIBLE);

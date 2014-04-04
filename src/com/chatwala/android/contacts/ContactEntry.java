@@ -7,6 +7,10 @@ import android.os.Looper;
  * Created by Eliezer on 3/31/2014.
  */
 public class ContactEntry implements Comparable<ContactEntry> {
+    public interface OnSendStateChangedListener {
+        public void onSendStateChanged(ContactEntry contact, boolean isSent);
+    }
+
     private String name;
     private String value;
     private String type;
@@ -18,9 +22,6 @@ public class ContactEntry implements Comparable<ContactEntry> {
     private static final int TIME_TO_SEND = 5;
     private int timeToSend = TIME_TO_SEND;
 
-    public interface OnSendStateChangedListener {
-        public void onSendStateChanged();
-    }
     private OnSendStateChangedListener listener;
 
     private Handler sendingHandler = new Handler(Looper.getMainLooper());
@@ -38,20 +39,10 @@ public class ContactEntry implements Comparable<ContactEntry> {
                 }
             }
             if(listener != null) {
-                listener.onSendStateChanged();
+                listener.onSendStateChanged(ContactEntry.this, isSent());
             }
         }
     };
-
-    public interface OnSendListener {
-        public void onSend();
-    }
-
-    private OnSendListener onSendListener;
-
-    public void setOnSendListener(OnSendListener onSendListener) {
-        this.onSendListener = onSendListener;
-    }
 
     public ContactEntry(String name, String value, String type, String image, boolean isContact) {
         this.name = name;
@@ -59,10 +50,6 @@ public class ContactEntry implements Comparable<ContactEntry> {
         this.type = type;
         this.image = image;
         this.isContact = isContact;
-    }
-
-    public void setOnSendStateChangedListener(OnSendStateChangedListener listener) {
-        this.listener = listener;
     }
 
     public String getName() {
@@ -107,13 +94,14 @@ public class ContactEntry implements Comparable<ContactEntry> {
         return isSending || isSent;
     }
 
-    public boolean startSend() {
+    public boolean startSend(OnSendStateChangedListener listener) {
         if(isSent) {
             return false;
         }
 
         isSending = true;
         timeToSend = TIME_TO_SEND;
+        this.listener = listener;
 
         sendingHandler.post(countdownRunnable);
         return true;
@@ -141,9 +129,6 @@ public class ContactEntry implements Comparable<ContactEntry> {
     public void sendMessage() {
         isSending = false;
         isSent = true;
-        if(onSendListener != null) {
-            onSendListener.onSend();
-        }
     }
 
     public int hashCode() {

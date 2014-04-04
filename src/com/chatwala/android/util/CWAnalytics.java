@@ -59,6 +59,7 @@ public class CWAnalytics
     private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
     private static String ACTION_BACK_PRESSED = "BACK_PRESSED";
 
+    private static String ACTION_NUMBER_ADDED = "NUMBER_ADDED";
     private static String ACTION_RECIPIENT_ADDED = "RECIPIENT_ADDED";
     private static String ACTION_RECENT_ADDED = "RECENT_ADDED";
     private static String ACTION_MESSAGE_SEND_CANCELED = "MESSAGE_SEND_CANCELED";
@@ -312,6 +313,10 @@ public class CWAnalytics
     {
         numRedos++;
         sendEvent(ACTION_REDO_MESSAGE, null, new Long(numRedos));
+    }
+
+    public static void sendNumberAddedEvent() {
+        sendEvent(ACTION_NUMBER_ADDED, LABEL_TAP_SCREEN, null);
     }
 
     public static void sendRecipientAddedEvent() {
