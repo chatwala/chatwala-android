@@ -1749,11 +1749,9 @@ public class NewCameraActivity extends DrawerListActivity {
     {
         //String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
         String messageLink = messageStartInfo.getShareUrl();
-        String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
         i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
-        i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);
         startActivity(i);
     }
 
