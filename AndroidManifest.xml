@@ -101,19 +101,9 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".sms.SmsRetryReceiver"
-                  android:exported="false">
-            <intent-filter>
-                <action android:name="com.chatwala.android.SMS_RETRY"/>
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".sms.SmsRetryReceiver" android:exported="false" />
 
-        <receiver android:name=".sms.SmsSentReceiver"
-                  android:exported="false">
-            <intent-filter>
-                <action android:name="com.chatwala.android.SMS_SENT"/>
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".sms.SmsSentReceiver" android:exported="false" />
 
         <receiver android:name="co.touchlab.android.superbus.network.ConnectionChangeReceiver"
                   android:exported="false">

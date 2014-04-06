@@ -14,7 +14,7 @@ public class SmsRetryReceiver extends BroadcastReceiver {
         if(intent.hasExtra(SmsManager.SMS_EXTRA)) {
             Sms sms = intent.getParcelableExtra(SmsManager.SMS_EXTRA);
             if(sms != null) {
-                CWAnalytics.sendMessageSentRetryEvent(sms.getAnalyticsCategory(), sms.getNumRetries());
+                CWAnalytics.sendMessageSentRetryEvent(sms.getAnalyticsCategory(), sms.getNumRetries() + 1);
                 SmsManager.getInstance().sendSms(sms);
             }
         }

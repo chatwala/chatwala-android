@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SmsManager {
     public static final String DEFAULT_MESSAGE = "Hey, I sent you a video message on Chatwala: ";
     public static final String SMS_EXTRA = "SMS";
-    public static final String SMS_RETRY_ACTION = "com.chatwala.android.SMS_RETRY";
     public static final int MAX_SMS_MESSAGE_LENGTH = 160;
 
     private static final int NUM_THREADS = 3;

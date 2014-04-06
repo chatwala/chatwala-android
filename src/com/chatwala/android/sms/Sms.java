@@ -8,7 +8,7 @@ import com.chatwala.android.util.CWAnalytics;
  * Created by Eliezer on 4/3/2014.
  */
 public class Sms implements Parcelable {
-    private static final int ALLOWED_RETRIES = 5;
+    private static final int ALLOWED_RETRIES = 6;
 
     private String number;
     private String message;
@@ -30,7 +30,7 @@ public class Sms implements Parcelable {
         }
         this.messageUrl = messageUrl;
         this.analyticsCategory = CWAnalytics.getCategory();
-        this.numRetries = 0; //this ctor should never be used for a retry
+        this.numRetries = -1; //this ctor should never be used for a retry
     }
 
     private String setMessage(String message, String messageUrl) {
@@ -53,7 +53,7 @@ public class Sms implements Parcelable {
 
     @Override
     public int hashCode() {
-        return (number + message + analyticsCategory).hashCode() ^ numRetries;
+        return (number + message + analyticsCategory).hashCode() ^ (numRetries + 1);
     }
 
     public String getNumber() {
@@ -85,8 +85,11 @@ public class Sms implements Parcelable {
     }
 
     public long retry() {
-        numRetries++;
-        long base = (2 ^ (numRetries + 1)); //base amount of minutes to wait
+        // 1st retry waits 1 minute, then 2, then 4, then 8, then 16, then 32
+        // for a total of 6 retries over 63 minutes
+        //long base = (long) Math.pow(2, (numRetries + 1)); //base amount of minutes to wait
+        long base = (long) 1 << (numRetries + 1); // this is more efficient for raising 2 to x?
+        numRetries++; //first retry waits 1 minute
         return (base * 60) * 1000; //convert minutes to milliseconds
     }
 
