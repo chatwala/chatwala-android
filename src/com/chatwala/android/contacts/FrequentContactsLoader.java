@@ -20,6 +20,7 @@ import java.util.Map;
 public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> {
     private List<ContactEntry> contacts;
     private int howManyContactsToLoad;
+    private int offset;
 
     @SuppressLint("InlinedApi")
     private static final String LAST_TIME_CONTACTED = (isApi18OrGreater() ?
@@ -40,8 +41,13 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
             ContactsContract.CommonDataKinds.Phone.PHOTO_URI};
 
     public FrequentContactsLoader(Context context, int howManyContactsToLoad) {
+        this(context, howManyContactsToLoad, 0);
+    }
+
+    public FrequentContactsLoader(Context context, int howManyContactsToLoad, int offset) {
         super(context);
         this.howManyContactsToLoad = howManyContactsToLoad;
+        this.offset = offset;
         onContentChanged();
     }
 
@@ -74,9 +80,13 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
             Map<String, String> addToRecentsByNumber = new HashMap<String, String>();
             String previousName = null;
 
+            int offsetCounter = 0;
             if(cursor != null) {
                 if (cursor.moveToFirst()) {
                     do {
+                        if(offsetCounter++ < offset) {
+                            continue;
+                        }
                         try {
                             String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                             String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));

@@ -26,7 +26,7 @@ import java.util.List;
 public class TopContactsActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<List<ContactEntry>> {
     public static final String TOP_CONTACTS_LIST_EXTRA = "TOP_CONTACTS_LIST";
     private static final int TOP_CONTACTS_LOADER_CODE = 1000;
-    private static final int INITIAL_TOP_CONTACTS = 9;
+    public static final int INITIAL_TOP_CONTACTS = 9;
 
     private TopContactsAdapter adapter;
     private GridView topContactsGrid;

@@ -57,6 +57,7 @@ public class SmsActivity extends FragmentActivity {
     private FrequentContactsAdapter recentsdAdapter;
 
     private boolean cameFromTopContactsFlow;
+    private int numContactsFromTopFlow;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +83,7 @@ public class SmsActivity extends FragmentActivity {
 
         if(getIntent().hasExtra(COMING_FROM_TOP_CONTACTS_EXTRA)) {
             cameFromTopContactsFlow = true;
+            numContactsFromTopFlow = getIntent().getIntExtra(COMING_FROM_TOP_CONTACTS_EXTRA, 0);
         }
 
         if(cameFromTopContactsFlow) {
@@ -277,16 +279,14 @@ public class SmsActivity extends FragmentActivity {
                     }
                 });
 
-                if(isChecked) {
-                    if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
+                if (isChecked) {
+                    if (contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
                         entry.setIsSent(true);
-                    }
-                    else {
+                    } else {
                         contactsSentTo.put(entry.getName() + entry.getValue(), true);
                         entry.startSend();
                     }
-                }
-                else {
+                } else {
                     contactsSentTo.remove(entry.getName() + entry.getValue());
                     entry.cancelSend();
                 }
@@ -361,7 +361,7 @@ public class SmsActivity extends FragmentActivity {
     private LoaderManager.LoaderCallbacks<List<ContactEntry>> frequentlyContactsCallbacks = new LoaderManager.LoaderCallbacks<List<ContactEntry>>() {
         @Override
         public Loader onCreateLoader(int i, Bundle bundle) {
-            return new FrequentContactsLoader(SmsActivity.this, MOST_CONTACTED_CONTACT_LIMIT);
+            return new FrequentContactsLoader(SmsActivity.this, MOST_CONTACTED_CONTACT_LIMIT, numContactsFromTopFlow);
         }
 
         @Override

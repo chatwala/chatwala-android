@@ -1672,7 +1672,7 @@ public class NewCameraActivity extends DrawerListActivity {
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
         i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
-        i.putExtra(SmsActivity.COMING_FROM_TOP_CONTACTS_EXTRA, true);
+        i.putExtra(SmsActivity.COMING_FROM_TOP_CONTACTS_EXTRA, TopContactsActivity.INITIAL_TOP_CONTACTS);
         startActivity(i); //TODO WE HAD TO TAKE OUT THE TEARDOWN...CREATE OR WE CRASH WHEN WE COME BACK LINE 925
     }
 
