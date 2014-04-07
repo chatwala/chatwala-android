@@ -38,6 +38,8 @@ public class SmsActivity extends FragmentActivity implements ContactsAdapter.OnC
     private static final int CONTACTS_LOADER_CODE = 0;
     private static final int CONTACTS_TIME_CONTACTED_LOADER_CODE = 1;
 
+    private final String analyticsCategory = CWAnalytics.getCategory();
+
     private String smsMessageUrl;
     private String smsMessage = null;
 
@@ -185,7 +187,7 @@ public class SmsActivity extends FragmentActivity implements ContactsAdapter.OnC
             CWAnalytics.sendNumberAddedEvent();
             contactsFilter.setText("");
         }
-        SmsManager.getInstance().sendSms(new Sms(contact.getValue(), smsMessage, smsMessageUrl));
+        SmsManager.getInstance().sendSms(new Sms(contact.getValue(), smsMessage, smsMessageUrl, analyticsCategory));
     }
 
     @Override
