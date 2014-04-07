@@ -95,6 +95,7 @@ public class MessageLoader extends AsyncTaskLoader<List<DrawerMessage>> {
     }
 
     private void onReleaseResources(List<DrawerMessage> messages) {
-        messages = null;
+        //messages = null;
+        //don't do anything
     }
 }

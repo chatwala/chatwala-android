@@ -111,36 +111,45 @@ public class ShareUtils
     }
 
     public static String getReadUrlFromShareUrl(Uri shareUrl) {
-        String[] split = shareUrl.getQuery().split("\\.");
-        String messageId="", shardKey="";
+        try {
+            String[] split = shareUrl.getQuery().split("\\.");
+            String messageId="", shardKey="";
 
-        if(split.length==1) {
-            //handle old share urls:
-            shardKey = "s1";
-            messageId = split[0];
-        }
-        else if(split.length==2){
-            shardKey = split[0];
-            messageId= split[1];
-        }
+            if(split.length==1) {
+                //handle old share urls:
+                shardKey = "s1";
+                messageId = split[0];
+            }
+            else if(split.length==2){
+                shardKey = split[0];
+                messageId= split[1];
+            }
 
-        String readUrl = EnvironmentVariables.get().getMessageReadUrlTemplate();
-        return readUrl.replace("{shard}", shardKey).replace("{message}", messageId);
+            String readUrl = EnvironmentVariables.get().getMessageReadUrlTemplate();
+            return readUrl.replace("{shard}", shardKey).replace("{message}", messageId);
+        }
+        catch(Exception e) {
+            return null;
+        }
     }
 
     public static String getMessageIdFromShareUrl(Uri shareUrl) {
-        String[] split = shareUrl.getQuery().split("\\.");
-        String messageId="";
+        try {
+            String[] split = shareUrl.getQuery().split("\\.");
+            String messageId="";
 
-        if(split.length==1) {
-            //handle old share urls:
-            messageId = split[0];
+            if(split.length==1) {
+                //handle old share urls:
+                messageId = split[0];
+            }
+            else if(split.length==2){
+                messageId= split[1];
+            }
+            return messageId;
         }
-        else if(split.length==2){
-            messageId= split[1];
+        catch(Exception e) {
+            return null;
         }
-        return messageId;
-
     }
 
     public static String getIdFromIntent(Intent callingIntent)

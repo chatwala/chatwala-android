@@ -22,6 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -202,12 +203,23 @@ public abstract class BaseHttpRequest<T>
 
     }
 
+    private static final int FUCKING_BIG = 400000;
     private void logHttpResponse(HttpResponse response) {
         try {
             Logger.i("==================HTTP RESPONSE==================");
             String responseLog = "Response from: " + response.getUrl();
             responseLog += "\n" + response.getHeaders().toString().replaceAll("],", "]\n");
-            if(responseLog.contains("application/json")) {
+            int contentLength = Integer.MAX_VALUE;
+            if(response.getHeaders().containsKey("Content-Length")) {
+                List<String> contentLengthList = response.getHeaders().get("Content-Length");
+                if(contentLengthList != null) {
+                    try {
+                        contentLength = Integer.parseInt(contentLengthList.get(0));
+                    }
+                    catch(Exception ignore) { contentLength = Integer.MAX_VALUE; }
+                }
+            }
+            if(responseLog.contains("application/json") && contentLength < FUCKING_BIG) {
                 responseLog += "\n" + response.getBodyAsString();
             }
             Logger.i(responseLog);

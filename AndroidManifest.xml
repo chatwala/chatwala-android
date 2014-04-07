@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="20042"
-          android:versionName="1.6.0">
+          android:versionCode="20046"
+          android:versionName="1.6.3">
     <uses-sdk android:minSdkVersion="15"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -26,12 +26,12 @@
     <uses-permission android:name="com.chatwala.android.permission.C2D_MESSAGE" />
 
     <application
-        android:label="@string/app_name"
+        android:label="@string/app_name_dev"
         android:icon="@drawable/appicon"
         android:name="com.chatwala.android.ChatwalaApplication">
         <activity
             android:name=".activity.NewCameraActivity"
-            android:label="@string/app_name"
+            android:label="@string/app_name_dev"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -62,6 +62,11 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activity.TopContactsActivity"
+                  android:label="@string/top_contacts_title"
+                  android:screenOrientation="portrait"
+                  android:windowSoftInputMode="adjustPan"
+                  android:theme="@style/ChatwalaTheme"/>
         <activity android:name=".activity.SmsActivity"
                   android:label="@string/send_sms"
                   android:screenOrientation="portrait"
@@ -96,12 +101,9 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.chatwala.android.SmsSentReceiver"
-                  android:exported="false">
-            <intent-filter>
-                <action android:name="com.chatwala.android.SMS_SENT"/>
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".sms.SmsRetryReceiver" android:exported="false" />
+
+        <receiver android:name=".sms.SmsSentReceiver" android:exported="false" />
 
         <receiver android:name="co.touchlab.android.superbus.network.ConnectionChangeReceiver"
                   android:exported="false">

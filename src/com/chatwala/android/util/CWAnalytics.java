@@ -34,6 +34,9 @@ public class CWAnalytics
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
     private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
     private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
+    private static String ACTION_TOP_CONTACTS_LOADED = "TOP_CONTACTS_LOADED";
+    private static String ACTION_TAP_NEXT = "TAP_NEXT";
+    private static String ACTION_TOP_CONTACTS_SENT = "TOP_CONTACTS_SENT";
     private static String ACTION_START_RECORDING = "START_RECORDING";
     private static String ACTION_STOP_RECORDING = "STOP_RECORDING";
     private static String ACTION_BACKGROUND_WHILE_RECORDING = "BACKGROUND_WHILE_RECORDING";
@@ -56,11 +59,13 @@ public class CWAnalytics
     private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
     private static String ACTION_BACK_PRESSED = "BACK_PRESSED";
 
+    private static String ACTION_NUMBER_ADDED = "NUMBER_ADDED";
     private static String ACTION_RECIPIENT_ADDED = "RECIPIENT_ADDED";
     private static String ACTION_RECENT_ADDED = "RECENT_ADDED";
     private static String ACTION_MESSAGE_SEND_CANCELED = "MESSAGE_SEND_CANCELED";
     private static String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
+    private static String ACTION_MESSAGE_SENT_RETRY = "MESSAGE_SENT_RETRY";
     private static String ACTION_MESSAGE_SENT_FAILED = "MESSAGE_SENT_FAILED";
     private static String ACTION_BACKGROUND_WHILE_SMS = "BACKGROUND_WHILE_SMS";
 
@@ -69,7 +74,11 @@ public class CWAnalytics
 
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
+    private static String LABEL_AUTO_START = "AUTO_START";
     private static String LABEL_NO_TAP = "NO_TAP";
+
+    private static String LABEL_FAILED_IMMEDIATELY = "FAILED_IMMEDIATELY";
+    private static String LABEL_FAILED_RETRIES = "FAILED_RETRIES";
 
     private static Boolean isStarterMessage= false;
     private static String categoryString = null;
@@ -160,6 +169,10 @@ public class CWAnalytics
         }
     }
 
+    public static String getCategory() {
+        return categoryString;
+    }
+
     public static void sendReferrerReceivedEvent(Referrer referrer) {
         calculateCategory(referrer);
         if(referrer != null && referrer.isValid()) {
@@ -180,6 +193,18 @@ public class CWAnalytics
         incrementAction();
     }
 
+    public static void sendTopContactsLoadedEvent(int numContacts) {
+        sendEvent(ACTION_TOP_CONTACTS_LOADED, null, (long) numContacts);
+    }
+
+    public static void sendTapNextEvent(boolean buttonTapped, int numContacts) {
+        sendEvent(ACTION_TAP_NEXT, (buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN), (long) numContacts);
+    }
+
+    public static void sendTopContactsSentEvent(int numContacts) {
+        sendEvent(ACTION_TOP_CONTACTS_SENT, null, (long) numContacts);
+    }
+
     public static void sendDrawerOpened() {
         sendEvent(ACTION_DRAWER_OPENED, null, new Long(actionIncrement));
         incrementAction();
@@ -189,9 +214,9 @@ public class CWAnalytics
         sendEvent(ACTION_DRAWER_CLOSED, null, null);
     }
 
-    public static void sendRecordingStartEvent(boolean buttonTapped)
+    public static void sendRecordingStartEvent(boolean buttonTapped, boolean autoStarted)
     {
-        sendEvent(ACTION_START_RECORDING, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, new Long(actionIncrement));
+        sendEvent(ACTION_START_RECORDING, (autoStarted? LABEL_AUTO_START : buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN), new Long(actionIncrement));
         incrementAction();
     }
 
@@ -290,6 +315,10 @@ public class CWAnalytics
         sendEvent(ACTION_REDO_MESSAGE, null, new Long(numRedos));
     }
 
+    public static void sendNumberAddedEvent() {
+        sendEvent(ACTION_NUMBER_ADDED, LABEL_TAP_SCREEN, null);
+    }
+
     public static void sendRecipientAddedEvent() {
         sendEvent(ACTION_RECIPIENT_ADDED, LABEL_TAP_SCREEN, null);
     }
@@ -302,16 +331,20 @@ public class CWAnalytics
         sendEvent(ACTION_MESSAGE_SEND_CANCELED, LABEL_TAP_SCREEN, null);
     }
 
-    public static void sendMessageSentEvent(long numRecipients) {
-        sendEvent(ACTION_MESSAGE_SENT, LABEL_TAP_BUTTON, numRecipients);
+    public static void sendMessageSentEvent(String category) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT, LABEL_TAP_BUTTON, null);
     }
 
-    public static void sendMessageSentConfirmedEvent() {
-        sendEvent(ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, null);
+    public static void sendMessageSentConfirmedEvent(String category) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, null);
     }
 
-    public static void sendMessageSentFailedEvent() {
-        sendEvent(ACTION_MESSAGE_SENT_FAILED, LABEL_NO_TAP, null);
+    public static void sendMessageSentRetryEvent(String category, int numRetries) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_RETRY, LABEL_NO_TAP, (long) numRetries);
+    }
+
+    public static void sendMessageSentFailedEvent(String category, boolean failedImmediately) {
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_FAILED, (failedImmediately ? LABEL_FAILED_IMMEDIATELY : LABEL_FAILED_RETRIES), null);
     }
 
     public static void sendFacebookSendConfirmed() {
@@ -330,8 +363,19 @@ public class CWAnalytics
         sendEvent(ACTION_BACK_PRESSED, LABEL_TAP_BUTTON, null);
     }
 
-    private static void sendEvent(String action, String label, Long value)
-    {
+    private static void sendEvent(String action, String label, Long value) {
+        String labelString = label != null ? label : LABEL_NO_TAP;
+        String valueString = value != null ? value.toString() : "none";
+        tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());
+        Logger.i("Sending Analytics event (tracking id is " + EnvironmentVariables.get().getGoogleAnalyticsID() + "):" +
+                "\n\tCATEGORY:\t" + categoryString +
+                "\n\tACTION:\t" + action +
+                "\n\tLABEL:\t" + labelString +
+                "\n\tVALUE:\t" + valueString);
+    }
+
+    private static void sendSmsEvent(String category, String action, String label, Long value) {
+        String categoryString = category != null ? category : "SMS_CATEGORY";
         String labelString = label != null ? label : LABEL_NO_TAP;
         String valueString = value != null ? value.toString() : "none";
         tracker.send(MapBuilder.createEvent(categoryString, action, label, value).build());

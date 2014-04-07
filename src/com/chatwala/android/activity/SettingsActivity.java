@@ -82,7 +82,7 @@ public class SettingsActivity extends BaseChatWalaActivity
                     return;
                 }
 
-                DeliveryMethod selected = (DeliveryMethod) view.getTag();
+                DeliveryMethod selected = (DeliveryMethod) deliveryMethodSpinner.getAdapter().getItem(position);
                 AppPrefs.getInstance(SettingsActivity.this).setDeliveryMethod(selected);
                 Logger.logDeliveryMethod(selected.getDisplayString());
             }
@@ -407,7 +407,8 @@ public class SettingsActivity extends BaseChatWalaActivity
         SMS(0, "SMS"),
         CWSMS(1, "Chatwala SMS"),
         EMAIL(2, "Email"),
-        FB(3, "Facebook");
+        FB(3, "Facebook"),
+        TOP_CONTACTS(4, "Top Contacts");
 
         private int method;
         private String displayString;
