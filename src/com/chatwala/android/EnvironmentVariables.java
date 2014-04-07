@@ -51,7 +51,7 @@ public enum EnvironmentVariables {
 
     public static EnvironmentVariables get()
     {
-        return EnvironmentVariables.PROD;
+        return EnvironmentVariables.DEV;
     }
 
 

@@ -126,37 +126,7 @@ public class CWAnalytics
 
     public static void calculateCategory(Referrer referrer) {
         String oldCategoryString = new String(categoryString==null?"":categoryString);
-        if(referrer != null && referrer.isValid()) {
-            if(isFirstOpen) {
-                if(referrer.isInstallReferrer()) {
-                    if(referrer.isFacebookReferrer()) {
-                        categoryString = CATEGORY_FIRST_OPEN_FACEBOOK;
-                    }
-                    else if(referrer.isMessageReferrer()) {
-                        categoryString = CATEGORY_FIRST_OPEN_MESSAGE;
-                    }
-                    else if(referrer.isCopyReferrer()) {
-                        categoryString = CATEGORY_FIRST_OPEN_COPY;
-                    }
-                    else {
-                        categoryString = CATEGORY_FIRST_OPEN;
-                    }
-                }
-            }
-            else {
-                if(referrer.isAdReferrer()) {
-                    if(referrer.isFacebookReferrer()) {
-                        categoryString = CATEGORY_AD_REFERRER_FACEBOOK;
-                    }
-                }
-                else {
-                    categoryString = (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER);
-                }
-            }
-        }
-        else {
-            categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
-        }
+        categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
 
         if(!categoryString.equals(oldCategoryString)) {
             resetActionIncrement();
