@@ -1,15 +1,11 @@
 package com.chatwala.android.sms;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsManager;
 import com.chatwala.android.util.CWAnalytics;
-
-import java.util.Date;
 
 /**
  * Created by Eliezer on 3/4/14.
@@ -32,7 +28,13 @@ public class SmsSentReceiver extends BroadcastReceiver {
                 case SmsManager.RESULT_ERROR_NULL_PDU:
                 case SmsManager.RESULT_ERROR_RADIO_OFF:
                 default:
-                    if (sms != null) {
+                    if(sms != null) {
+                        CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), true);
+                    }
+                    else {
+                        CWAnalytics.sendMessageSentFailedEvent(null, true);
+                    }
+                    /*if (sms != null) {
                         if (sms.canRetry()) {
                             long millisecondsToRetryIn = sms.retry();
                             Intent smsRetryIntent = new Intent(context, SmsRetryReceiver.class);
@@ -48,7 +50,7 @@ public class SmsSentReceiver extends BroadcastReceiver {
                     }
                     else {
                         CWAnalytics.sendMessageSentFailedEvent(null, false);
-                    }
+                    }*/
             }
         }
     }
