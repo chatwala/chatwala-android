@@ -2,6 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_top_contacts_skip"
-        android:title="Skip"
+        android:title="skip"
         android:showAsAction="always"/>
 </menu>
