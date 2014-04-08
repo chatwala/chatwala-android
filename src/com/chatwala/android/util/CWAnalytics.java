@@ -329,7 +329,7 @@ public class CWAnalytics
     }
 
     public static void sendMessageSentFailedEvent(String category, boolean failedImmediately) {
-        sendSmsEvent(category, ACTION_MESSAGE_SENT_FAILED, (failedImmediately ? LABEL_FAILED_IMMEDIATELY : LABEL_FAILED_RETRIES), null);
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_FAILED, null, null);
     }
 
     public static void sendFacebookSendConfirmed() {

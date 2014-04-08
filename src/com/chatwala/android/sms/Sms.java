@@ -43,10 +43,10 @@ public class Sms implements Parcelable {
         }
     }
 
-
     public Sms(Parcel p) {
         number = p.readString();
         message = p.readString();
+        messageUrl = p.readString();
         analyticsCategory = p.readString();
         numRetries = p.readInt();
     }
@@ -111,6 +111,7 @@ public class Sms implements Parcelable {
     public void writeToParcel(Parcel p, int flags) {
         p.writeString(number);
         p.writeString(message);
+        p.writeString(messageUrl);
         p.writeString(analyticsCategory);
         p.writeInt(numRetries);
     }

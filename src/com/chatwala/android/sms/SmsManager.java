@@ -2,6 +2,7 @@ package com.chatwala.android.sms;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Bundle;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
@@ -56,7 +57,9 @@ public class SmsManager {
             public void run() {
                 try {
                     Intent smsSentIntent = new Intent(getApp(), SmsSentReceiver.class);
-                    smsSentIntent.putExtra(SMS_EXTRA, sms);
+                    Bundle smsBundle = new Bundle();
+                    smsBundle.putParcelable(SMS_EXTRA, sms);
+                    smsSentIntent.putExtra(SMS_EXTRA, smsBundle);
                     PendingIntent sentPendingIntent = PendingIntent.getBroadcast(getApp(), messagesSentCount.getAndIncrement(),
                             smsSentIntent, 0);
                     android.telephony.SmsManager.getDefault().sendTextMessage(sms.getNumber(), null,

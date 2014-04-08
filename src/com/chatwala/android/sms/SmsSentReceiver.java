@@ -1,11 +1,10 @@
 package com.chatwala.android.sms;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.telephony.SmsManager;
 import com.chatwala.android.util.CWAnalytics;
 
@@ -15,8 +14,14 @@ import com.chatwala.android.util.CWAnalytics;
 public class SmsSentReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent.hasExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA)) {
-            Sms sms = intent.getParcelableExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA);
+        String SMS_EXTRA_KEY = com.chatwala.android.sms.SmsManager.SMS_EXTRA;
+        if(intent.hasExtra(SMS_EXTRA_KEY)) {
+            Bundle smsBundle = intent.getBundleExtra(SMS_EXTRA_KEY);
+            Sms sms = null;
+            if(smsBundle != null && smsBundle.containsKey(SMS_EXTRA_KEY)) {
+                sms = smsBundle.getParcelable(SMS_EXTRA_KEY);
+            }
+
             switch(getResultCode()) {
                 case Activity.RESULT_OK:
                     if (sms != null) {
@@ -31,10 +36,12 @@ public class SmsSentReceiver extends BroadcastReceiver {
                 case SmsManager.RESULT_ERROR_RADIO_OFF:
                 default:
                     if (sms != null) {
-                        if (sms.canRetry()) {
+                        /*if (sms.canRetry()) {
                             long millisecondsToRetryIn = sms.retry();
+                            Bundle smsPutBundle = new Bundle();
+                            smsPutBundle.putParcelable(SMS_EXTRA_KEY, sms);
                             Intent smsRetryIntent = new Intent(com.chatwala.android.sms.SmsManager.SMS_RETRY_ACTION);
-                            smsRetryIntent.putExtra(com.chatwala.android.sms.SmsManager.SMS_EXTRA, sms);
+                            smsRetryIntent.putExtra(SMS_EXTRA_KEY, smsPutBundle);
                             PendingIntent smsRetryPendingIntent = PendingIntent.getBroadcast(context, sms.hashCode(), smsRetryIntent, 0);
                             AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
                             am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, millisecondsToRetryIn, smsRetryPendingIntent);
@@ -42,7 +49,8 @@ public class SmsSentReceiver extends BroadcastReceiver {
                         }
                         else {
                             CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
-                        }
+                        }*/
+                        CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
                     }
                     else {
                         CWAnalytics.sendMessageSentFailedEvent(null, false);
