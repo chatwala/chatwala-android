@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ListView;
@@ -32,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SmsActivity extends FragmentActivity {
+public class SmsActivity extends FragmentActivity implements ContactsAdapter.OnContactActionListener {
     public static final String SMS_MESSAGE_URL_EXTRA = "sms_message_url";
     public static final String SMS_MESSAGE_EXTRA = "sms_message";
     public static final String COMING_FROM_TOP_CONTACTS_EXTRA = "coming_from_top_contacts";
@@ -41,6 +40,8 @@ public class SmsActivity extends FragmentActivity {
 
     private static final int CONTACTS_LOADER_CODE = 0;
     private static final int CONTACTS_TIME_CONTACTED_LOADER_CODE = 1;
+
+    private final String analyticsCategory = CWAnalytics.getCategory();
 
     private String smsMessageUrl;
     private String smsMessage = null;
@@ -105,10 +106,8 @@ public class SmsActivity extends FragmentActivity {
 
         contactsSentTo = new HashMap<String, Boolean>();
 
-        contactsAdapter = new ContactsAdapter(this, new ArrayList<ContactEntry>(), true);
-        setContactsAdapterItemCheckedChangeListener();
-        recentsdAdapter = new FrequentContactsAdapter(this, new ArrayList<ContactEntry>(), false);
-        setFrequentsAdapterItemCheckedChangeListener();
+        contactsAdapter = new ContactsAdapter(this, new ArrayList<ContactEntry>(), true, this);
+        recentsdAdapter = new FrequentContactsAdapter(this, new ArrayList<ContactEntry>(), false, this);
 
         contactsFilter = (EditText) findViewById(R.id.contacts_filter);
         contactsFilter.addTextChangedListener(new TextWatcher() {
@@ -138,73 +137,7 @@ public class SmsActivity extends FragmentActivity {
         });
 
         contactsListView = (ListView) findViewById(R.id.contacts_list);
-        contactsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final ContactEntry entry = contactsAdapter.getItem(i);
-                entry.setOnSendListener(new ContactEntry.OnSendListener() {
-                    @Override
-                    public void onSend() {
-                        sendSms(entry);
-                    }
-                });
-                contactsAdapter.setItemOnSendStateChangedListener(entry);
-                if(!entry.isContact()) {
-                    sendSms(entry);
-                    contactsFilter.setText("");
-                    return;
-                }
-
-                if(!entry.isSending()) {
-                    if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
-                        entry.setIsSent(true);
-                        contactsAdapter.notifyDataSetChanged();
-                        recentsdAdapter.notifyDataSetChanged();
-                    }
-                    else {
-                        contactsSentTo.put(entry.getName() + entry.getValue(), true);
-                        startSendSms(entry);
-                    }
-                }
-            }
-        });
-
         recentsGridView = (GridView) findViewById(R.id.recents_list);
-        recentsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final ContactEntry entry = recentsdAdapter.getItem(i);
-                recentsdAdapter.setItemOnSendStateChangedListener(entry);
-                entry.setOnSendListener(new ContactEntry.OnSendListener() {
-                    @Override
-                    public void onSend() {
-                        sendSms(entry);
-                    }
-                });
-
-                if(!entry.isContact()) {
-                    sendSms(entry);
-                    contactsFilter.setText("");
-                    return;
-                }
-
-                if(entry.isSending()) {
-                    contactsSentTo.remove(entry.getName() + entry.getValue());
-                    onCancelSendSms(entry);
-                }
-                else {
-                    if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
-                        entry.setIsSent(true);
-                        contactsAdapter.notifyDataSetChanged();
-                        recentsdAdapter.notifyDataSetChanged();
-                    }
-                    else {
-                        contactsSentTo.put(entry.getName() + entry.getValue(), true);
-                        startSendSms(entry);
-                    }
-                }
-            }
-        });
 
         findViewById(R.id.contacts_filter_clear).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,101 +163,78 @@ public class SmsActivity extends FragmentActivity {
         }
     }
 
-    private void setContactsAdapterItemCheckedChangeListener() {
-        contactsAdapter.setOnItemCheckedChangeListener(new ContactsAdapter.OnItemCheckedChangeListener() {
-            @Override
-            public void onItemCheckedChanged(final ContactEntry entry, boolean isChecked) {
-                contactsAdapter.setItemOnSendStateChangedListener(entry);
-                entry.setOnSendListener(new ContactEntry.OnSendListener() {
+    @Override
+    public void onItemCheckedChange(ContactEntry contact, boolean isChecked) {
+        if(!contact.isContact()) {
+            onSend(contact);
+        }
+        else {
+            if(isChecked) {
+                onStartSend(contact);
+            }
+            else {
+                contact.cancelSend();
+                contactsSentTo.remove(contact.getName() + contact.getValue());
+                notifyAdaptersDataSetChanged();
+                CWAnalytics.sendMessageSendCanceledEvent();
+            }
+        }
+    }
+
+    public void onStartSend(ContactEntry contact) {
+        if(!contact.isSending()) {
+            if(contactsSentTo.containsKey(contact.getName() + contact.getValue())) {
+                contact.setIsSent(true);
+                notifyAdaptersDataSetChanged();
+            }
+            else {
+                contact.startSend(new ContactEntry.OnSendStateChangedListener() {
                     @Override
-                    public void onSend() {
-                        sendSms(entry);
+                    public void onSendStateChanged(ContactEntry contact, boolean isSent) {
+                        if(isSent) {
+                            onSend(contact);
+                        }
+                        notifyAdaptersDataSetChanged();
                     }
                 });
-
-                if(!entry.isContact()) {
-                    entry.sendMessage();
-                    contactsFilter.setText("");
-                    return;
-                }
-
-                if(isChecked) {
-                    if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
-                        entry.setIsSent(true);
-                    }
-                    else {
-                        contactsSentTo.put(entry.getName() + entry.getValue(), true);
-                        entry.startSend();
-                    }
+                contactsSentTo.put(contact.getName() + contact.getValue(), true);
+                if(cameFromTopContactsFlow) {
+                    CWAnalytics.sendUpsellAddedEvent();
                 }
                 else {
-                    contactsSentTo.remove(entry.getName() + entry.getValue());
-                    entry.cancelSend();
-                }
-
-                contactsAdapter.notifyDataSetChanged();
-            }
-        });
-    }
-
-    private void setFrequentsAdapterItemCheckedChangeListener() {
-        recentsdAdapter.setOnItemCheckedChangeListener(new ContactsAdapter.OnItemCheckedChangeListener() {
-            @Override
-            public void onItemCheckedChanged(final ContactEntry entry, boolean isChecked) {
-                recentsdAdapter.setItemOnSendStateChangedListener(entry);
-                entry.setOnSendListener(new ContactEntry.OnSendListener() {
-                    @Override
-                    public void onSend() {
-                        sendSms(entry);
+                    if(contactsListView.isShown()) {
+                        CWAnalytics.sendRecipientAddedEvent();
                     }
-                });
-
-                if (isChecked) {
-                    if (contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
-                        entry.setIsSent(true);
-                    } else {
-                        contactsSentTo.put(entry.getName() + entry.getValue(), true);
-                        entry.startSend();
+                    else if(recentsGridView.isShown()) {
+                        CWAnalytics.sendRecentAddedEvent();
                     }
-                } else {
-                    contactsSentTo.remove(entry.getName() + entry.getValue());
-                    entry.cancelSend();
                 }
-
-                recentsdAdapter.notifyDataSetChanged();
-            }
-        });
-    }
-
-    private void startSendSms(ContactEntry contact) {
-        contact.startSend();
-        if(cameFromTopContactsFlow) {
-            CWAnalytics.sendUpsellAddedEvent();
-        }
-        else {
-            if(contactsListView.isShown()) {
-                CWAnalytics.sendRecipientAddedEvent();
-            }
-            else if(recentsGridView.isShown()) {
-                CWAnalytics.sendRecentAddedEvent();
             }
         }
     }
 
-    private void onCancelSendSms(ContactEntry contact) {
-        contact.cancelSend();
-        contactsAdapter.notifyDataSetChanged();
-        recentsdAdapter.notifyDataSetChanged();
-        if(cameFromTopContactsFlow) {
-            CWAnalytics.sendUpsellCanceledEvent();
-        }
-        else {
-            CWAnalytics.sendMessageSendCanceledEvent();
+    @Override
+    public void onSendCanceled(ContactEntry contact) {
+        if(recentsGridView.isShown()) {
+            contact.cancelSend();
+            contactsSentTo.remove(contact.getName() + contact.getValue());
+            notifyAdaptersDataSetChanged();
+            if(cameFromTopContactsFlow) {
+                CWAnalytics.sendUpsellCanceledEvent();
+            }
+            else {
+                CWAnalytics.sendMessageSendCanceledEvent();
+            }
         }
     }
 
-    private void sendSms(ContactEntry contact) {
-        SmsManager.getInstance().sendSms(new Sms(contact.getValue(), smsMessage, smsMessageUrl));
+    @Override
+    public void onSend(ContactEntry contact) {
+        if(!contact.isContact()) {
+            CWAnalytics.sendNumberAddedEvent();
+            contactsFilter.setText("");
+        }
+        SmsManager.getInstance().sendSms(new Sms(contact.getValue(), smsMessage, smsMessageUrl, analyticsCategory));
     }
 
     @Override
@@ -357,8 +267,7 @@ public class SmsActivity extends FragmentActivity {
 
         @Override
         public void onLoadFinished(Loader<List<ContactEntry>> contactEntryLoader, List<ContactEntry> contacts) {
-            contactsAdapter = new ContactsAdapter(SmsActivity.this, contacts, true);
-            setContactsAdapterItemCheckedChangeListener();
+            contactsAdapter = new ContactsAdapter(SmsActivity.this, contacts, true, SmsActivity.this);
             contactsListView.setAdapter(contactsAdapter);
         }
 
@@ -380,8 +289,8 @@ public class SmsActivity extends FragmentActivity {
                 finish();
                 return;
             }
-            recentsdAdapter = new FrequentContactsAdapter(SmsActivity.this, contacts, true);
-            setFrequentsAdapterItemCheckedChangeListener();
+
+            recentsdAdapter = new FrequentContactsAdapter(SmsActivity.this, contacts, true, SmsActivity.this);
             recentsGridView.setAdapter(recentsdAdapter);
         }
 
@@ -390,4 +299,9 @@ public class SmsActivity extends FragmentActivity {
             //do nothing
         }
     };
+
+    private void notifyAdaptersDataSetChanged() {
+        contactsAdapter.notifyDataSetChanged();
+        recentsdAdapter.notifyDataSetChanged();
+    }
 }

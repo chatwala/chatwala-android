@@ -23,37 +23,33 @@ import java.util.Locale;
 /**
  * Created by Eliezer on 3/31/2014.
  */
-public class ContactsAdapter extends BaseAdapter implements Filterable, ContactEntry.OnSendStateChangedListener {
+public class ContactsAdapter extends BaseAdapter implements Filterable {
+    public interface OnContactActionListener {
+        public void onItemCheckedChange(ContactEntry contact, boolean isChecked);
+        public void onStartSend(ContactEntry contact);
+        public void onSendCanceled(ContactEntry contact);
+        public void onSend(ContactEntry contact);
+    }
+
     private Context context;
     private List<ContactEntry> contacts;
     private List<ContactEntry> filteredContacts;
     private boolean useFiltered;
+    private OnContactActionListener listener;
     private LayoutInflater inflater;
-    protected OnItemCheckedChangeListener itemCheckedChangeListener;
 
-    public ContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered) {
+    public ContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered, OnContactActionListener listener) {
         this.context = context;
         this.contacts = contacts;
         Collections.sort(this.contacts);
         filteredContacts = new ArrayList<ContactEntry>(this.contacts);
         this.useFiltered = useFiltered;
+        this.listener = listener;
         inflater = LayoutInflater.from(context);
     }
 
-    public interface OnItemCheckedChangeListener {
-        public void onItemCheckedChanged(ContactEntry contact, boolean isChecked);
-    }
-
-    public void setOnItemCheckedChangeListener(OnItemCheckedChangeListener itemCheckedChangeListener) {
-        this.itemCheckedChangeListener = itemCheckedChangeListener;
-    }
-
-    protected OnItemCheckedChangeListener getItemCheckedChangeListener() {
-        return itemCheckedChangeListener;
-    }
-
-    public void setItemOnSendStateChangedListener(ContactEntry contact) {
-        contact.setOnSendStateChangedListener(this);
+    protected OnContactActionListener getOnContactActionListener() {
+        return listener;
     }
 
     protected LayoutInflater getLayoutInflater() {
@@ -160,19 +156,43 @@ public class ContactsAdapter extends BaseAdapter implements Filterable, ContactE
             holder = (ViewHolder) convertView.getTag();
         }
 
-        final ContactEntry entry = getItem(i);
-        holder.name.setText(entry.getName());
-        holder.value.setText(entry.getValue());
-        holder.type.setText(entry.getType());
-        holder.status.setText(entry.getSendingStatus());
-        holder.sentCb.setChecked(entry.isSentOrSending());
-        holder.sentCb.setEnabled(!entry.isSent());
+        final ContactEntry contact = getItem(i);
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(getOnContactActionListener() != null) {
+                    if(!contact.isContact()) {
+                        getOnContactActionListener().onSend(contact);
+                        return;
+                    }
+
+                    if(contact.isSending()) {
+                        getOnContactActionListener().onSendCanceled(contact);
+                    }
+                    else if(!contact.isSent()) {
+                        getOnContactActionListener().onStartSend(contact);
+                    }
+                    else {
+                        contact.setIsSent(true);
+                        notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+
+        holder.name.setText(contact.getName());
+        holder.value.setText(contact.getValue());
+        holder.type.setText(contact.getType());
+        holder.status.setText(contact.getSendingStatus());
+        holder.sentCb.setChecked(contact.isSentOrSending());
+        holder.sentCb.setEnabled(!contact.isSent());
         holder.sentCb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 boolean isChecked = ((CheckBox)v).isChecked();
-                if(getItemCheckedChangeListener() != null) {
-                    getItemCheckedChangeListener().onItemCheckedChanged(entry, isChecked);
+                if(getOnContactActionListener() != null) {
+                    getOnContactActionListener().onItemCheckedChange(contact, isChecked);
                 }
             }
         });
@@ -181,7 +201,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable, ContactE
             holder.sentCb.setButtonDrawable(id);
         }
 
-        if(entry.isSent()) {
+        if(contact.isSent()) {
             convertView.setBackgroundColor(Color.GRAY);
         }
         else {
@@ -256,11 +276,6 @@ public class ContactsAdapter extends BaseAdapter implements Filterable, ContactE
                 notifyDataSetChanged();
             }
         };
-    }
-
-    @Override
-    public void onSendStateChanged() {
-        notifyDataSetChanged();
     }
 
     private static class ViewHolder {

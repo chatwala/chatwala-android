@@ -64,11 +64,13 @@ public class CWAnalytics
     private static String ACTION_UPSELL_ADDED = "UPSELL_ADDED";
     private static String ACTION_UPSELL_CANCELED = "UPSELL_CANCELED";
 
+    private static String ACTION_NUMBER_ADDED = "NUMBER_ADDED";
     private static String ACTION_RECIPIENT_ADDED = "RECIPIENT_ADDED";
     private static String ACTION_RECENT_ADDED = "RECENT_ADDED";
     private static String ACTION_MESSAGE_SEND_CANCELED = "MESSAGE_SEND_CANCELED";
     private static String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     private static String ACTION_MESSAGE_SENT_CONFIRMED = "MESSAGE_SENT_CONFIRMED";
+    private static String ACTION_MESSAGE_SENT_RETRY = "MESSAGE_SENT_RETRY";
     private static String ACTION_MESSAGE_SENT_FAILED = "MESSAGE_SENT_FAILED";
     private static String ACTION_BACKGROUND_WHILE_SMS = "BACKGROUND_WHILE_SMS";
 
@@ -304,6 +306,10 @@ public class CWAnalytics
         sendEvent(ACTION_UPSELL_CANCELED, LABEL_TAP_SCREEN, null);
     }
 
+    public static void sendNumberAddedEvent() {
+        sendEvent(ACTION_NUMBER_ADDED, LABEL_TAP_SCREEN, null);
+    }
+
     public static void sendRecipientAddedEvent() {
         sendEvent(ACTION_RECIPIENT_ADDED, LABEL_TAP_SCREEN, null);
     }
@@ -325,7 +331,7 @@ public class CWAnalytics
     }
 
     public static void sendMessageSentRetryEvent(String category, int numRetries) {
-        sendSmsEvent(category, ACTION_MESSAGE_SENT_CONFIRMED, LABEL_NO_TAP, (long) numRetries);
+        sendSmsEvent(category, ACTION_MESSAGE_SENT_RETRY, LABEL_NO_TAP, (long) numRetries);
     }
 
     public static void sendMessageSentFailedEvent(String category, boolean failedImmediately) {
