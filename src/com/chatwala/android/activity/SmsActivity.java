@@ -215,8 +215,8 @@ public class SmsActivity extends FragmentActivity {
             }
         });
 
-        getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, contactsCallbacks);
         getSupportLoaderManager().initLoader(CONTACTS_TIME_CONTACTED_LOADER_CODE, null, frequentlyContactsCallbacks);
+        getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, contactsCallbacks);
     }
 
     @Override
@@ -298,11 +298,16 @@ public class SmsActivity extends FragmentActivity {
 
     private void startSendSms(ContactEntry contact) {
         contact.startSend();
-        if(contactsListView.isShown()) {
-            CWAnalytics.sendRecipientAddedEvent();
+        if(cameFromTopContactsFlow) {
+            CWAnalytics.sendUpsellAddedEvent();
         }
-        else if(recentsGridView.isShown()) {
-            CWAnalytics.sendRecentAddedEvent();
+        else {
+            if(contactsListView.isShown()) {
+                CWAnalytics.sendRecipientAddedEvent();
+            }
+            else if(recentsGridView.isShown()) {
+                CWAnalytics.sendRecentAddedEvent();
+            }
         }
     }
 
@@ -310,7 +315,12 @@ public class SmsActivity extends FragmentActivity {
         contact.cancelSend();
         contactsAdapter.notifyDataSetChanged();
         recentsdAdapter.notifyDataSetChanged();
-        CWAnalytics.sendMessageSendCanceledEvent();
+        if(cameFromTopContactsFlow) {
+            CWAnalytics.sendUpsellCanceledEvent();
+        }
+        else {
+            CWAnalytics.sendMessageSendCanceledEvent();
+        }
     }
 
     private void sendSms(ContactEntry contact) {
@@ -366,6 +376,10 @@ public class SmsActivity extends FragmentActivity {
 
         @Override
         public void onLoadFinished(Loader<List<ContactEntry>> listLoader, List<ContactEntry> contacts) {
+            if(contacts.size() == 0) {
+                finish();
+                return;
+            }
             recentsdAdapter = new FrequentContactsAdapter(SmsActivity.this, contacts, true);
             setFrequentsAdapterItemCheckedChangeListener();
             recentsGridView.setAdapter(recentsdAdapter);

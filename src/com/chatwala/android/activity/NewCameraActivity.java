@@ -922,9 +922,10 @@ public class NewCameraActivity extends DrawerListActivity {
                     else {
                         if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
                             deliveryMethod = DeliveryMethod.CWSMS;
-                            //TODO HAD TO TAKE THIS OUT BECAUSE OF LINE 1675...IF WE REVERT PUT THIS BACK IN
-                            //tearDownSurface();
-                            //createSurface();
+                            if(!getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_SHOW_UPSELL_EXTRA)) {
+                                tearDownSurface();
+                                createSurface();
+                            }
                         }
                     }
                 }
@@ -1669,11 +1670,14 @@ public class NewCameraActivity extends DrawerListActivity {
             SmsManager.getInstance().sendSms(new Sms(contact, messageLink));
         }
         CWAnalytics.sendTopContactsSentEvent(topContactsList.size());
-        closePreviewOnReturn = true;
-        Intent i = new Intent(this, SmsActivity.class);
-        i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
-        i.putExtra(SmsActivity.COMING_FROM_TOP_CONTACTS_EXTRA, TopContactsActivity.INITIAL_TOP_CONTACTS);
-        startActivity(i); //TODO WE HAD TO TAKE OUT THE TEARDOWN...CREATE OR WE CRASH WHEN WE COME BACK LINE 925
+        if(getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_SHOW_UPSELL_EXTRA)) {
+            closePreviewOnReturn = true;
+            Intent i = new Intent(this, SmsActivity.class);
+            i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
+            i.putExtra(SmsActivity.COMING_FROM_TOP_CONTACTS_EXTRA, TopContactsActivity.INITIAL_TOP_CONTACTS);
+            startActivity(i);
+            CWAnalytics.sendUpsellShownEvent();
+        }
     }
 
     private void sendSms(final String messageId)

@@ -59,6 +59,10 @@ public class CWAnalytics
     private static String ACTION_STOP_PRESSED = "STOP_PRESSED";
     private static String ACTION_BACK_PRESSED = "BACK_PRESSED";
 
+    private static String ACTION_UPSELL_SHOWN_EVENT = "UPSELL_SHOWN";
+    private static String ACTION_UPSELL_ADDED = "UPSELL_ADDED";
+    private static String ACTION_UPSELL_CANCELED = "UPSELL_CANCELED";
+
     private static String ACTION_RECIPIENT_ADDED = "RECIPIENT_ADDED";
     private static String ACTION_RECENT_ADDED = "RECENT_ADDED";
     private static String ACTION_MESSAGE_SEND_CANCELED = "MESSAGE_SEND_CANCELED";
@@ -311,6 +315,18 @@ public class CWAnalytics
     {
         numRedos++;
         sendEvent(ACTION_REDO_MESSAGE, null, new Long(numRedos));
+    }
+
+    public static void sendUpsellShownEvent() {
+        sendEvent(ACTION_UPSELL_SHOWN_EVENT, LABEL_NO_TAP, null);
+    }
+
+    public static void sendUpsellAddedEvent() {
+        sendEvent(ACTION_UPSELL_ADDED, LABEL_TAP_SCREEN, null);
+    }
+
+    public static void sendUpsellCanceledEvent() {
+        sendEvent(ACTION_UPSELL_CANCELED, LABEL_TAP_SCREEN, null);
     }
 
     public static void sendRecipientAddedEvent() {

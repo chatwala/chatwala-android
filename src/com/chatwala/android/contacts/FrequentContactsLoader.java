@@ -84,9 +84,6 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
             if(cursor != null) {
                 if (cursor.moveToFirst()) {
                     do {
-                        if(offsetCounter++ < offset) {
-                            continue;
-                        }
                         try {
                             String name = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                             String value = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER));
@@ -117,6 +114,9 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                                         String normalizedPreviousValue = PhoneNumberUtils.extractNetworkPortion(previousNameEntry.getValue());
                                         if (!addToRecentsByNumber.containsKey(normalizedPreviousValue)) {
                                             addToRecentsByNumber.put(normalizedPreviousValue, previousNameEntry.getValue()); //don't use this number again
+                                            if(offsetCounter++ < offset) {
+                                                continue;
+                                            }
                                             contacts.add(previousNameEntry);
                                             if (contacts.size() == howManyContactsToLoad) {
                                                 break;
@@ -132,6 +132,9 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                             } else {
                                 addToRecents.put(name, false); //we have mobile; don't add any non-mobile
                                 addToRecentsByNumber.put(normalizedValue, value); //don't use this number again
+                                if(offsetCounter++ < offset) {
+                                    continue;
+                                }
                                 contacts.add(new FrequentContactEntry(name, value, type, image, timesContacted, true));
                             }
                         } catch (Exception e) {

@@ -25,6 +25,7 @@ import java.util.List;
  */
 public class TopContactsActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<List<ContactEntry>> {
     public static final String TOP_CONTACTS_LIST_EXTRA = "TOP_CONTACTS_LIST";
+    public static final String TOP_CONTACTS_SHOW_UPSELL_EXTRA = "TOP_CONTACTS_SHOW_UPSELL";
     private static final int TOP_CONTACTS_LOADER_CODE = 1000;
     public static final int INITIAL_TOP_CONTACTS = 9;
 
@@ -123,6 +124,9 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
     private void startNewCameraActivity() {
         Intent i = new Intent(TopContactsActivity.this, NewCameraActivity.class);
         i.putStringArrayListExtra(TOP_CONTACTS_LIST_EXTRA, adapter.getContactsToSendTo());
+        if(adapter.getCount() == INITIAL_TOP_CONTACTS) {
+            i.putExtra(TOP_CONTACTS_SHOW_UPSELL_EXTRA, true);
+        }
         startActivity(i);
         finish();
     }
