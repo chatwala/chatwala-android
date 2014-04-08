@@ -34,6 +34,8 @@ public class CWAnalytics
     private static String ACTION_APP_BACKGROUND = "APP_BACKGROUND";
     private static String ACTION_DRAWER_OPENED= "ACTION_DRAWER_OPENED";
     private static String ACTION_DRAWER_CLOSED= "ACTION_DRAWER_CLOSED";
+    private static String ACTION_TOP_CONTACTS_LOADED = "TOP_CONTACTS_LOADED";
+    private static String ACTION_TAP_NEXT = "TAP_NEXT";
     private static String ACTION_START_RECORDING = "START_RECORDING";
     private static String ACTION_STOP_RECORDING = "STOP_RECORDING";
     private static String ACTION_BACKGROUND_WHILE_RECORDING = "BACKGROUND_WHILE_RECORDING";
@@ -69,6 +71,7 @@ public class CWAnalytics
 
     private static String LABEL_TAP_BUTTON = "TAP_BUTTON";
     private static String LABEL_TAP_SCREEN = "TAP_SCREEN";
+    private static String LABEL_AUTO_START = "AUTO_START";
     private static String LABEL_NO_TAP = "NO_TAP";
 
     private static Boolean isStarterMessage= false;
@@ -123,37 +126,7 @@ public class CWAnalytics
 
     public static void calculateCategory(Referrer referrer) {
         String oldCategoryString = new String(categoryString==null?"":categoryString);
-        if(referrer != null && referrer.isValid()) {
-            if(isFirstOpen) {
-                if(referrer.isInstallReferrer()) {
-                    if(referrer.isFacebookReferrer()) {
-                        categoryString = CATEGORY_FIRST_OPEN_FACEBOOK;
-                    }
-                    else if(referrer.isMessageReferrer()) {
-                        categoryString = CATEGORY_FIRST_OPEN_MESSAGE;
-                    }
-                    else if(referrer.isCopyReferrer()) {
-                        categoryString = CATEGORY_FIRST_OPEN_COPY;
-                    }
-                    else {
-                        categoryString = CATEGORY_FIRST_OPEN;
-                    }
-                }
-            }
-            else {
-                if(referrer.isAdReferrer()) {
-                    if(referrer.isFacebookReferrer()) {
-                        categoryString = CATEGORY_AD_REFERRER_FACEBOOK;
-                    }
-                }
-                else {
-                    categoryString = (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER);
-                }
-            }
-        }
-        else {
-            categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
-        }
+        categoryString = (isFirstOpen ? CATEGORY_FIRST_OPEN : (isStarterMessage ? CATEGORY_CONVERSATION_STARTER : CATEGORY_CONVERSATION_REPLIER));
 
         if(!categoryString.equals(oldCategoryString)) {
             resetActionIncrement();
@@ -180,6 +153,14 @@ public class CWAnalytics
         incrementAction();
     }
 
+    public static void sendTopContactsLoadedEvent(int numContacts) {
+        sendEvent(ACTION_TOP_CONTACTS_LOADED, null, (long) numContacts);
+    }
+
+    public static void sendTapNextEvent(boolean buttonTapped, int numContacts) {
+        sendEvent(ACTION_TAP_NEXT, (buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN), (long) numContacts);
+    }
+
     public static void sendDrawerOpened() {
         sendEvent(ACTION_DRAWER_OPENED, null, new Long(actionIncrement));
         incrementAction();
@@ -189,9 +170,9 @@ public class CWAnalytics
         sendEvent(ACTION_DRAWER_CLOSED, null, null);
     }
 
-    public static void sendRecordingStartEvent(boolean buttonTapped)
+    public static void sendRecordingStartEvent(boolean buttonTapped, boolean autoStarted)
     {
-        sendEvent(ACTION_START_RECORDING, buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN, new Long(actionIncrement));
+        sendEvent(ACTION_START_RECORDING, (autoStarted? LABEL_AUTO_START : buttonTapped ? LABEL_TAP_BUTTON : LABEL_TAP_SCREEN), new Long(actionIncrement));
         incrementAction();
     }
 

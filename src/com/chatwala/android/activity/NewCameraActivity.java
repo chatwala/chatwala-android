@@ -1,6 +1,7 @@
 package com.chatwala.android.activity;
 
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telephony.SmsManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -34,6 +36,7 @@ import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
+import com.chatwala.android.SmsSentReceiver;
 import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
@@ -106,6 +109,7 @@ public class NewCameraActivity extends DrawerListActivity {
     private String recordCopyOverride;
 
     private boolean isFacebookFlow = false;
+    private ArrayList<String> topContactsList;
 
     private ShowcaseView tutorialView;
     private static final int FIRST_BUTTON_TUTORIAL_ID = 1000;
@@ -360,6 +364,18 @@ public class NewCameraActivity extends DrawerListActivity {
         super.onCreate(savedInstanceState);
         Logger.i("Beginning of onCreate()");
 
+        if(!getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA)) {
+            if(!AppPrefs.getInstance(this).wasTopContactsShown() ||
+                    (AppPrefs.getInstance(this).getDeliveryMethod() == DeliveryMethod.TOP_CONTACTS &&
+                    getIntent().getData() == null && !getIntent().hasExtra(OPEN_DRAWER) &&
+                    !getIntent().hasExtra(MESSAGE_ID))) {
+                startActivity(new Intent(this, TopContactsActivity.class));
+                AppPrefs.getInstance(this).setTopContactsShown(true);
+                finish();
+                return;
+            }
+        }
+
         LocalBroadcastManager.getInstance(this).registerReceiver(referrerIntentReceiver,
                 new IntentFilter(ReferrerReceiver.CW_REFERRER_ACTION));
 
@@ -462,7 +478,7 @@ public class NewCameraActivity extends DrawerListActivity {
             tutorialView.hide();
         }
 
-        if(replyMessageAvailable()) {
+        if(replyMessageAvailable() || deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
             ShowcaseView.registerShot(this, FIRST_BUTTON_TUTORIAL_ID);
             return;
         }
@@ -533,6 +549,19 @@ public class NewCameraActivity extends DrawerListActivity {
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
         shouldShowPreview = AppPrefs.getInstance(this).getPrefShowPreview();
         deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
+        if(getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA) &&
+                getIntent().getStringArrayListExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA).size() > 0) {
+            topContactsList = getIntent().getStringArrayListExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA);
+            getIntent().removeExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA);
+            deliveryMethod = DeliveryMethod.TOP_CONTACTS;
+        }
+        else if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+            deliveryMethod = AppPrefs.getInstance(this).getDeliveryMethod();
+            if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                deliveryMethod = DeliveryMethod.CWSMS;
+            }
+            topContactsList = null;
+        }
 
         Logger.i();
         CWAnalytics.setStarterMessage(!replyMessageAvailable(), referrer);
@@ -542,7 +571,10 @@ public class NewCameraActivity extends DrawerListActivity {
 
 //        setReviewVolume();
 
-        if (closePreviewOnReturn)
+        if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+            createSurface();
+        }
+        else if (closePreviewOnReturn)
         {
             closePreviewOnReturn = false;
             closeResultPreview();
@@ -655,7 +687,11 @@ public class NewCameraActivity extends DrawerListActivity {
         }
     }
 
-    private void triggerButtonAction(boolean fromCenterButtonPress)
+    private void triggerButtonAction(boolean fromCenterButtonPress) {
+        triggerButtonAction(fromCenterButtonPress, false);
+    }
+
+    private void triggerButtonAction(boolean fromCenterButtonPress, boolean autoStarted)
     {
         AppState state = getAppState();
         Logger.logUserAction("Timer button pressed in state: " + state.name());
@@ -683,7 +719,7 @@ public class NewCameraActivity extends DrawerListActivity {
         {
             MessageOrigin origin = getCurrentMessageOrigin();
             if(origin == MessageOrigin.INITIATOR) {
-                CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress);
+                CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress, autoStarted);
                 messageStartInfoFuture = executor.submit(new Callable<ChatwalaMessageStartInfo>() {
 
                     @Override
@@ -800,6 +836,9 @@ public class NewCameraActivity extends DrawerListActivity {
                             else if(deliveryMethod == DeliveryMethod.EMAIL) {
                                 sendEmail(messageId);
                             }
+                            else if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                                sendSmsToTopContacts(messageId);
+                            }
                             else {
                                 sendFacebookPostShare(messageId);
                             }
@@ -847,41 +886,40 @@ public class NewCameraActivity extends DrawerListActivity {
                 }
 
                 @Override
-                protected void onPostExecute(final Boolean complete)
-                {
-                    if(complete != null)
-                    {
-                        if(complete)
-                        {
+                protected void onPostExecute(Boolean complete) {
+                    if(complete != null) {
+                        if(complete) {
                             Toast.makeText(NewCameraActivity.this, "Message sent.", Toast.LENGTH_LONG).show();
 
                             AppPrefs prefs = AppPrefs.getInstance(NewCameraActivity.this);
                             boolean showFeedback = false;
-                            if(!prefs.getPrefFeedbackShown())
-                            {
+                            if(!prefs.getPrefFeedbackShown()) {
                                 showFeedback = prefs.recordMessageSent();
                             }
 
-                            if(!prefs.isImageReviewed() && MessageDataStore.findUserImageInLocalStore(prefs.getUserId()).exists())
-                            {
+                            if(!prefs.isImageReviewed() && MessageDataStore.findUserImageInLocalStore(prefs.getUserId()).exists()) {
                                 UpdateProfilePicActivity.startMe(NewCameraActivity.this, true);
                             }
-                            else if(showFeedback)
-                            {
+                            else if(showFeedback) {
                                 FeedbackActivity.startMe(NewCameraActivity.this, true);
                             }
-                            else
-                            {
+                            else {
                                 NewCameraActivity.startMe(NewCameraActivity.this);
                             }
 
                             finish();
                         }
-                        else
-                        {
+                        else {
                             Toast.makeText(NewCameraActivity.this, "Couldn't contact server.  Please try again later.", Toast.LENGTH_LONG).show();
                             NewCameraActivity.startMe(NewCameraActivity.this);
                             finish();
+                        }
+                    }
+                    else {
+                        if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                            deliveryMethod = DeliveryMethod.CWSMS;
+                            tearDownSurface();
+                            createSurface();
                         }
                     }
                 }
@@ -1117,7 +1155,8 @@ public class NewCameraActivity extends DrawerListActivity {
             CWAnalytics.sendStopPressedEvent(analyticsDuration());
         }
 
-        if(buttonPress && getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) {
+        if(buttonPress && ((getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) ||
+                                deliveryMethod == DeliveryMethod.TOP_CONTACTS)) {
             cameraPreviewView.stopRecording();
             showSendOrCancelAlert();
         }
@@ -1141,6 +1180,13 @@ public class NewCameraActivity extends DrawerListActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         setAppState(AppState.ReadyStopped, true);
+                        if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                            deliveryMethod = AppPrefs.getInstance(NewCameraActivity.this).getDeliveryMethod();
+                            if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                                deliveryMethod = DeliveryMethod.CWSMS;
+                            }
+                            topContactsList = null;
+                        }
                         tearDownSurface();
                         createSurface();
                     }
@@ -1203,7 +1249,12 @@ public class NewCameraActivity extends DrawerListActivity {
         else
         {
             removeWaterSplash();
-            showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, getRecordCopy());
+            if(deliveryMethod == DeliveryMethod.TOP_CONTACTS && topContactsList != null) {
+                showPreRecordingCountdown();
+            }
+            else {
+                showMessage(bottomFrameMessage, bottomFrameMessageText, R.color.message_background_clear, getRecordCopy());
+            }
         }
 
         liveForRecording();
@@ -1603,6 +1654,47 @@ public class NewCameraActivity extends DrawerListActivity {
         }
     }
 
+    private void sendSmsToTopContacts(String messageId) {
+        if(topContactsList == null || topContactsList.size() == 0) {
+            DeliveryMethod deliveryMethod = AppPrefs.getInstance(this).getDeliveryMethod();
+            if (deliveryMethod == DeliveryMethod.SMS) {
+                sendSms(messageId);
+            }
+            else if(deliveryMethod == DeliveryMethod.CWSMS) {
+                sendChatwalaSms(messageId);
+            }
+            else if(deliveryMethod == DeliveryMethod.EMAIL) {
+                sendEmail(messageId);
+            }
+            return;
+        }
+
+        String messageLink = messageStartInfo.getShareUrl();
+        final String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
+        final Context appContext = NewCameraActivity.this;
+
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                for(String contact : topContactsList) {
+                    PendingIntent sentIntent = null;
+                    if(appContext != null) {
+                        sentIntent = PendingIntent.getBroadcast(appContext, contact.hashCode(),
+                                new Intent(appContext, SmsSentReceiver.class), 0);
+                    }
+                    try {
+                        SmsManager.getDefault().sendTextMessage(contact, null, smsText, sentIntent, null);
+                    }
+                    catch (Exception e) {
+                        Logger.e("There was an exception while sending SMS(s)", e);
+                        CWAnalytics.sendMessageSentFailedEvent();
+                    }
+                }
+                topContactsList = null;
+            }
+        });
+    }
+
     private void sendSms(final String messageId)
     {
         String messageLink = messageStartInfo.getShareUrl();
@@ -1733,7 +1825,12 @@ public class NewCameraActivity extends DrawerListActivity {
             this.countdownEnd = countdownEnd;
             this.isReply = isReply;
 
-            displayMessage = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+            if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                displayMessage = getString(R.string.top_contacts_recording_text);
+            }
+            else {
+                displayMessage = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+            }
         }
 
         public boolean shouldShowFirst() {
@@ -1753,10 +1850,49 @@ public class NewCameraActivity extends DrawerListActivity {
         }
 
         public String getDisplayMessage() {
-            if(!shouldShowPreview && isReply && countdownBegin == 5) {
+            if(deliveryMethod == DeliveryMethod.TOP_CONTACTS && countdownBegin == 5) {
+                displayMessage = getString(R.string.top_contacts_sending_text);
+            }
+            else if(!shouldShowPreview && isReply && countdownBegin == 5) {
                 displayMessage = getString(R.string.sending_reply_countdown);
             }
             return displayMessage;
+        }
+    }
+
+    private void showPreRecordingCountdown() {
+        int colorRes = (R.color.message_background_clear);
+        bottomFrameMessage.setBackgroundColor(getResources().getColor(colorRes));
+        bottomFrameMessageText.setText("");
+        bottomFrameMessage.setVisibility(View.VISIBLE);
+        bottomFrameMessageText.setVisibility(View.VISIBLE);
+
+        final int delay = 1000;
+
+        if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+            bottomFrameMessageText.postDelayed(new RecordCountdownRunnable(4, 1, false) {
+                @Override
+                public void run() {
+                    if (bottomFrameMessageText == null) { //if we lost the activity
+                        bottomFrameMessageText.removeCallbacks(this);
+                        return;
+                    }
+
+                    if (!isCountdownValid() || getAppState() != AppState.ReadyStopped) {
+                        if(!isCountdownValid()) {
+                            triggerButtonAction(false, true);
+                        }
+                        bottomFrameMessageText.removeCallbacks(this);
+                    }
+                    else {
+                        bottomFrameMessageText.setText(String.format(getString(R.string.top_contacts_pre_recording_text), tick()));
+                        bottomFrameMessageText.postDelayed(this, delay);
+                    }
+                }
+            }, 100);
+        }
+        else {
+            showRecordingCountdown(false);
         }
     }
 
@@ -1769,7 +1905,7 @@ public class NewCameraActivity extends DrawerListActivity {
 
         final int delay = (isReply ? 850 : 1000);
 
-        bottomFrameMessageText.postDelayed(new RecordCountdownRunnable(10, 0, isReply) {
+        bottomFrameMessageText.postDelayed(new RecordCountdownRunnable(10, 1, isReply) {
             @Override
             public void run() {
                 if (bottomFrameMessageText == null) { //if we lost the activity
@@ -1784,6 +1920,9 @@ public class NewCameraActivity extends DrawerListActivity {
                 else {
                     if (shouldShowFirst()) {
                         String message = getString((isReply ? R.string.recording_reply_countdown : R.string.recording_countdown));
+                        if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
+                            message = getString(R.string.top_contacts_recording_text);
+                        }
                         bottomFrameMessageText.setText(message.replace("%d", " "));
                         setShowFirstMessage(false);
                     }
