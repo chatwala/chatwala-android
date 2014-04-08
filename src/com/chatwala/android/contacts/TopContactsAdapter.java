@@ -49,6 +49,10 @@ public class TopContactsAdapter extends ContactsAdapter {
         return contactsToSendTo;
     }
 
+    public void clearContactsToSendTo() {
+        contactsToSendTo.clear();
+    }
+
     @Override
     public View getView(int i, View convertView, ViewGroup parent) {
         final ViewHolder holder;

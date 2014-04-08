@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.GridView;
@@ -48,6 +50,25 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
         Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         ((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.top_contacts_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.menu_top_contacts_skip) {
+            adapter.clearContactsToSendTo();
+            startNewCameraActivity();
+            CWAnalytics.sendTapSkipEvent();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
