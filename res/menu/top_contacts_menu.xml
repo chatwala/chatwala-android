@@ -3,5 +3,5 @@
     <item
         android:id="@+id/menu_top_contacts_skip"
         android:title="Skip"
-        android:showAsAction="ifRoom"/>
+        android:showAsAction="always"/>
 </menu>

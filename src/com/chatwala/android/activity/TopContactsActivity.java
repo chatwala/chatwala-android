@@ -65,6 +65,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         if(item.getItemId() == R.id.menu_top_contacts_skip) {
             adapter.clearContactsToSendTo();
             startNewCameraActivity();
+            CWAnalytics.sendTapSkipEvent();
             return true;
         }
         else {
