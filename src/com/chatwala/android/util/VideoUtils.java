@@ -5,7 +5,6 @@ import android.media.MediaMetadataRetriever;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -90,7 +89,7 @@ public class VideoUtils
         public int rotation;
     }
 
-    public static VideoMetadata findMetadata(File videoFile) throws IOException
+    public static VideoMetadata findMetadata(File videoFile) throws Exception
     {
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         FileInputStream inp = new FileInputStream(videoFile);

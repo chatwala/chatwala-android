@@ -1,45 +1,41 @@
 package com.chatwala.android.activity;
 
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.Loader;
-import android.telephony.SmsManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.TextView;
 import com.chatwala.android.R;
-import com.chatwala.android.SmsSentReceiver;
 import com.chatwala.android.contacts.ContactEntry;
 import com.chatwala.android.contacts.ContactsAdapter;
 import com.chatwala.android.contacts.ContactsLoader;
 import com.chatwala.android.contacts.FrequentContactsAdapter;
 import com.chatwala.android.contacts.FrequentContactsLoader;
+import com.chatwala.android.sms.Sms;
+import com.chatwala.android.sms.SmsManager;
 import com.chatwala.android.util.CWAnalytics;
-import com.chatwala.android.util.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SmsActivity extends FragmentActivity {
     public static final String SMS_MESSAGE_URL_EXTRA = "sms_message_url";
     public static final String SMS_MESSAGE_EXTRA = "sms_message";
-
-    private static final int MAX_SMS_MESSAGE_LENGTH = 160;
+    public static final String COMING_FROM_TOP_CONTACTS_EXTRA = "coming_from_top_contacts";
 
     private static final int MOST_CONTACTED_CONTACT_LIMIT = 27;
 
@@ -47,12 +43,9 @@ public class SmsActivity extends FragmentActivity {
     private static final int CONTACTS_TIME_CONTACTED_LOADER_CODE = 1;
 
     private String smsMessageUrl;
-    private String smsMessage;
+    private String smsMessage = null;
 
     private boolean sendAnalyticsBackgroundEvent = true;
-
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
-    private int messagesSent = 0;
 
     private Map<String, Boolean> contactsSentTo;
 
@@ -63,60 +56,52 @@ public class SmsActivity extends FragmentActivity {
     private ContactsAdapter contactsAdapter;
     private FrequentContactsAdapter recentsdAdapter;
 
-    private class SendMessageRunnable implements Runnable {
-        private Context appContext;
-        private String value;
-
-        public SendMessageRunnable(String value) {
-            this.value = value;
-            if(SmsActivity.this != null) {
-                appContext = SmsActivity.this.getApplicationContext();
-            }
-        }
-
-        @Override
-        public void run() {
-            //this isn't needed unless we allow for custom messages
-            /*String messageUrlWithPrefix = ": " + smsMessageUrl;
-            int maxMessageSize = MAX_SMS_MESSAGE_LENGTH - messageUrlWithPrefix.length();
-            if(smsMessage.length() > maxMessageSize) {
-                smsMessage = smsMessage.substring(maxMessageSize - 1) + messageUrlWithPrefix;
-            }*/
-            String message = smsMessage + ": " + smsMessageUrl;
-            PendingIntent sentIntent = null;
-            if(appContext != null) {
-                sentIntent = PendingIntent.getBroadcast(appContext, messagesSent, new Intent(appContext, SmsSentReceiver.class), 0);
-            }
-            try {
-                SmsManager.getDefault().sendTextMessage(value, null, message, sentIntent, null);
-                messagesSent++;
-            }
-            catch(Exception e) {
-                Logger.e("There was an exception while sending SMS(s)", e);
-                CWAnalytics.sendMessageSentFailedEvent();
-            }
-        }
-    }
+    private boolean cameFromTopContactsFlow;
+    private int numContactsFromTopFlow;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         setContentView(R.layout.activity_sms);
 
-        if(!getIntent().hasExtra(SMS_MESSAGE_URL_EXTRA) || !getIntent().hasExtra(SMS_MESSAGE_EXTRA)) {
+        if(getIntent().hasExtra(SMS_MESSAGE_URL_EXTRA)) {
+            smsMessageUrl = getIntent().getStringExtra(SMS_MESSAGE_URL_EXTRA);
+        }
+        else {
             finish();
             return;
+        }
+        if(getIntent().hasExtra(SMS_MESSAGE_EXTRA)) {
+            smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
+        }
+
+        if(getIntent().hasExtra(COMING_FROM_TOP_CONTACTS_EXTRA)) {
+            cameFromTopContactsFlow = true;
+            numContactsFromTopFlow = getIntent().getIntExtra(COMING_FROM_TOP_CONTACTS_EXTRA, 0);
+        }
+
+        if(cameFromTopContactsFlow) {
+            getActionBar().setTitle("Message Sent");
+            getIntent().removeExtra(COMING_FROM_TOP_CONTACTS_EXTRA);
+            findViewById(R.id.contacts_custom_copy).setVisibility(View.VISIBLE);
+            findViewById(R.id.contacts_filter_container).setVisibility(View.GONE);
+            findViewById(R.id.recent_contacts_lbl).setVisibility(View.GONE);
+            ((TextView) findViewById(R.id.contacts_custom_copy)).setText("Tap friends to send them the message too.");
+        }
+        else {
+            findViewById(R.id.contacts_custom_copy).setVisibility(View.GONE);
+            findViewById(R.id.contacts_filter_container).setVisibility(View.VISIBLE);
+            findViewById(R.id.recent_contacts_lbl).setVisibility(View.VISIBLE);
         }
 
         //Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         //((TextView)findViewById(R.id.sms_copy)).setTypeface(fontDemi);
-
-        smsMessageUrl = getIntent().getStringExtra(SMS_MESSAGE_URL_EXTRA);
-        smsMessage = getIntent().getStringExtra(SMS_MESSAGE_EXTRA);
 
         contactsSentTo = new HashMap<String, Boolean>();
 
@@ -230,8 +215,19 @@ public class SmsActivity extends FragmentActivity {
             }
         });
 
-        getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, contactsCallbacks);
         getSupportLoaderManager().initLoader(CONTACTS_TIME_CONTACTED_LOADER_CODE, null, frequentlyContactsCallbacks);
+        getSupportLoaderManager().initLoader(CONTACTS_LOADER_CODE, null, contactsCallbacks);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            NavUtils.navigateUpFromSameTask(this);
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void setContactsAdapterItemCheckedChangeListener() {
@@ -283,16 +279,14 @@ public class SmsActivity extends FragmentActivity {
                     }
                 });
 
-                if(isChecked) {
-                    if(contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
+                if (isChecked) {
+                    if (contactsSentTo.containsKey(entry.getName() + entry.getValue())) {
                         entry.setIsSent(true);
-                    }
-                    else {
+                    } else {
                         contactsSentTo.put(entry.getName() + entry.getValue(), true);
                         entry.startSend();
                     }
-                }
-                else {
+                } else {
                     contactsSentTo.remove(entry.getName() + entry.getValue());
                     entry.cancelSend();
                 }
@@ -304,11 +298,16 @@ public class SmsActivity extends FragmentActivity {
 
     private void startSendSms(ContactEntry contact) {
         contact.startSend();
-        if(contactsListView.isShown()) {
-            CWAnalytics.sendRecipientAddedEvent();
+        if(cameFromTopContactsFlow) {
+            CWAnalytics.sendUpsellAddedEvent();
         }
-        else if(recentsGridView.isShown()) {
-            CWAnalytics.sendRecentAddedEvent();
+        else {
+            if(contactsListView.isShown()) {
+                CWAnalytics.sendRecipientAddedEvent();
+            }
+            else if(recentsGridView.isShown()) {
+                CWAnalytics.sendRecentAddedEvent();
+            }
         }
     }
 
@@ -316,11 +315,16 @@ public class SmsActivity extends FragmentActivity {
         contact.cancelSend();
         contactsAdapter.notifyDataSetChanged();
         recentsdAdapter.notifyDataSetChanged();
-        CWAnalytics.sendMessageSendCanceledEvent();
+        if(cameFromTopContactsFlow) {
+            CWAnalytics.sendUpsellCanceledEvent();
+        }
+        else {
+            CWAnalytics.sendMessageSendCanceledEvent();
+        }
     }
 
     private void sendSms(ContactEntry contact) {
-        executor.execute(new SendMessageRunnable(contact.getValue()));
+        SmsManager.getInstance().sendSms(new Sms(contact.getValue(), smsMessage, smsMessageUrl));
     }
 
     @Override
@@ -335,11 +339,9 @@ public class SmsActivity extends FragmentActivity {
     public void onStop() {
         super.onStop();
 
-        if(messagesSent > 0) {
-            CWAnalytics.sendMessageSentEvent(messagesSent);
+        if(!isFinishing()) {
+            finish();
         }
-
-        finish();
 
         if(sendAnalyticsBackgroundEvent) {
             CWAnalytics.sendBackgroundWhileSmsEvent();
@@ -369,11 +371,15 @@ public class SmsActivity extends FragmentActivity {
     private LoaderManager.LoaderCallbacks<List<ContactEntry>> frequentlyContactsCallbacks = new LoaderManager.LoaderCallbacks<List<ContactEntry>>() {
         @Override
         public Loader onCreateLoader(int i, Bundle bundle) {
-            return new FrequentContactsLoader(SmsActivity.this, MOST_CONTACTED_CONTACT_LIMIT);
+            return new FrequentContactsLoader(SmsActivity.this, MOST_CONTACTED_CONTACT_LIMIT, numContactsFromTopFlow);
         }
 
         @Override
         public void onLoadFinished(Loader<List<ContactEntry>> listLoader, List<ContactEntry> contacts) {
+            if(contacts.size() == 0) {
+                finish();
+                return;
+            }
             recentsdAdapter = new FrequentContactsAdapter(SmsActivity.this, contacts, true);
             setFrequentsAdapterItemCheckedChangeListener();
             recentsGridView.setAdapter(recentsdAdapter);
