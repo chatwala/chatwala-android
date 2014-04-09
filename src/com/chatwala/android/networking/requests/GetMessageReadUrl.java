@@ -50,7 +50,7 @@ public class GetMessageReadUrl implements Request<HttpURLConnection, GetMessageR
     public CWResult<Boolean> makeRequest(HttpURLConnection client) throws Exception {
         CWResult<Boolean> result = new CWResult<Boolean>();
         JSONObject request = new JSONObject();
-        request.put("short_id", shareId);
+        request.put("share_id", shareId);
 
         client.setFixedLengthStreamingMode(request.toString().getBytes().length);
         client.setRequestProperty("Content-Type", "application/json");
