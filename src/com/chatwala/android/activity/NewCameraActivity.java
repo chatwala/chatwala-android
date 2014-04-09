@@ -34,6 +34,7 @@ import co.touchlab.android.superbus.BusHelper;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
+import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
 import com.chatwala.android.SmsSentReceiver;
@@ -43,10 +44,12 @@ import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.http.GetMessageFileRequest;
 import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
-import com.chatwala.android.http.server20.ChatwalaResponse;
-import com.chatwala.android.http.server20.GetShareUrlFromMessageIdRequest;
 import com.chatwala.android.http.server20.PostAddToInboxRequest;
 import com.chatwala.android.loaders.BroadcastSender;
+import com.chatwala.android.networking.NetworkCallable;
+import com.chatwala.android.networking.NetworkManager;
+import com.chatwala.android.networking.requests.GetMessageReadUrlResponse;
+import com.chatwala.android.networking.requests.GetMessageShortUrl;
 import com.chatwala.android.receivers.ReferrerReceiver;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.server20.NewMessageFlowCommand;
@@ -72,12 +75,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -115,9 +118,10 @@ public class NewCameraActivity extends DrawerListActivity {
     private static final int FIRST_BUTTON_TUTORIAL_ID = 1000;
 
     private ChatwalaMessage playbackMessage = null;
-    private ChatwalaMessageStartInfo messageStartInfo = null;
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
-    private Future<ChatwalaMessageStartInfo> messageStartInfoFuture;
+
+    private Future<CWResult<ChatwalaMessageStartInfo>> shortURLFuture;
+    private ChatwalaMessageStartInfo messageStartInfo;
+
     private static final String MESSAGE_READ_URL_EXTRA = "MESSAGE_READ_URL";
     private static final String MESSAGE_ID = "MESSAGE_ID";
     public static final String PENDING_SEND_URL = "PENDING_SEND_URL";
@@ -720,13 +724,7 @@ public class NewCameraActivity extends DrawerListActivity {
             MessageOrigin origin = getCurrentMessageOrigin();
             if(origin == MessageOrigin.INITIATOR) {
                 CWAnalytics.sendRecordingStartEvent(fromCenterButtonPress, autoStarted);
-                messageStartInfoFuture = executor.submit(new Callable<ChatwalaMessageStartInfo>() {
-
-                    @Override
-                    public ChatwalaMessageStartInfo call() throws Exception {
-                        return prepManualSend();
-                    }
-                });
+                shortURLFuture = prepManualSend();
             }
             else if(origin == MessageOrigin.LINK) {
                 CWAnalytics.sendReactionStartEvent(fromCenterButtonPress);
@@ -797,7 +795,8 @@ public class NewCameraActivity extends DrawerListActivity {
                         if (playbackMessage == null || playbackMessage.getSenderId().startsWith("unknown"))
                         {
                             try {
-                                messageStartInfo = messageStartInfoFuture.get();
+                                CWResult<ChatwalaMessageStartInfo> cwresult = shortURLFuture.get();
+                                messageStartInfo = cwresult.getResult();
                             }
                             catch(Exception e) {
                                 Logger.e("Got an exception while waiting for the messageStartInfo", e);
@@ -807,6 +806,7 @@ public class NewCameraActivity extends DrawerListActivity {
                                 return false;
                             }
                             final String messageId = messageStartInfo.getMessageId();
+                            Logger.d("startInfo=" + messageStartInfo.getMessageId() + " url=" + messageStartInfo.getShortUrl());
 
                             DataProcessor.runProcess(new Runnable()
                             {
@@ -1482,8 +1482,10 @@ public class NewCameraActivity extends DrawerListActivity {
                 }
                 else
                 {
-                    readUrl = ShareUtils.getReadUrlFromShareUrl(getIntent().getData());
-                    playbackMessageId = ShareUtils.getMessageIdFromShareUrl(getIntent().getData());
+
+                    GetMessageReadUrlResponse response = ShareUtils.getReadUrlFromShareUrl(NewCameraActivity.this, getIntent().getData());
+                    readUrl = response.getReadUrl();
+                    playbackMessageId = response.getMessageId();
                     new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
                 }
 
@@ -1551,37 +1553,21 @@ public class NewCameraActivity extends DrawerListActivity {
         }
     }
 
-    private ChatwalaMessageStartInfo prepManualSend()
+    private Future<CWResult<ChatwalaMessageStartInfo>> prepManualSend()
     {
-        int attempts = 0;
-        while (attempts < 3)
-        {
-            try
-            {
 
-                String messageId = UUID.randomUUID().toString();
-                ChatwalaResponse<String> response = (ChatwalaResponse<String>) new GetShareUrlFromMessageIdRequest(NewCameraActivity.this, messageId).execute();
+        String messageId = UUID.randomUUID().toString();
+        GetMessageShortUrl getMessageShortUrl = new GetMessageShortUrl(messageId);
 
-                if(response.getResponseData()!=null) {
+        NetworkCallable<HttpURLConnection, ChatwalaMessageStartInfo> callable = getMessageShortUrl.getCallable(this, 3);
 
-                    messageStartInfo = new ChatwalaMessageStartInfo();
-                    messageStartInfo.setShareUrl(response.getResponseData());
-                    messageStartInfo.setMessageId(messageId);
-                    return messageStartInfo;
-                }
+        Future<CWResult<ChatwalaMessageStartInfo>> future = NetworkManager.getInstance().postToQueue(callable);
+        return future;
 
-            }
-            catch (TransientException e)
-            {}
-            catch (PermanentException e)
-            {}
-            attempts++;
-        }
-        return null;
     }
 
     private void sendFacebookPostShare(String messageId) {
-        String urlToShare = messageStartInfo.getShareUrl();
+        String urlToShare = messageStartInfo.getShortUrl();
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
@@ -1619,7 +1605,7 @@ public class NewCameraActivity extends DrawerListActivity {
         Uri mailtoUri = Uri.parse(uriText);
         //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
         //String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
-        String messageLink = messageStartInfo.getShareUrl();
+        String messageLink = messageStartInfo.getShortUrl();
 
         boolean gmailOk = false;
 
@@ -1697,7 +1683,7 @@ public class NewCameraActivity extends DrawerListActivity {
 
     private void sendSms(final String messageId)
     {
-        String messageLink = messageStartInfo.getShareUrl();
+        String messageLink = messageStartInfo.getShortUrl();
         String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
@@ -1773,7 +1759,7 @@ public class NewCameraActivity extends DrawerListActivity {
     private void sendChatwalaSms(final String messageId)
     {
         //String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
-        String messageLink = messageStartInfo.getShareUrl();
+        String messageLink = messageStartInfo.getShortUrl();
         String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
