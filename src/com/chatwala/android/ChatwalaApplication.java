@@ -2,7 +2,6 @@ package com.chatwala.android;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -17,27 +16,20 @@ import co.touchlab.android.superbus.provider.PersistedApplication;
 import co.touchlab.android.superbus.provider.PersistenceProvider;
 import co.touchlab.android.superbus.provider.gson.GsonSqlitePersistenceProvider;
 import co.touchlab.android.superbus.provider.sqlite.SQLiteDatabaseFactory;
-import com.chatwala.android.activity.KillswitchActivity;
-import com.chatwala.android.activity.SettingsActivity;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.db.DBHelper;
-import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.networking.NetworkManager;
-import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.GCMUtils;
+import com.chatwala.android.util.KillswitchInfo;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
-import xmlwise.Plist;
-import xmlwise.XmlParseException;
+import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -109,22 +101,37 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             Logger.i("User id is " + userId);
         }
 
-        if(!isChatwalaSmsEnabled()) {
-            if(AppPrefs.getInstance(getApplicationContext()).getDeliveryMethod() == SettingsActivity.DeliveryMethod.CWSMS) {
-                AppPrefs.getInstance(getApplicationContext()).setDeliveryMethod(SettingsActivity.DeliveryMethod.SMS);
-            }
-        }
-
         isKillswitchShowing = new AtomicBoolean(false);
-        isKillswitchActive(ChatwalaApplication.this);
+
+        try {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        KillswitchInfo oldKillswitch = AppPrefs.getInstance(getApplicationContext()).getKillswitch();
+                        CWResult<JSONObject> killswitchResult = NetworkManager.getInstance().getKillswitch(oldKillswitch).get();
+                        if(killswitchResult.isSuccess()) {
+                            AppPrefs.getInstance(getApplicationContext()).putKillswitch(killswitchResult.getResult());
+                        }
+                        else {
+                            AppPrefs.getInstance(getApplicationContext()).putKillswitch(new JSONObject());
+                        }
+                    }
+                    catch(Exception e) {
+                        Logger.e("Couldn't get the killswitch", e);
+                    }
+                }
+            }.start();
+        }
+        catch(Exception e) {
+            Logger.e("The killswitch checker thread crashed", e);
+        }
 
         DataProcessor.runProcess(new Runnable()
         {
             @Override
             public void run()
             {
-                BusHelper.submitCommandSync(ChatwalaApplication.this, new CheckKillswitchCommand());
-
                 if(GCMUtils.shouldRegisterForGcm(ChatwalaApplication.this))
                 {
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterPushTokenCommand());
@@ -225,66 +232,5 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         {
             return DatabaseHelper.getInstance(ChatwalaApplication.this).getWritableDatabase();
         }
-    }
-
-    public static boolean isChatwalaSmsEnabled() {
-        try {
-            File killswitchFile = MessageDataStore.makePlistFile();
-
-            if(killswitchFile.exists()) {
-                Map<String, Object> properties = Plist.load(killswitchFile);
-                Boolean val = (Boolean) properties.get("SMS_DISABLED");
-                if(val != null && val) {
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }
-            else {
-                return true;
-            }
-        }
-        catch(Exception e) {
-            Logger.e("There was an error checking if ChatwalaSMS is enabled", e);
-            return true;
-        }
-    }
-
-    public static boolean isKillswitchActive(Context context)
-    {
-        try
-        {
-            File killswitchFile = MessageDataStore.makePlistFile();
-
-            if(killswitchFile.exists())
-            {
-                Map<String, Object> properties = Plist.load(killswitchFile);
-                Logger.d("Killswitch enabled is " + properties.get("APP_DISABLED"));
-                Logger.d("Killswitch text is " + properties.get("AAPP_DISABLED_TEXT"));
-
-                if((Boolean)properties.get("APP_DISABLED"))
-                {
-                    KillswitchActivity.startMe(context, (String) properties.get("APP_DISABLED_TEXT"));
-                    return true;
-                }
-                else
-                {
-                    BroadcastSender.makeKillswitchOffBroadcast(context);
-                }
-            }
-
-            //todo - what should we do in these cases? For now we'll just eat them
-        }
-        catch (XmlParseException e)
-        {
-            Logger.e("Unable to parse killswitch plist file", e);
-        }
-        catch (IOException e)
-        {
-            Logger.e("IO Exception with killswitch plist file", e);
-        }
-
-        return false;
     }
 }

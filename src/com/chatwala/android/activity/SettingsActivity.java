@@ -17,7 +17,6 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import com.chatwala.android.AppPrefs;
-import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.R;
 import com.chatwala.android.util.Logger;
@@ -255,26 +254,6 @@ public class SettingsActivity extends BaseChatWalaActivity
 
         public DeliveryMethodAdapter() {
             methods = DeliveryMethod.values();
-            try {
-                if(!ChatwalaApplication.isChatwalaSmsEnabled()) {
-                    DeliveryMethod[] newMethods = new DeliveryMethod[methods.length - 1];
-                    for(int i = 0; i < methods.length; i++) {
-                        if(methods[i] == DeliveryMethod.CWSMS) {
-                            while(++i < methods.length) {
-                                newMethods[i - 1] = methods[i];
-                            }
-                            break;
-                        }
-                        else {
-                            newMethods[i] = methods[i];
-                        }
-                    }
-                    methods = newMethods;
-                }
-            }
-            catch (Exception e) {
-                Logger.e("Exception with disabling ChatwalaSMS", e);
-            }
         }
 
         @Override

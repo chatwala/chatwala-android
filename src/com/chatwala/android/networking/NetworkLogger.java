@@ -27,4 +27,15 @@ public class NetworkLogger {
         Logger.i(sb.toString());
     }
 
+    public static void logHttpResponse(HttpURLConnection client, String url, String response) {
+        Logger.i("==================HTTP RESPONSE==================");
+        StringBuilder sb = new StringBuilder()
+                .append("Response from: ").append(url)
+                .append("\n").append(client.getHeaderFields().toString().replaceAll("],", "]\n"));
+        if(client.getContentType() != null && client.getContentType().contains("application/json") && response != null) {
+            sb.append("\n").append(response);
+        }
+        Logger.i(sb.toString());
+    }
+
 }

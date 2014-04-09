@@ -36,7 +36,9 @@ public class FetchMessagesService extends IntentService
             @Override
             public void run()
             {
-                BusHelper.submitCommandSync(FetchMessagesService.this, new GetUserInboxCommand());
+                if(!AppPrefs.getInstance(FetchMessagesService.this).getKillswitch().isActive()) {
+                    BusHelper.submitCommandSync(FetchMessagesService.this, new GetUserInboxCommand());
+                }
             }
         });
     }

@@ -2,7 +2,10 @@ package com.chatwala.android.networking;
 
 import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
+import com.chatwala.android.networking.requests.GetKillswitchRequest;
+import com.chatwala.android.util.KillswitchInfo;
 import com.chatwala.android.util.Logger;
+import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +48,10 @@ public class NetworkManager {
 
     public <TClient, TResult> Future<CWResult<TResult>> postToQueue(NetworkCallable<TClient, TResult> callable) {
         return getQueue().submit(callable);
+    }
+
+    public Future<CWResult<JSONObject>> getKillswitch(KillswitchInfo oldKillswitch) {
+        return postToQueue(new GetKillswitchRequest(oldKillswitch).getCallable(getApp(), 3));
     }
 
     public void setChatwalaHeaders(HttpURLConnection client) {

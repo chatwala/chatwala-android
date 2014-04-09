@@ -9,6 +9,9 @@ import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.superbus.ClearStoreCommand;
 import com.chatwala.android.util.CameraUtils;
+import com.chatwala.android.util.KillswitchInfo;
+import com.chatwala.android.util.Logger;
+import org.json.JSONObject;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,6 +25,7 @@ public class AppPrefs
     private static AppPrefs INSTANCE;
     private Application application;
 
+    public static final String PREF_KILLSWITCH = "KILLSWITCH";
     public static final String PREF_REFERRER = "PREF_REFERRER";
     public static final String PREF_FIRST_OPEN = "FIRST_OPEN";
     public static final String PREF_FIRST_BUTTON_PRESS = "FIRST_BUTTON_PRESS";
@@ -65,6 +69,21 @@ public class AppPrefs
     {
         return mSp;
     }*/
+
+    public void putKillswitch(JSONObject killswitch) {
+        mSp.edit().putString(PREF_KILLSWITCH, killswitch.toString()).apply();
+    }
+
+    public KillswitchInfo getKillswitch() {
+        try {
+            JSONObject killswitch = new JSONObject(mSp.getString(PREF_KILLSWITCH, "{}"));
+            return new KillswitchInfo(application, killswitch);
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't create KillswitchInfo from prefs", e);
+            return new KillswitchInfo(application, new JSONObject());
+        }
+    }
 
     public void putReferrer(String referrer) {
         mSp.edit().putString(PREF_REFERRER, referrer).apply();
