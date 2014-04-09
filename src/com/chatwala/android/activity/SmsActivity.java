@@ -285,7 +285,7 @@ public class SmsActivity extends FragmentActivity implements ContactsAdapter.OnC
 
         @Override
         public void onLoadFinished(Loader<List<ContactEntry>> listLoader, List<ContactEntry> contacts) {
-            if(contacts.size() == 0) {
+            if(cameFromTopContactsFlow && contacts.size() == 0) {
                 finish();
                 return;
             }
