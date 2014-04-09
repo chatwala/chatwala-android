@@ -86,7 +86,7 @@ public class GetMessageShortUrl implements Request<HttpURLConnection, ChatwalaMe
             JSONObject responseBody = new JSONObject(responseBuilder.toString());
             ChatwalaMessageStartInfo startInfo = new ChatwalaMessageStartInfo();
             startInfo.setMessageId(this.messageId);
-            startInfo.setShortUrl(responseBody.getString("short_url"));
+            startInfo.setShareUrl(responseBody.getString("share_url"));
 
             CWResult<ChatwalaMessageStartInfo> response = new CWResult<ChatwalaMessageStartInfo>().setSuccess(startInfo);
 

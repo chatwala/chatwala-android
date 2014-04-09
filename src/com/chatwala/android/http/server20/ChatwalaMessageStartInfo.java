@@ -9,14 +9,6 @@ public class ChatwalaMessageStartInfo {
     String shortUrl;
     String messageId;
 
-    public String getShortUrl() {
-        return shortUrl;
-    }
-
-    public void setShortUrl(String shortUrl) {
-        this.shortUrl=shortUrl;
-    }
-
     public String getShareUrl() {
         return shareUrl;
     }

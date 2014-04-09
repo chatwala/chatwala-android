@@ -80,7 +80,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -806,7 +805,7 @@ public class NewCameraActivity extends DrawerListActivity {
                                 return false;
                             }
                             final String messageId = messageStartInfo.getMessageId();
-                            Logger.d("startInfo=" + messageStartInfo.getMessageId() + " url=" + messageStartInfo.getShortUrl());
+                            Logger.d("startInfo=" + messageStartInfo.getMessageId() + " url=" + messageStartInfo.getShareUrl());
 
                             DataProcessor.runProcess(new Runnable()
                             {
@@ -1567,7 +1566,7 @@ public class NewCameraActivity extends DrawerListActivity {
     }
 
     private void sendFacebookPostShare(String messageId) {
-        String urlToShare = messageStartInfo.getShortUrl();
+        String urlToShare = messageStartInfo.getShareUrl();
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
@@ -1605,7 +1604,7 @@ public class NewCameraActivity extends DrawerListActivity {
         Uri mailtoUri = Uri.parse(uriText);
         //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
         //String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
-        String messageLink = messageStartInfo.getShortUrl();
+        String messageLink = messageStartInfo.getShareUrl();
 
         boolean gmailOk = false;
 
@@ -1683,7 +1682,7 @@ public class NewCameraActivity extends DrawerListActivity {
 
     private void sendSms(final String messageId)
     {
-        String messageLink = messageStartInfo.getShortUrl();
+        String messageLink = messageStartInfo.getShareUrl();
         String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
@@ -1759,7 +1758,7 @@ public class NewCameraActivity extends DrawerListActivity {
     private void sendChatwalaSms(final String messageId)
     {
         //String messageUrl = EnvironmentVariables.get().getWebPath() + messageId;
-        String messageLink = messageStartInfo.getShortUrl();
+        String messageLink = messageStartInfo.getShareUrl();
         String messageText = "Hey, I sent you a video message on Chatwala";
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
