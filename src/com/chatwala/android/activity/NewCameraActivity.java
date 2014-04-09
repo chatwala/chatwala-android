@@ -804,7 +804,7 @@ public class NewCameraActivity extends DrawerListActivity {
                                 return false;
                             }
                             final String messageId = messageStartInfo.getMessageId();
-                            Logger.d("startInfo=" + messageStartInfo.getMessageId() + " url=" + messageStartInfo.getShortUrl());
+                            Logger.d("startInfo=" + messageStartInfo.getMessageId() + " url=" + messageStartInfo.getShareUrl());
 
                             DataProcessor.runProcess(new Runnable()
                             {
@@ -1555,7 +1555,7 @@ public class NewCameraActivity extends DrawerListActivity {
     }
 
     private void sendFacebookPostShare(String messageId) {
-        String urlToShare = messageStartInfo.getShortUrl();
+        String urlToShare = messageStartInfo.getShareUrl();
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
@@ -1593,7 +1593,7 @@ public class NewCameraActivity extends DrawerListActivity {
         Uri mailtoUri = Uri.parse(uriText);
         //String messageLink = "<a href=\"http://chatwala.com/?" + messageId + "\">View the message</a>.";
         //String messageLink = EnvironmentVariables.get().getWebPath() + messageId;
-        String messageLink = messageStartInfo.getShortUrl();
+        String messageLink = messageStartInfo.getShareUrl();
 
         boolean gmailOk = false;
 
@@ -1660,7 +1660,7 @@ public class NewCameraActivity extends DrawerListActivity {
 
     private void sendSms(final String messageId)
     {
-        String messageLink = messageStartInfo.getShortUrl();
+        String messageLink = messageStartInfo.getShareUrl();
         String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
         closePreviewOnReturn = true;
         openSmsShare(smsText);
