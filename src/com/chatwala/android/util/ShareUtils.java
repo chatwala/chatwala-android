@@ -1,11 +1,17 @@
 package com.chatwala.android.util;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
+import com.chatwala.android.CWResult;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.networking.NetworkCallable;
+import com.chatwala.android.networking.NetworkManager;
+import com.chatwala.android.networking.requests.GetMessageReadUrl;
+import com.chatwala.android.networking.requests.GetMessageReadUrlResponse;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.concurrent.Future;
 
 
 /**
@@ -110,29 +118,25 @@ public class ShareUtils
         return null;
     }
 
-    public static String getReadUrlFromShareUrl(Uri shareUrl) {
+    public static GetMessageReadUrlResponse getReadUrlFromShareUrl(Context context, Uri shareUrl) {
+
+        String shareId = shareUrl.getQuery();
+
+        GetMessageReadUrl getMessageReadUrl = new GetMessageReadUrl(shareId);
+
+        NetworkCallable<HttpURLConnection, GetMessageReadUrlResponse> callable = getMessageReadUrl.getCallable(context, 3);
+
+        Future<CWResult<GetMessageReadUrlResponse>> future = NetworkManager.getInstance().postToQueue(callable);
+
         try {
-            String[] split = shareUrl.getQuery().split("\\.");
-            String messageId="", shardKey="";
-
-            if(split.length==1) {
-                //handle old share urls:
-                shardKey = "s1";
-                messageId = split[0];
-            }
-            else if(split.length==2){
-                shardKey = split[0];
-                messageId= split[1];
-            }
-
-            String readUrl = EnvironmentVariables.get().getMessageReadUrlTemplate();
-            return readUrl.replace("{shard}", shardKey).replace("{message}", messageId);
+            return future.get().getResult();
         }
-        catch(Exception e) {
+        catch (Exception e) {
             return null;
         }
     }
 
+    /*
     public static String getMessageIdFromShareUrl(Uri shareUrl) {
         try {
             String[] split = shareUrl.getQuery().split("\\.");
@@ -151,6 +155,10 @@ public class ShareUtils
             return null;
         }
     }
+=======
+        return messageId;
+
+    }*/
 
     public static String getIdFromIntent(Intent callingIntent)
     {

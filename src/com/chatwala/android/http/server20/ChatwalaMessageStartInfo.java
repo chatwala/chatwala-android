@@ -6,6 +6,7 @@ package com.chatwala.android.http.server20;
 public class ChatwalaMessageStartInfo {
 
     String shareUrl;
+    String shortUrl;
     String messageId;
 
     public String getShareUrl() {
