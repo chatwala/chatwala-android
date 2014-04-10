@@ -19,9 +19,7 @@ import com.chatwala.android.util.MessageDataStore;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Created by matthewdavis on 1/10/14.
@@ -105,12 +103,7 @@ public class UpdateProfilePicActivity extends BaseChatWalaActivity
 
                 Toast.makeText(UpdateProfilePicActivity.this, "Profile updated!", Toast.LENGTH_LONG).show();
             }
-            catch (FileNotFoundException e)
-            {
-                Toast.makeText(UpdateProfilePicActivity.this, "Problem updating profile, please try again", Toast.LENGTH_LONG).show();
-            }
-            catch (IOException e)
-            {
+            catch(Exception e) {
                 Toast.makeText(UpdateProfilePicActivity.this, "Problem updating profile, please try again", Toast.LENGTH_LONG).show();
             }
 
