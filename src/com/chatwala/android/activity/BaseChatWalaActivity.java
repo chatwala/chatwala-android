@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ViewGroup;
-import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.util.Logger;
 import com.google.analytics.tracking.android.EasyTracker;
@@ -22,10 +21,6 @@ public abstract class BaseChatWalaActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        if(!(this instanceof KillswitchActivity))
-        {
-            ChatwalaApplication.isKillswitchShowing.set(false);
-        }
     }
 
     @Override

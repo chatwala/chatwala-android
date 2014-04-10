@@ -2,6 +2,7 @@ package com.chatwala.android;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -31,7 +32,6 @@ import com.crashlytics.android.Crashlytics;
 import org.json.JSONObject;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created with IntelliJ IDEA.
@@ -40,8 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Time: 4:52 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ChatwalaApplication extends Application implements PersistedApplication, Application.ActivityLifecycleCallbacks
-{
+public class ChatwalaApplication extends Application implements PersistedApplication, Application.ActivityLifecycleCallbacks {
     public static final String LOG_TAG = "Chatwala";
 
     static final String FONT_DIR = "fonts/";
@@ -53,15 +52,13 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     private GsonSqlitePersistenceProvider persistenceProvider;
 
-    public static AtomicBoolean isKillswitchShowing;
     public static int numActivities=0;
 
     public NetworkManager networkManager;
     public MessageManager messageManager;
 
     @Override
-    public void onCreate()
-    {
+    public void onCreate() {
         super.onCreate();
 
         networkManager = NetworkManager.attachToApp(this);
@@ -75,17 +72,14 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         this.registerActivityLifecycleCallbacks(this);
 
-        if(!MessageDataStore.init(ChatwalaApplication.this))
-        {
+        if(!MessageDataStore.init(ChatwalaApplication.this)) {
             Logger.w("There might not be enough space");
         }
 
-        try
-        {
+        try {
             persistenceProvider = new GsonSqlitePersistenceProvider(new MyDatabaseFactory());
         }
-        catch (StorageException e)
-        {
+        catch (StorageException e) {
             Logger.e("Couldn't start the persistence provider");
             throw new RuntimeException(e);
         }
@@ -94,14 +88,11 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         fontDemi = Typeface.createFromAsset(getAssets(), FONT_DIR + ITCAG_DEMI);
 
         AppPrefs prefs = AppPrefs.getInstance(ChatwalaApplication.this);
-        if(prefs.getUserId() == null)
-        {
+        if(prefs.getUserId() == null) {
             String userId = UUID.randomUUID().toString();
             prefs.setUserId(userId);
             Logger.i("User id is " + userId);
         }
-
-        isKillswitchShowing = new AtomicBoolean(false);
 
         try {
             new Thread() {
@@ -127,24 +118,20 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             Logger.e("The killswitch checker thread crashed", e);
         }
 
-        DataProcessor.runProcess(new Runnable()
-        {
+        DataProcessor.runProcess(new Runnable() {
             @Override
-            public void run()
-            {
-                if(GCMUtils.shouldRegisterForGcm(ChatwalaApplication.this))
-                {
+            public void run() {
+                if(GCMUtils.shouldRegisterForGcm(ChatwalaApplication.this)) {
                     BusHelper.submitCommandSync(ChatwalaApplication.this, new PostRegisterPushTokenCommand());
                 }
             }
         });
 
-        FetchMessagesService.init(ChatwalaApplication.this, AppPrefs.getInstance(ChatwalaApplication.this).getPrefMessageLoadInterval());
+        startService(new Intent(this, FetchMessagesService.class));
     }
 
     @Override
-    public PersistenceProvider getProvider()
-    {
+    public PersistenceProvider getProvider() {
         return persistenceProvider;
     }
 
@@ -153,14 +140,12 @@ public class ChatwalaApplication extends Application implements PersistedApplica
      * @return
      */
     @Override
-    public BusLog getLog()
-    {
+    public BusLog getLog() {
         return null;
     }
 
     @Override
-    public SuperbusEventListener getEventListener()
-    {
+    public SuperbusEventListener getEventListener() {
         return new ConnectionChangeBusEventListener();
     }
 
@@ -169,8 +154,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
      * @return
      */
     @Override
-    public CommandPurgePolicy getCommandPurgePolicy()
-    {
+    public CommandPurgePolicy getCommandPurgePolicy() {
         return null;
     }
 
@@ -179,8 +163,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
      * @return
      */
     @Override
-    public ForegroundNotificationManager getForegroundNotificationManager()
-    {
+    public ForegroundNotificationManager getForegroundNotificationManager() {
         return null;
     }
 
@@ -225,11 +208,9 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
     }
 
-    private final class MyDatabaseFactory implements SQLiteDatabaseFactory
-    {
+    private final class MyDatabaseFactory implements SQLiteDatabaseFactory {
         @Override
-        public SQLiteDatabase getDatabase()
-        {
+        public SQLiteDatabase getDatabase() {
             return DatabaseHelper.getInstance(ChatwalaApplication.this).getWritableDatabase();
         }
     }

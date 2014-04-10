@@ -10,6 +10,8 @@ import org.json.JSONObject;
 public class KillswitchInfo {
     public static final String MINIMUM_LIVE_VERSION_KEY = "minimumLiveVersion";
     public static final String LAST_MODIFIED_KEY = "lastModified";
+    public static final String COPY_OVERRIDE_KEY = "copyOverride";
+    private static final String DEFAULT_COPY = "Thanks for using Chatwala, please update to the latest version in the store.";
 
     private Context context;
     private JSONObject killswitch;
@@ -38,7 +40,11 @@ public class KillswitchInfo {
     }
 
     public String getCopy() {
-        return "Killswitch";
+        JSONObject copyOverrides = killswitch.optJSONObject(COPY_OVERRIDE_KEY);
+        if(copyOverrides != null) {
+            return copyOverrides.optString(Integer.toString(versionCode), DEFAULT_COPY);
+        }
+        return DEFAULT_COPY;
     }
 
     public JSONObject toJson() {

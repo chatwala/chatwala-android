@@ -18,37 +18,28 @@ import com.chatwala.android.util.Logger;
  * Time: 1:58 PM
  * To change this template use File | Settings | File Templates.
  */
-public class FetchMessagesService extends IntentService
-{
+public class FetchMessagesService extends IntentService {
     private static final long ONE_MINUTE = 1000 * 60;
 
-    public FetchMessagesService()
-    {
+    public FetchMessagesService() {
         super("FetchMessagesService");
     }
 
     @Override
-    protected void onHandleIntent(Intent intent)
-    {
+    protected void onHandleIntent(Intent intent) {
         Logger.i("Got new intent");
-        DataProcessor.runProcess(new Runnable()
-        {
+        final PendingIntent pi = PendingIntent.getService(this, 0, new Intent(this, FetchMessagesService.class), 0);
+        final long minutes = AppPrefs.getInstance(this).getPrefMessageLoadInterval() * ONE_MINUTE;
+        final AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        DataProcessor.runProcess(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 if(!AppPrefs.getInstance(FetchMessagesService.this).getKillswitch().isActive()) {
                     BusHelper.submitCommandSync(FetchMessagesService.this, new GetUserInboxCommand());
                 }
+
+                manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + minutes, pi);
             }
         });
-    }
-
-    public static void init(Context context, int minutes)
-    {
-        context.startService(new Intent(context, FetchMessagesService.class));
-        AlarmManager manager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
-        Intent i = new Intent(context, FetchMessagesService.class);
-        PendingIntent receiver = PendingIntent.getService(context, 0, i, 0);
-        manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + ONE_MINUTE, minutes * ONE_MINUTE, receiver);
     }
 }

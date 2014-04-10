@@ -2,6 +2,7 @@ package com.chatwala.android;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import co.touchlab.android.superbus.BusHelper;
@@ -20,8 +21,7 @@ import org.json.JSONObject;
  * Time: 12:27 AM
  * To change this template use File | Settings | File Templates.
  */
-public class AppPrefs
-{
+public class AppPrefs {
     private static AppPrefs INSTANCE;
     private Application application;
 
@@ -48,10 +48,8 @@ public class AppPrefs
 
     public static final String PREF_SHOWED_TOP_CONTACTS = "SHOWED_TOP_CONTACT";
 
-    public static synchronized AppPrefs getInstance(Context context)
-    {
-        if (INSTANCE == null)
-        {
+    public static synchronized AppPrefs getInstance(Context context) {
+        if (INSTANCE == null) {
             INSTANCE = new AppPrefs(context);
         }
         return INSTANCE;
@@ -59,8 +57,7 @@ public class AppPrefs
 
     private final SharedPreferences mSp;
 
-    private AppPrefs(Context context)
-    {
+    private AppPrefs(Context context) {
         mSp = PreferenceManager.getDefaultSharedPreferences(context);
         application = (Application) context.getApplicationContext();
     }
@@ -107,8 +104,7 @@ public class AppPrefs
         mSp.edit().putInt(PREF_ACTION_INCREMENT, actionIncrement).apply();
     }
 
-    public Boolean isFirstOpen()
-    {
+    public Boolean isFirstOpen() {
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         if(firstOpen) {
             mSp.edit()
@@ -150,53 +146,43 @@ public class AppPrefs
         mSp.edit().putBoolean(PREF_FIRST_BUTTON_PRESS, true).apply();
     }
 
-    public void setUserId(String userId)
-    {
+    public void setUserId(String userId) {
         mSp.edit().putString(PREF_USER_ID, userId).apply();
     }
 
-    public String getUserId()
-    {
+    public String getUserId() {
         return mSp.getString(PREF_USER_ID, null);
     }
 
-    public void setGcmToken(String token)
-    {
+    public void setGcmToken(String token) {
         mSp.edit().putString(PREF_GCM_TOKEN, token).apply();
     }
 
-    public String getGcmToken()
-    {
+    public String getGcmToken() {
         return mSp.getString(PREF_GCM_TOKEN, null);
     }
 
-    public void setGcmAppVersion(Integer version)
-    {
+    public void setGcmAppVersion(Integer version) {
         mSp.edit().putInt(PREF_GCM_APP_VERSION, version).apply();
     }
 
-    public Integer getGcmAppVersion()
-    {
+    public Integer getGcmAppVersion() {
         return mSp.getInt(PREF_GCM_APP_VERSION, 0);
     }
 
-    public void setImageReviewed()
-    {
+    public void setImageReviewed() {
         mSp.edit().putBoolean(PREF_IMAGE_REVIEWED, true).apply();
     }
 
-    public boolean isImageReviewed()
-    {
+    public boolean isImageReviewed() {
         return mSp.getBoolean(PREF_IMAGE_REVIEWED, false);
     }
 
-    public String getPrefSelectedEmail()
-    {
+    public String getPrefSelectedEmail() {
         return mSp.getString(PREF_SELECTED_EMAIL, null);
     }
 
-    public void setPrefSelectedEmail(String email)
-    {
+    public void setPrefSelectedEmail(String email) {
         mSp.edit().putString(PREF_SELECTED_EMAIL, email).apply();
     }
 
@@ -208,33 +194,27 @@ public class AppPrefs
         mSp.edit().putBoolean(PREF_SHOW_PREVIEW, showPreview).apply();
     }
 
-    public int getPrefBitDepth()
-    {
+    public int getPrefBitDepth() {
         return mSp.getInt(PREF_BIT_DEPTH, CameraUtils.findVideoBitDepth(application));
     }
 
-    public void setPrefBitDepth(int bitDepth)
-    {
+    public void setPrefBitDepth(int bitDepth) {
         mSp.edit().putInt(PREF_BIT_DEPTH, bitDepth).apply();
     }
 
-    public boolean getPrefCheckedHappy()
-    {
+    public boolean getPrefCheckedHappy() {
         return mSp.getBoolean(PREF_CHECKED_HAPPY, false);
     }
 
-    public void setPrefCheckedHappy(boolean bitDepth)
-    {
+    public void setPrefCheckedHappy(boolean bitDepth) {
         mSp.edit().putBoolean(PREF_CHECKED_HAPPY, bitDepth).apply();
     }
 
-    public int getPrefShareCount()
-    {
+    public int getPrefShareCount() {
         return mSp.getInt(PREF_SHARE_COUNT, 0);
     }
 
-    public void setPrefShareCount(int bitDepth)
-    {
+    public void setPrefShareCount(int bitDepth) {
         mSp.edit().putInt(PREF_SHARE_COUNT, bitDepth).apply();
     }
 
@@ -261,19 +241,16 @@ public class AppPrefs
         }
     }
 
-    public void setPrefMessageLoadInterval(int minutes)
-    {
+    public void setPrefMessageLoadInterval(int minutes) {
         mSp.edit().putInt(PREF_MESSAGE_LOAD_INTERVAL, minutes).apply();
-        FetchMessagesService.init(application, minutes);
+        application.startService(new Intent(application, FetchMessagesService.class));
     }
 
-    public int getPrefMessageLoadInterval()
-    {
+    public int getPrefMessageLoadInterval() {
         return mSp.getInt(PREF_MESSAGE_LOAD_INTERVAL, 60);
     }
 
-    public void setPrefDiskSpaceMax(int max)
-    {
+    public void setPrefDiskSpaceMax(int max) {
         mSp.edit().putInt(PREF_DISK_SPACE_MAX, max).apply();
         DataProcessor.runProcess(new Runnable()
         {
@@ -285,33 +262,27 @@ public class AppPrefs
         });
     }
 
-    public int getPrefDiskSpaceMax()
-    {
+    public int getPrefDiskSpaceMax() {
         return mSp.getInt(PREF_DISK_SPACE_MAX, 500);
     }
 
-    public void setPrefFeedbackShown(boolean shouldShowFeedback)
-    {
+    public void setPrefFeedbackShown(boolean shouldShowFeedback) {
         mSp.edit().putBoolean(PREF_FEEDBACK_SHOWN, shouldShowFeedback).apply();
     }
 
-    public boolean getPrefFeedbackShown()
-    {
+    public boolean getPrefFeedbackShown() {
         return mSp.getBoolean(PREF_FEEDBACK_SHOWN, false);
     }
 
-    public boolean recordMessageSent()
-    {
+    public boolean recordMessageSent() {
         int showCount = mSp.getInt(PREF_FEEDBACK_MESSAGE_COUNT, 0);
         showCount++;
         mSp.edit().putInt(PREF_FEEDBACK_MESSAGE_COUNT, showCount).apply();
-        if(showCount >= 5)
-        {
+        if(showCount >= 5) {
             setPrefFeedbackShown(true);
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }
