@@ -22,7 +22,7 @@ import java.sql.SQLException;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 {
     private static final String DATABASE_NAME = "chatwala2.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     private static DatabaseHelper instance;
     private final ChatwalaApplication app;
@@ -75,6 +75,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         try {
             Dao<ChatwalaMessage, String> messageDao = getChatwalaMessageDao();
             messageDao.executeRaw("ALTER TABLE 'message' ADD COLUMN userThumbnailUrl VARCHAR");
+        }
+        catch(Exception e) {
+            Logger.e("Got an error while updating the database", e);
+        }
+
+        try {
+            Dao<ChatwalaMessage, String> messageDao = getChatwalaMessageDao();
+            messageDao.executeRaw("ALTER TABLE 'message' ADD COLUMN isDeleted INTEGER DEFAULT 0");
         }
         catch(Exception e) {
             Logger.e("Got an error while updating the database", e);

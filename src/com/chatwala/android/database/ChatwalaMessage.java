@@ -84,6 +84,9 @@ public class ChatwalaMessage {
     @DatabaseField
     private boolean walaDownloaded;
 
+    @DatabaseField
+    private boolean isDeleted;
+
     public String getShardKey() {
         return shardKey;
     }
@@ -98,6 +101,14 @@ public class ChatwalaMessage {
 
     public void setWalaDownloaded(boolean walaDownloaded) {
         this.walaDownloaded = walaDownloaded;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public String getImageModifiedSince() {

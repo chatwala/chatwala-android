@@ -50,4 +50,12 @@ public class DrawerMessage {
     public ChatwalaMessage.MessageState getMessageState() {
         return messageState;
     }
+
+    public boolean equals(DrawerMessage other) {
+        return getMessageId().equals(other.getMessageId());
+    }
+
+    public int hashCode() {
+        return getMessageId().hashCode();
+    }
 }
