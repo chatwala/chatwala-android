@@ -148,23 +148,33 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+
                 CWAnalytics.sendDrawerOpened();
 
                 ChatwalaNotificationManager.removeNewMessagesNotification(getApplicationContext());
                 DataProcessor.runProcess(new Runnable() {
                     @Override
                     public void run() {
-                        BusHelper.submitCommandSync(getApplicationContext(), new GetUserInboxCommand());
+                        BusHelper.submitCommandAsync(getApplicationContext(), new GetUserInboxCommand());
                     }
                 });
 
                 loadUsers();
+
+                LocalBroadcastManager.getInstance(DrawerListActivity.this).registerReceiver(newMessageReceiver,
+                        new IntentFilter(new IntentFilter(BroadcastSender.NEW_MESSAGES_BROADCAST)));
             }
 
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
                 CWAnalytics.sendDrawerClosed();
+
+                //sometimes throws exceptions even though it shouldn't
+                try {
+                    LocalBroadcastManager.getInstance(DrawerListActivity.this).unregisterReceiver(newMessageReceiver);
+                }
+                catch(Exception ignore) {}
             }
         });
 
@@ -231,9 +241,6 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 SettingsActivity.startMe(DrawerListActivity.this);
             }
         });
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(newMessageReceiver,
-                new IntentFilter(new IntentFilter(BroadcastSender.NEW_MESSAGES_BROADCAST)));
     }
 
     private void showDeleteDialog(final int position) {

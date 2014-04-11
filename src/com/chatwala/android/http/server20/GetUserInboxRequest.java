@@ -26,9 +26,7 @@ import java.util.ArrayList;
  * Created by samirahman on 3/11/14.
  */
 public class GetUserInboxRequest extends BasePostRequest {
-
-
-    private ChatwalaResponse<ChatwalaMessagePage> chatwalaResponse=null;
+    private ChatwalaResponse<ChatwalaMessagePage> chatwalaResponse = null;
 
     public GetUserInboxRequest(Context context) {
         super(context);
@@ -80,30 +78,25 @@ public class GetUserInboxRequest extends BasePostRequest {
         chatwalaResponse.setResponseData(page);
     }
 
-    protected ChatwalaResponse<ChatwalaMessagePage> getReturnValue()
-    {
+    protected ChatwalaResponse<ChatwalaMessagePage> getReturnValue() {
         return chatwalaResponse;
     }
 
     @Override
-    protected boolean hasDbOperation()
-    {
+    protected boolean hasDbOperation() {
         return true;
     }
 
     @Override
-    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException
-    {
+    protected Object commitResponse(DatabaseHelper databaseHelper) throws SQLException {
         OldDatabaseHelper oldDatabaseHelper = OldDatabaseHelper.getInstance(context);
 
         Dao<ChatwalaMessage, String> messageDao = databaseHelper.getChatwalaMessageDao();
 
         ArrayList<ChatwalaMessage> messages = chatwalaResponse.getResponseData().getMessages();
-        for(final ChatwalaMessage message : messages)
-        {
+        for(final ChatwalaMessage message : messages) {
             boolean exists = databaseHelper.getChatwalaMessageDao().idExists(message.getMessageId());
-            if(exists)
-            {
+            if(exists) {
                 //If a message was first in the chain, not all of this may be filled out
                 final ChatwalaMessage updatedMessage = messageDao.queryForId(message.getMessageId());
 
@@ -111,7 +104,7 @@ public class GetUserInboxRequest extends BasePostRequest {
                     DataProcessor.runProcess(new Runnable() {
                         @Override
                         public void run() {
-                            BusHelper.submitCommandSync(context, new GetMessageFileCommand(message));
+                            BusHelper.submitCommandAsync(context, new GetMessageFileCommand(message));
                         }
                     });
                 }
