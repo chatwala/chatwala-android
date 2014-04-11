@@ -52,7 +52,7 @@ public class Sms implements Parcelable {
 
     @Override
     public int hashCode() {
-        return (number + message + analyticsCategory).hashCode() ^ (numRetries + 1);
+        return (int) Math.pow((number + message + analyticsCategory).hashCode(), (numRetries + 1));
     }
 
     public String getNumber() {
