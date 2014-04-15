@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.chatwala.android"
-          android:versionCode="20047"
-          android:versionName="1.6.3">
+          android:versionCode="20055"
+          android:versionName="1.6.5">
     <uses-sdk android:minSdkVersion="15"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -66,12 +66,16 @@
                   android:label="@string/top_contacts_title"
                   android:screenOrientation="portrait"
                   android:windowSoftInputMode="adjustPan"
-                  android:theme="@style/ChatwalaTheme"/>
+                  android:theme="@style/ChatwalaTopContactsTheme"/>
         <activity android:name=".activity.SmsActivity"
                   android:label="@string/send_sms"
                   android:screenOrientation="portrait"
                   android:windowSoftInputMode="adjustPan"
-                  android:theme="@style/ChatwalaTheme"/>
+                  android:theme="@style/ChatwalaTheme">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.chatwala.android.activity.NewCameraActivity" />
+        </activity>
         <activity android:name=".activity.SettingsActivity"
                   android:label="@string/settings"
                   android:screenOrientation="portrait"
@@ -101,12 +105,9 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.chatwala.android.SmsSentReceiver"
-                  android:exported="false">
-            <intent-filter>
-                <action android:name="com.chatwala.android.SMS_SENT"/>
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".sms.SmsRetryReceiver" android:exported="false" />
+
+        <receiver android:name=".sms.SmsSentReceiver" android:exported="false" />
 
         <receiver android:name="co.touchlab.android.superbus.network.ConnectionChangeReceiver"
                   android:exported="false">

@@ -30,7 +30,7 @@ public class TopContactsAdapter extends ContactsAdapter {
     private TopContactsEventListener listener;
 
     public TopContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered, TopContactsEventListener listener) {
-        super(context, contacts, useFiltered);
+        super(context, contacts, useFiltered, null);
         try {
             pic = Picasso.with(getContext());
         }
@@ -47,6 +47,10 @@ public class TopContactsAdapter extends ContactsAdapter {
 
     public ArrayList<String> getContactsToSendTo() {
         return contactsToSendTo;
+    }
+
+    public void clearContactsToSendTo() {
+        contactsToSendTo.clear();
     }
 
     @Override

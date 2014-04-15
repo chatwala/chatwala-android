@@ -8,12 +8,10 @@ import android.text.TextUtils;
 import com.chatwala.android.CWResult;
 import com.chatwala.android.EnvironmentVariables;
 import com.chatwala.android.database.ChatwalaMessage;
-import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
 import com.chatwala.android.networking.NetworkCallable;
 import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.networking.requests.GetMessageReadUrl;
 import com.chatwala.android.networking.requests.GetMessageReadUrlResponse;
-import com.chatwala.android.networking.requests.GetMessageShortUrl;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,8 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
@@ -142,16 +138,24 @@ public class ShareUtils
 
     /*
     public static String getMessageIdFromShareUrl(Uri shareUrl) {
-        String[] split = shareUrl.getQuery().split("\\.");
-        String messageId="";
+        try {
+            String[] split = shareUrl.getQuery().split("\\.");
+            String messageId="";
 
-        if(split.length==1) {
-            //handle old share urls:
-            messageId = split[0];
+            if(split.length==1) {
+                //handle old share urls:
+                messageId = split[0];
+            }
+            else if(split.length==2){
+                messageId= split[1];
+            }
+            return messageId;
         }
-        else if(split.length==2){
-            messageId= split[1];
+        catch(Exception e) {
+            return null;
         }
+    }
+=======
         return messageId;
 
     }*/

@@ -20,6 +20,7 @@ import java.util.Map;
 public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> {
     private List<ContactEntry> contacts;
     private int howManyContactsToLoad;
+    private int offset;
 
     @SuppressLint("InlinedApi")
     private static final String LAST_TIME_CONTACTED = (isApi18OrGreater() ?
@@ -40,8 +41,13 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
             ContactsContract.CommonDataKinds.Phone.PHOTO_URI};
 
     public FrequentContactsLoader(Context context, int howManyContactsToLoad) {
+        this(context, howManyContactsToLoad, 0);
+    }
+
+    public FrequentContactsLoader(Context context, int howManyContactsToLoad, int offset) {
         super(context);
         this.howManyContactsToLoad = howManyContactsToLoad;
+        this.offset = offset;
         onContentChanged();
     }
 
@@ -74,6 +80,7 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
             Map<String, String> addToRecentsByNumber = new HashMap<String, String>();
             String previousName = null;
 
+            int offsetCounter = 0;
             if(cursor != null) {
                 if (cursor.moveToFirst()) {
                     do {
@@ -107,6 +114,9 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                                         String normalizedPreviousValue = PhoneNumberUtils.extractNetworkPortion(previousNameEntry.getValue());
                                         if (!addToRecentsByNumber.containsKey(normalizedPreviousValue)) {
                                             addToRecentsByNumber.put(normalizedPreviousValue, previousNameEntry.getValue()); //don't use this number again
+                                            if(offsetCounter++ < offset) {
+                                                continue;
+                                            }
                                             contacts.add(previousNameEntry);
                                             if (contacts.size() == howManyContactsToLoad) {
                                                 break;
@@ -122,6 +132,9 @@ public class FrequentContactsLoader extends AsyncTaskLoader<List<ContactEntry>> 
                             } else {
                                 addToRecents.put(name, false); //we have mobile; don't add any non-mobile
                                 addToRecentsByNumber.put(normalizedValue, value); //don't use this number again
+                                if(offsetCounter++ < offset) {
+                                    continue;
+                                }
                                 contacts.add(new FrequentContactEntry(name, value, type, image, timesContacted, true));
                             }
                         } catch (Exception e) {

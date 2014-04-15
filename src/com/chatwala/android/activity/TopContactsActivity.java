@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.GridView;
@@ -15,7 +17,6 @@ import com.chatwala.android.R;
 import com.chatwala.android.contacts.ContactEntry;
 import com.chatwala.android.contacts.FrequentContactsLoader;
 import com.chatwala.android.contacts.TopContactsAdapter;
-import com.chatwala.android.ui.CWButton;
 import com.chatwala.android.util.CWAnalytics;
 
 import java.util.ArrayList;
@@ -26,12 +27,12 @@ import java.util.List;
  */
 public class TopContactsActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<List<ContactEntry>> {
     public static final String TOP_CONTACTS_LIST_EXTRA = "TOP_CONTACTS_LIST";
+    public static final String TOP_CONTACTS_SHOW_UPSELL_EXTRA = "TOP_CONTACTS_SHOW_UPSELL";
     private static final int TOP_CONTACTS_LOADER_CODE = 1000;
-    private static final int INITIAL_TOP_CONTACTS = 9;
+    public static final int INITIAL_TOP_CONTACTS = 9;
 
     private TopContactsAdapter adapter;
     private GridView topContactsGrid;
-    private CWButton startButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,9 +48,27 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         adapter = new TopContactsAdapter(this, new ArrayList<ContactEntry>(0), false, null);
         topContactsGrid.setAdapter(adapter);
 
-        startButton = (CWButton) findViewById(R.id.top_contacts_start_button);
         Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         ((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.top_contacts_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.menu_top_contacts_skip) {
+            adapter.clearContactsToSendTo();
+            startNewCameraActivity();
+            CWAnalytics.sendTapSkipEvent();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -104,7 +123,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         findViewById(R.id.top_contacts_start_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CWAnalytics.sendTapNextEvent(false, adapter.getContactsToSendTo().size());
+                CWAnalytics.sendTapNextEvent(true, adapter.getContactsToSendTo().size());
                 startNewCameraActivity();
             }
         });
@@ -126,6 +145,9 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
     private void startNewCameraActivity() {
         Intent i = new Intent(TopContactsActivity.this, NewCameraActivity.class);
         i.putStringArrayListExtra(TOP_CONTACTS_LIST_EXTRA, adapter.getContactsToSendTo());
+        if(adapter.getCount() == INITIAL_TOP_CONTACTS) {
+            i.putExtra(TOP_CONTACTS_SHOW_UPSELL_EXTRA, true);
+        }
         startActivity(i);
         finish();
     }

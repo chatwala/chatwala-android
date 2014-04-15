@@ -1,7 +1,6 @@
 package com.chatwala.android.activity;
 
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -21,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
 import android.support.v4.content.LocalBroadcastManager;
-import android.telephony.SmsManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -31,13 +29,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
-import co.touchlab.android.superbus.PermanentException;
-import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
-import com.chatwala.android.SmsSentReceiver;
 import com.chatwala.android.activity.SettingsActivity.DeliveryMethod;
 import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
@@ -51,6 +46,8 @@ import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.networking.requests.GetMessageReadUrlResponse;
 import com.chatwala.android.networking.requests.GetMessageShortUrl;
 import com.chatwala.android.receivers.ReferrerReceiver;
+import com.chatwala.android.sms.Sms;
+import com.chatwala.android.sms.SmsManager;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.server20.NewMessageFlowCommand;
 import com.chatwala.android.superbus.server20.ReplyFlowCommand;
@@ -76,11 +73,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -635,7 +630,9 @@ public class NewCameraActivity extends DrawerListActivity {
 
         if (state == AppState.PlaybackRecording || state == AppState.Recording)
         {
-            cameraPreviewView.abortRecording();
+            if(cameraPreviewView != null) {
+                cameraPreviewView.abortRecording();
+            }
         }
 
         setAppState(AppState.Off);
@@ -783,7 +780,9 @@ public class NewCameraActivity extends DrawerListActivity {
                         DataProcessor.runProcess(new Runnable() {
                             @Override
                             public void run() {
-                                BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
+                                if(recordPreviewFile != null) {
+                                    BusHelper.submitCommandSync(NewCameraActivity.this, new ReplyFlowCommand(incomingMessage, UUID.randomUUID().toString(), recordPreviewFile.getPath(), chatMessageVideoMetadata.duration));
+                                }
                             }
                         });
                         return true;
@@ -812,7 +811,9 @@ public class NewCameraActivity extends DrawerListActivity {
                                 @Override
                                 public void run()
                                 {
-                                    BusHelper.submitCommandSync(NewCameraActivity.this, new NewMessageFlowCommand(messageId, recordPreviewFile.getPath()));
+                                    if(recordPreviewFile != null) {
+                                        BusHelper.submitCommandSync(NewCameraActivity.this, new NewMessageFlowCommand(messageId, recordPreviewFile.getPath()));
+                                    }
                                 }
                             });
 
@@ -917,8 +918,10 @@ public class NewCameraActivity extends DrawerListActivity {
                     else {
                         if(deliveryMethod == DeliveryMethod.TOP_CONTACTS) {
                             deliveryMethod = DeliveryMethod.CWSMS;
-                            tearDownSurface();
-                            createSurface();
+                            if(!getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_SHOW_UPSELL_EXTRA)) {
+                                tearDownSurface();
+                                createSurface();
+                            }
                         }
                     }
                 }
@@ -1154,14 +1157,16 @@ public class NewCameraActivity extends DrawerListActivity {
             CWAnalytics.sendStopPressedEvent(analyticsDuration());
         }
 
-        if(buttonPress && ((getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) ||
-                                deliveryMethod == DeliveryMethod.TOP_CONTACTS)) {
-            cameraPreviewView.stopRecording();
-            showSendOrCancelAlert();
-        }
-        else {
-            setAppState(AppState.PreviewLoading, buttonPress);
-            cameraPreviewView.stopRecording();
+        if(cameraPreviewView != null) {
+            if(buttonPress && ((getCurrentMessageOrigin() != MessageOrigin.INITIATOR && !shouldShowPreview) ||
+                    deliveryMethod == DeliveryMethod.TOP_CONTACTS)) {
+                cameraPreviewView.stopRecording();
+                showSendOrCancelAlert();
+            }
+            else {
+                setAppState(AppState.PreviewLoading, buttonPress);
+                cameraPreviewView.stopRecording();
+            }
         }
     }
 
@@ -1312,9 +1317,9 @@ public class NewCameraActivity extends DrawerListActivity {
                 }
                 return VideoUtils.findMetadata(params[0]);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                Logger.e("Got an IOException while getting the video metadata", e);
+                Logger.e("Got an Exception while getting the video metadata", e);
                 return null;
             }
 
@@ -1453,13 +1458,16 @@ public class NewCameraActivity extends DrawerListActivity {
         if (recordPreviewVideoView != null)
             recordPreviewVideoView.pause();
 
-        cameraPreviewContainer.removeAllViews();
-        if (cameraPreviewView != null)
-        {
-            cameraPreviewView.releaseResources();
-            cameraPreviewView = null;
+        if(cameraPreviewContainer != null) {
+            cameraPreviewContainer.removeAllViews();
+            if (cameraPreviewView != null) {
+                cameraPreviewView.releaseResources();
+                cameraPreviewView = null;
+            }
         }
-        videoViewContainer.removeAllViews();
+        if(videoViewContainer != null) {
+            videoViewContainer.removeAllViews();
+        }
         messageVideoView = null;
         findViewById(R.id.recordPreviewClick).setOnClickListener(null);
         Logger.i("End of tearDownSurface");
@@ -1481,7 +1489,6 @@ public class NewCameraActivity extends DrawerListActivity {
                 }
                 else
                 {
-
                     GetMessageReadUrlResponse response = ShareUtils.getReadUrlFromShareUrl(NewCameraActivity.this, getIntent().getData());
                     readUrl = response.getReadUrl();
                     playbackMessageId = response.getMessageId();
@@ -1513,26 +1520,8 @@ public class NewCameraActivity extends DrawerListActivity {
 
                 return playbackMessage;
             }
-            catch (TransientException e)
-            {
-                chatMessageVideoMetadata = null;
-                playbackMessage = null;
-                return null;
-            }
-            catch (PermanentException e)
-            {
-                chatMessageVideoMetadata = null;
-                playbackMessage = null;
-                return null;
-            }
-            catch (IOException e)
-            {
-                chatMessageVideoMetadata = null;
-                playbackMessage = null;
-                return null;
-            }
-            catch (SQLException e)
-            {
+            catch (Exception e) {
+                Logger.e("Got an Exception while loading a message", e);
                 chatMessageVideoMetadata = null;
                 playbackMessage = null;
                 return null;
@@ -1613,7 +1602,7 @@ public class NewCameraActivity extends DrawerListActivity {
         gmailIntent.setData(mailtoUri);
         gmailIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
         //gmailIntent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
-        gmailIntent.putExtra(Intent.EXTRA_TEXT, "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + messageLink);
+        gmailIntent.putExtra(Intent.EXTRA_TEXT, "Hey, I sent you a video message on Chatwala:\n\n" + messageLink);
 
         try
         {
@@ -1633,7 +1622,7 @@ public class NewCameraActivity extends DrawerListActivity {
             intent.setData(mailtoUri);
             intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.message_subject));
             //intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml("Chatwala is a new way to have real conversations with friends. " + messageLink));
-            intent.putExtra(Intent.EXTRA_TEXT, "Chatwala is a new way to have real conversations with friends. View the message:\n\n" + messageLink);
+            intent.putExtra(Intent.EXTRA_TEXT, "Hey, I sent you a video message on Chatwala:\n\n" + messageLink);
 
             startActivity(Intent.createChooser(intent, "Send email..."));
         }
@@ -1655,29 +1644,18 @@ public class NewCameraActivity extends DrawerListActivity {
         }
 
         String messageLink = messageStartInfo.getShareUrl();
-        final String smsText = "Hey, I sent you a video message on Chatwala: " + messageLink;
-        final Context appContext = NewCameraActivity.this;
-
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                for(String contact : topContactsList) {
-                    PendingIntent sentIntent = null;
-                    if(appContext != null) {
-                        sentIntent = PendingIntent.getBroadcast(appContext, contact.hashCode(),
-                                new Intent(appContext, SmsSentReceiver.class), 0);
-                    }
-                    try {
-                        SmsManager.getDefault().sendTextMessage(contact, null, smsText, sentIntent, null);
-                    }
-                    catch (Exception e) {
-                        Logger.e("There was an exception while sending SMS(s)", e);
-                        CWAnalytics.sendMessageSentFailedEvent();
-                    }
-                }
-                topContactsList = null;
-            }
-        });
+        for (String contact : topContactsList) {
+            SmsManager.getInstance().sendSms(new Sms(contact, messageLink, CWAnalytics.getCategory()));
+        }
+        CWAnalytics.sendTopContactsSentEvent(topContactsList.size());
+        if(getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_SHOW_UPSELL_EXTRA)) {
+            closePreviewOnReturn = true;
+            Intent i = new Intent(this, SmsActivity.class);
+            i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
+            i.putExtra(SmsActivity.COMING_FROM_TOP_CONTACTS_EXTRA, TopContactsActivity.INITIAL_TOP_CONTACTS);
+            startActivity(i);
+            CWAnalytics.sendUpsellShownEvent();
+        }
     }
 
     private void sendSms(final String messageId)
@@ -1763,7 +1741,6 @@ public class NewCameraActivity extends DrawerListActivity {
         closePreviewOnReturn = true;
         Intent i = new Intent(this, SmsActivity.class);
         i.putExtra(SmsActivity.SMS_MESSAGE_URL_EXTRA, messageLink);
-        i.putExtra(SmsActivity.SMS_MESSAGE_EXTRA, messageText);
         startActivity(i);
     }
 
