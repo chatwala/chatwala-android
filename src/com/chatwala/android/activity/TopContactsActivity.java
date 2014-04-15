@@ -50,6 +50,7 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
         Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
         ((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
+        findViewById(R.id.top_contacts_bottom).setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -92,16 +93,24 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
         adapter = new TopContactsAdapter(TopContactsActivity.this, contacts, false, new TopContactsAdapter.TopContactsEventListener() {
             @Override
-            public void onContactRemoved(int contactsLeft) {
-                if(contactsLeft == 0) {
+            public void onContactRemoved(int numContacts) {
+               /* if(contactsLeft == 0) {
                     startNewCameraActivity();
                     return;
+                }*/
+                if(numContacts==0) {
+                    findViewById(R.id.top_contacts_bottom).setVisibility(View.INVISIBLE);
                 }
             }
 
             @Override
-            public void onContactClicked() {
+            public void onContactClicked(int numContacts) {
                 //not currently used
+                if(numContacts>0) {
+                    //show send button
+                    findViewById(R.id.top_contacts_bottom).setVisibility(View.VISIBLE);
+                }
+
             }
 
             @Override

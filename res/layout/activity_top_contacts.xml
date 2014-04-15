@@ -48,7 +48,7 @@
             android:layout_height="0dp"
             android:layout_weight=".25"
             android:gravity="center"
-            android:descendantFocusability="afterDescendants">
+            android:descendantFocusability="afterDescendants" android:orientation="horizontal">
 
         <com.chatwala.android.ui.CWButton
                 android:id="@+id/top_contacts_start_button"

@@ -23,7 +23,7 @@ public class TopContactsAdapter extends ContactsAdapter {
 
     public interface TopContactsEventListener {
         public void onContactRemoved(int contactsLeft);
-        public void onContactClicked();
+        public void onContactClicked(int numContacts);
         public void onSend();
     }
 
@@ -40,9 +40,9 @@ public class TopContactsAdapter extends ContactsAdapter {
         this.listener = listener;
 
         contactsToSendTo = new ArrayList<String>(contacts.size());
-        for(ContactEntry contact : contacts) {
+        /*for(ContactEntry contact : contacts) {
             contactsToSendTo.add(contact.getValue());
-        }
+        }*/
     }
 
     public ArrayList<String> getContactsToSendTo() {
@@ -98,6 +98,7 @@ public class TopContactsAdapter extends ContactsAdapter {
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if(isChecked) {
                     contactsToSendTo.add(entry.getValue());
+                    listener.onContactClicked(contactsToSendTo.size());
                 }
                 else {
                     contactsToSendTo.remove(entry.getValue());
