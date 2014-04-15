@@ -243,7 +243,7 @@ public class SettingsActivity extends BaseChatWalaActivity
             }
 
             convertView.setTag(getItem(position));
-            ((TextView)convertView).setText(getItem(position).toString());
+            ((TextView)convertView).setText("  " + getItem(position).toString());
 
             return convertView;
         }
@@ -404,11 +404,11 @@ public class SettingsActivity extends BaseChatWalaActivity
     }
 
     public static enum DeliveryMethod {
-        SMS(0, "SMS"),
-        CWSMS(1, "Chatwala SMS"),
-        EMAIL(2, "Email"),
-        FB(3, "Facebook"),
-        TOP_CONTACTS(4, "Top Contacts");
+        SMS(0, "  SMS"),
+        CWSMS(1, "  Chatwala SMS"),
+        EMAIL(2, "  Email"),
+        FB(3, "  Facebook"),
+        TOP_CONTACTS(4, "  Top Contacts");
 
         private int method;
         private String displayString;
@@ -429,12 +429,12 @@ public class SettingsActivity extends BaseChatWalaActivity
 
     enum RefreshOptions
     {
-        ONE_MINUTE(1, "One Minute", 0),
-        FIVE_MINUTES(5, "Five Minutes", 1),
-        TEN_MINUTES(10, "Ten Minutes", 2),
-        THIRTY_MINUTES(30, "Thirty Minutes", 3),
-        ONE_HOUR(60, "One Hour", 4),
-        TWO_HOURS(120, "Two Hours", 5);
+        ONE_MINUTE(1, "  One Minute", 0),
+        FIVE_MINUTES(5, "  Five Minutes", 1),
+        TEN_MINUTES(10, "  Ten Minutes", 2),
+        THIRTY_MINUTES(30, "  Thirty Minutes", 3),
+        ONE_HOUR(60, "  One Hour", 4),
+        TWO_HOURS(120, "  Two Hours", 5);
 
         private int interval, sortOrder;
         private String displayString;
@@ -477,10 +477,10 @@ public class SettingsActivity extends BaseChatWalaActivity
 
     enum DiskSpaceOptions
     {
-        TEN_MEGS(10, "10 MB", 0),
-        FIFTY_MEGS(50, "50 MB", 1),
-        ONE_HUNDRED_MEGS(100, "100 MB", 2),
-        FIVE_HUNDRED_MEGS(500, "500 MB", 3);
+        TEN_MEGS(10, "  10 MB", 0),
+        FIFTY_MEGS(50, "  50 MB", 1),
+        ONE_HUNDRED_MEGS(100, "  100 MB", 2),
+        FIVE_HUNDRED_MEGS(500, "  500 MB", 3);
 
         private int space, sortOrder;
         private String displayString;
