@@ -20,12 +20,11 @@
 
         <TextView
                 android:id="@+id/top_contacts_header"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:textAppearanceLarge"
-                android:textStyle="bold"
+                android:textAppearance="?android:textAppearanceMedium"
                 android:textColor="#000"
-                android:text="@string/top_contacts_header_text"/>
+                android:text="@string/top_contacts_header_text" android:textStyle="normal"/>
 
     </LinearLayout>
 
@@ -56,7 +55,14 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:textAppearanceLarge"
                 cw:cw_button_drawable="@drawable/ic_action_send_ios"
-                cw:cw_button_size="100dp"/>
+                cw:cw_button_size="100dp" android:visibility="gone"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/top_contacts_bottom_text"
+                android:id="@+id/top_contacts_bottom_text" android:enabled="true" android:visibility="visible" android:clickable="false"
+                android:textColor="#000000" android:textStyle="normal"/>
 
     </LinearLayout>
 
