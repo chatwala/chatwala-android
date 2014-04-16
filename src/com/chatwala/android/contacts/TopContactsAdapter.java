@@ -8,6 +8,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.chatwala.android.R;
+import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
 import com.squareup.picasso.Picasso;
 
@@ -92,6 +93,13 @@ public class TopContactsAdapter extends ContactsAdapter {
         catch(Exception e){
             Logger.e("Error loading the contacts image", e);
         }
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               holder.check.setChecked(!holder.check.isChecked());
+            }
+        });
 
         holder.check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
