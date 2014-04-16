@@ -48,8 +48,8 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         adapter = new TopContactsAdapter(this, new ArrayList<ContactEntry>(0), false, null);
         topContactsGrid.setAdapter(adapter);
 
-        Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
-        ((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
+        //Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
+        //((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
        // findViewById(R.id.top_contacts_bottom).setVisibility(View.INVISIBLE);
         findViewById(R.id.top_contacts_start_button).setVisibility(View.GONE);
 
