@@ -129,6 +129,16 @@ public class GetMessageFileRequest extends BaseGetRequest
     {
         boolean exists = databaseHelper.getChatwalaMessageDao().idExists(chatwalaMessage.getMessageId());
 
+        //is valid?
+        if(!chatwalaMessage.getMessageId().equals(metadataJson.optString("message_id"))) {
+            
+            if(exists) {
+                databaseHelper.getChatwalaMessageDao().delete(chatwalaMessage);
+            }
+            messageFile.delete();
+            return chatwalaMessage;
+        }
+
         if(!exists)
         {
             //chatwalaMessage.setTimestamp(System.currentTimeMillis());
@@ -137,8 +147,7 @@ public class GetMessageFileRequest extends BaseGetRequest
             //Logger.i("New message metadata " + metadataJson.toString());
             //chatwalaMessage.saveMetadata(databaseHelper);
             try {
-                chatwalaMessage.populateFromMetaDataJSON(metadataJson);
-
+               chatwalaMessage.populateFromMetaDataJSON(metadataJson);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
