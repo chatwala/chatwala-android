@@ -51,6 +51,12 @@ public class DeleteMessageCommand extends SqliteCommand {
     @Override
     public void onSuccess(Context context) {
         try {
+            message.getMessageFile().delete();
+        }
+        catch(Exception e) {}
+
+        try {
+
             DatabaseHelper.getInstance(context).getChatwalaMessageDao().delete(message);
         }
         catch(Exception e) {}
