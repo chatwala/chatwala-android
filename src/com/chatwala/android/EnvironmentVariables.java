@@ -8,7 +8,7 @@ public enum EnvironmentVariables {
     PROD(
             "https://chatwala-prodeast-20.azurewebsites.net/",
             "prodeast_20",
-            "http://s3.amazonaws.com/chatwala.groundcontrol/defaults1_5.plist",
+            "http://chatwalaprod.blob.core.windows.net/configs/groundcontrol.json",
             "http://chatwala.com/?",
             "http://chatwalaprod{shard}.blob.core.windows.net/messages/{message}",
             "UA-46207837-1",
@@ -19,7 +19,7 @@ public enum EnvironmentVariables {
     QA(
             "https://chatwala-qa-20.azurewebsites.net/",
             "qa_20",
-            "http://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_5.plist",
+            "http://chatwalanonprod.blob.core.windows.net/qa-configs/groundcontrol.json",
             "http://chatwala.com/qa/?",
             "http://chatwalanonprod.blob.core.windows.net/qa-messages/{message}",
             "UA-46207837-4",
