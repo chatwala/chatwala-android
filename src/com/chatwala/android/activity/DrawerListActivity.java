@@ -1,13 +1,13 @@
 package com.chatwala.android.activity;
 
-import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Loader;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
@@ -16,12 +16,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.TranslateAnimation;
-import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.ViewSwitcher;
+import android.widget.*;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaNotificationManager;
 import com.chatwala.android.R;
@@ -321,11 +316,11 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
     private void loadUsers() {
         currentSenderId = null;
         if(usersLoaded) {
-            getLoaderManager().restartLoader(LOAD_USERS_REQUEST_CODE, null, loadUserCallbacks);
+            getSupportLoaderManager().restartLoader(LOAD_USERS_REQUEST_CODE, null, loadUserCallbacks);
         }
         else {
             usersLoaded = true;
-            getLoaderManager().initLoader(LOAD_USERS_REQUEST_CODE, null, loadUserCallbacks);
+            getSupportLoaderManager().initLoader(LOAD_USERS_REQUEST_CODE, null, loadUserCallbacks);
         }
     }
 
@@ -342,11 +337,11 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
         args.putString("senderId", senderId);
         currentSenderId = senderId;
         if(messagesLoaded) {
-            getLoaderManager().restartLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
+            getSupportLoaderManager().restartLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
         }
         else {
             messagesLoaded = true;
-            getLoaderManager().initLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
+            getSupportLoaderManager().initLoader(LOAD_MESSAGES_REQUEST_CODE, args, loadMessageCallbacks);
         }
     }
 

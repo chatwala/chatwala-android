@@ -3,6 +3,7 @@ package com.chatwala.android.activity;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.ViewGroup;
 import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.ChatwalaApplication;
@@ -19,7 +20,7 @@ import com.google.analytics.tracking.android.EasyTracker;
  * Time: 7:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BaseChatWalaActivity extends Activity
+public abstract class BaseChatWalaActivity extends FragmentActivity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState)

@@ -5,28 +5,13 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:background="@color/app_background" >
-    <LinearLayout
-            android:id="@+id/main_fragments_container"
+    <FrameLayout
+            android:id="@+id/main_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-        <FrameLayout
-                android:id="@+id/main_top_fragment_container"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="@drawable/chat_watermark_top">
+            android:background="@drawable/chat_watermark">
 
-        </FrameLayout>
-        <FrameLayout
-                android:id="@+id/main_bottom_fragment_container"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:background="@drawable/chat_watermark">
-
-        </FrameLayout>
-    </LinearLayout>
+    </FrameLayout>
 
     <com.chatwala.android.ui.CWButton
             android:layout_width="wrap_content"

@@ -27,8 +27,10 @@ public class CWCamera {
     private CameraState cameraState = CameraState.CLOSED;
     private MediaRecorder recorder;
 
+    private File recordingFile;
+
     private enum CameraState {
-        CLOSED, OPEN, PREVIEW, RECORDING, ERROR
+        CLOSED, READY, PREVIEW, RECORDING, ERROR
     }
 
     private enum CameraType {
@@ -45,13 +47,13 @@ public class CWCamera {
         return Singleton.instance;
     }
 
-    public boolean initIfNeeded() {
+    public boolean init(Context context, int width, int height) {
         if(isInitted) {
             return true;
         }
 
         cameraType = CameraType.FRONT;
-        openCameras();
+        openCameras(context, width, height);
 
         if(frontCamera == null) {
             if(backCamera == null) {
@@ -63,7 +65,9 @@ public class CWCamera {
             }
         }
 
-        cameraState = CameraState.OPEN;
+        initMediaRecorder(context, width, height);
+
+        cameraState = CameraState.READY;
 
         if(frontCamera != null) {
             frontCamera.setErrorCallback(new Camera.ErrorCallback() {
@@ -100,7 +104,11 @@ public class CWCamera {
         return cameraState == CameraState.PREVIEW;
     }
 
-    public boolean attachToPreview(Context context, SurfaceHolder surface, int width, int height) {
+    public File getRecordingFile() {
+        return recordingFile;
+    }
+
+    public boolean attachToPreview(SurfaceHolder surface) {
         if(!hasError() && getCurrentCamera() != null) {
             try {
                 if(isShowingPreview()) {
@@ -108,10 +116,7 @@ public class CWCamera {
                 }
 
                 getCurrentCamera().setPreviewDisplay(surface);
-                setCameraPreviewSize(context, width, height);
                 getCurrentCamera().startPreview();
-
-                initMediaRecorder(context, width, height);
 
                 cameraState = CameraState.PREVIEW;
                 return true;
@@ -149,7 +154,7 @@ public class CWCamera {
         }
     }
 
-    private void openCameras() {
+    private void openCameras(Context context, int width, int height) {
         if(isInitted) {
             return;
         }
@@ -161,15 +166,15 @@ public class CWCamera {
                 frontCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
                 backCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
                 backCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-                setInitialParameters(frontCamera);
-                setInitialParameters(backCamera);
+                setInitialParameters(frontCamera, context, width, height);
+                setInitialParameters(backCamera, context, width, height);
             }
             else {
                 frontCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
                 backCamera = frontCamera;
                 frontCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
                 backCameraId = frontCameraId;
-                setInitialParameters(frontCamera);
+                setInitialParameters(frontCamera, context, width, height);
             }
         }
         catch(Exception e) {
@@ -185,7 +190,7 @@ public class CWCamera {
         }
     }
 
-    private void setInitialParameters(Camera camera) {
+    private void setInitialParameters(Camera camera, Context context, int width, int height) {
         try {
             if(camera != null) {
                 Camera.Parameters params = camera.getParameters();
@@ -194,6 +199,7 @@ public class CWCamera {
                 params.setPreviewFpsRange(bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
                                           bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
                 camera.setParameters(params);
+                setCameraPreviewSize(camera, context, width, height);
             }
         }
         catch(Exception e) {
@@ -205,10 +211,10 @@ public class CWCamera {
         return rateRanges.get(rateRanges.size() - 1);
     }
 
-    private void setCameraPreviewSize(Context context, int width, int height) {
-        if(getCurrentCamera() != null) {
-            getCurrentCamera().stopPreview();
-            Camera.Parameters params = getCurrentCamera().getParameters();
+    private void setCameraPreviewSize(Camera camera, Context context, int width, int height) {
+        if(camera != null) {
+            camera.stopPreview();
+            Camera.Parameters params = camera.getParameters();
             Camera.Size bestSize = getBestSize(width, height, params.getSupportedPreviewSizes());
 
             if(bestSize != null) {
@@ -217,11 +223,13 @@ public class CWCamera {
 
             Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
             if (display.getRotation() == Surface.ROTATION_0) {
-                getCurrentCamera().setDisplayOrientation(90);
+                camera.setDisplayOrientation(90);
             }
             if (display.getRotation() == Surface.ROTATION_270) {
-                getCurrentCamera().setDisplayOrientation(180);
+                camera.setDisplayOrientation(180);
             }
+
+            camera.setParameters(params);
         }
     }
 
@@ -280,7 +288,7 @@ public class CWCamera {
                     recorder.setOrientationHint(mrRotate);
                 }
 
-                File recordingFile = MessageDataStore.makeTempVideoFile();
+                recordingFile = MessageDataStore.makeTempVideoFile();
                 recorder.setOutputFile(recordingFile.getPath());
 
                 recorder.prepare();
@@ -317,9 +325,19 @@ public class CWCamera {
         return bestSize;
     }
 
+    public void release() {
+        releaseResources();
+
+        if(recordingFile != null && recordingFile.exists()) {
+            recordingFile.delete();
+        }
+    }
+
     private void releaseResources() {
         releaseCameras();
-        releaseResources();
+        releaseRecorder();
+
+        cameraState = CameraState.CLOSED;
     }
 
     private void releaseCameras() {
