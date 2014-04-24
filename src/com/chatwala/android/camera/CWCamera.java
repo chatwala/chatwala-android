@@ -89,6 +89,11 @@ public class CWCamera {
     public boolean toggleCamera(int width, int height) {
         Logger.i("Camera toggling");
 
+        if(cameraState != CameraState.PREVIEW) {
+            Logger.w("Can't toggle cameras in this state (" + cameraState.toString() + ")");
+            return false;
+        }
+
         if(cameraType == CameraType.FRONT) {
             cameraType = CameraType.BACK;
         }
@@ -182,6 +187,7 @@ public class CWCamera {
     public boolean startRecording() {
         if(!hasError()) {
             try {
+                camera.unlock();
                 recorder.start();
                 cameraState = CameraState.RECORDING;
                 Logger.i("Start recording");
@@ -229,6 +235,7 @@ public class CWCamera {
     }
 
     private boolean openCamera(int width, int height) {
+        releaseCameras();
         int cameraCount = Camera.getNumberOfCameras();
         try {
             if(cameraType == CameraType.FRONT) {
@@ -323,6 +330,10 @@ public class CWCamera {
     }
 
     private boolean initMediaRecorder(int width, int height) {
+        if(recorder != null) {
+            releaseRecorder();
+        }
+
         recorder = new MediaRecorder();
         if(!setRecorderParams(width, height)) {
             releaseRecorder();
@@ -444,8 +455,8 @@ public class CWCamera {
     }
 
     private void releaseResources() {
-        releaseCameras();
         releaseRecorder();
+        releaseCameras();
 
         cameraState = CameraState.CLOSED;
     }
@@ -464,6 +475,10 @@ public class CWCamera {
 
     private void releaseRecorder() {
         if(recorder != null) {
+            if(isRecording()) {
+                stopRecording();
+            }
+
             recorder.reset();
             recorder.release();
             recorder = null;
