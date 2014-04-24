@@ -9,7 +9,6 @@ import com.chatwala.android.AppPrefs;
 import com.chatwala.android.http.BaseSasPutRequest;
 import com.chatwala.android.http.server20.ChatwalaResponse;
 import com.chatwala.android.http.server20.GetUserPictureUploadURLRequest;
-import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import org.apache.commons.io.IOUtils;
 

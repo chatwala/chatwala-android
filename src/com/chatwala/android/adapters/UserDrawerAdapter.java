@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -56,6 +57,17 @@ public class UserDrawerAdapter extends BaseAdapter {
         }
         else {
             this.users = users;
+        }
+        notifyDataSetChanged();
+    }
+
+    public void removeBySenderId(String senderId) {
+        Iterator<DrawerUser> it = users.iterator();
+        while(it.hasNext()) {
+            if(senderId.equals(it.next().getSenderId())) {
+                it.remove();
+                break;
+            }
         }
         notifyDataSetChanged();
     }

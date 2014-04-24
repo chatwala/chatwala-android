@@ -25,7 +25,7 @@
                 android:layout_alignParentRight="true"
                 android:scaleX="1.25"
                 android:scaleY="1.25"
-                android:checked="true"/>
+                android:checked="false"/>
 
         <TextView
                 android:id="@+id/contact_item_name"

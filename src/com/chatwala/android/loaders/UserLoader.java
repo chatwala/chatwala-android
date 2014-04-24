@@ -39,30 +39,31 @@ public class UserLoader extends AsyncTaskLoader<List<DrawerUser>> {
             List<DrawerUser> messages = new ArrayList<DrawerUser>();
             Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(getContext()).getChatwalaMessageDao();
             QueryBuilder<ChatwalaMessage,String> raw = messageDao.queryBuilder();
-            raw.selectRaw("senderId", "timestamp", "userThumbnailUrl", "MAX(timestamp)");
+            raw.selectRaw("senderId", "timestamp", "userThumbnailUrl", "SUM(CASE WHEN messageState = 'UNREAD' THEN 1 ELSE 0 END)", "MAX(timestamp)");
             raw.groupByRaw("senderId");
+            raw.having("COUNT(walaDownloaded) > 0 AND isDeleted = 0");
             raw.orderByRaw("timestamp DESC");
             for(String[] a : raw.queryRaw().getResults()) {
                 String senderId = a[0];
                 long timestamp = Long.parseLong(a[1]);
                 String thumbnailUrl = a[2];
-                boolean isUnread = false;
+                boolean isUnread = !a[3].equals("0");
 
-                QueryBuilder<ChatwalaMessage,String> checkWalasDownloaded = messageDao.queryBuilder();
+                /*QueryBuilder<ChatwalaMessage,String> checkWalasDownloaded = messageDao.queryBuilder();
                 checkWalasDownloaded.selectRaw("COUNT(walaDownloaded)");
                 checkWalasDownloaded.where().eq("senderId", senderId).and()
                         .eq("walaDownloaded", true);
                 if(checkWalasDownloaded.queryRawFirst()[0].equals("0")) {
                     continue;
-                }
+                }*/
 
-                QueryBuilder<ChatwalaMessage,String> checkUnread = messageDao.queryBuilder();
+                /*QueryBuilder<ChatwalaMessage,String> checkUnread = messageDao.queryBuilder();
                 checkUnread.selectRaw("COUNT(messageState)");
                 checkUnread.where().eq("senderId", senderId).and()
                                     .eq("messageState", ChatwalaMessage.MessageState.UNREAD);
                 if(!checkUnread.queryRawFirst()[0].equals("0")) {
                     isUnread = true;
-                }
+                }*/
 
                 messages.add(new DrawerUser(senderId, timestamp, thumbnailUrl, isUnread));
             }

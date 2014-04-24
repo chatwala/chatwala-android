@@ -8,7 +8,7 @@ public enum EnvironmentVariables {
     PROD(
             "https://chatwala-prodeast-20.azurewebsites.net/",
             "prodeast_20",
-            "http://s3.amazonaws.com/chatwala.groundcontrol/defaults1_5.plist",
+            "http://chatwalaprod.blob.core.windows.net/configs/groundcontrol.json",
             "http://chatwala.com/?",
             "http://chatwalaprod{shard}.blob.core.windows.net/messages/{message}",
             "UA-46207837-1",
@@ -19,7 +19,7 @@ public enum EnvironmentVariables {
     QA(
             "https://chatwala-qa-20.azurewebsites.net/",
             "qa_20",
-            "http://s3.amazonaws.com/chatwala.groundcontrol/QAdefaults1_5.plist",
+            "http://chatwalanonprod.blob.core.windows.net/qa-configs/groundcontrol.json",
             "http://chatwala.com/qa/?",
             "http://chatwalanonprod.blob.core.windows.net/qa-messages/{message}",
             "UA-46207837-4",
@@ -30,7 +30,7 @@ public enum EnvironmentVariables {
     DEV(
             "https://chatwala-deveast-20.azurewebsites.net/",
             "deveast_20",
-            "http://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_5.plist",
+            "http://chatwalanonprod.blob.core.windows.net/dev-configs/groundcontrol.json",
             "http://chatwala.com/dev/?",
             "http://chatwalanonprod.blob.core.windows.net/dev-messages/{message}",
             "UA-46207837-3",
@@ -41,7 +41,7 @@ public enum EnvironmentVariables {
     SANDBOX(
             "https://chatwala-sandbox-13.azurewebsites.net/", //leave at 13 for now
             "sandbox_20",
-            "http://s3.amazonaws.com/chatwala.groundcontrol/DEVdefaults1_5.plist",
+            "http://chatwalanonprod.blob.core.windows.net/dev-configs/groundcontrol.json",
             "http://chatwala.com/?",
             "http://chatwalanonprod.blob.core.windows.net/sandbox-messages/{message}",
             "UA-46207837-3",
@@ -63,15 +63,15 @@ public enum EnvironmentVariables {
     public static final String ALT_HASH_STRING = "http://chatwala.com/#";
     public static final String REDIRECT_STRING = "http://www.chatwala.com/droidredirect.html?";
 
-    private String apiPath, displayString, plistPath, webPath, messageReadUrlTemplate, googleAnalyticsID, facebookAppId;
+    private String apiPath, displayString, killswitchPath, webPath, messageReadUrlTemplate, googleAnalyticsID, facebookAppId;
     private boolean isDebug;
 
-    EnvironmentVariables(String apiPath, String displayString, String plistPath, String webPath, String messageReadUrlTemplate,
+    EnvironmentVariables(String apiPath, String displayString, String killswitchPath, String webPath, String messageReadUrlTemplate,
                          String googleAnalyticsID, String facebookAppId, boolean isDebug)
     {
         this.apiPath = apiPath;
         this.displayString = displayString;
-        this.plistPath = plistPath;
+        this.killswitchPath = killswitchPath;
         this.webPath = webPath;
         this.messageReadUrlTemplate = messageReadUrlTemplate;
         this.googleAnalyticsID = googleAnalyticsID;
@@ -89,11 +89,9 @@ public enum EnvironmentVariables {
         return displayString;
     }
 
-    public String getPlistPath()
-    {
-        return plistPath;
+    public String getKillswitchPath() {
+        return killswitchPath;
     }
-
 
     public String getWebPath()
     {

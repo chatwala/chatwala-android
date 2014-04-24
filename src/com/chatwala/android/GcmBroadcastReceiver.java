@@ -11,18 +11,16 @@ import com.chatwala.android.util.Logger;
 /**
  * Created by matthewdavis on 1/27/14.
  */
-public class GcmBroadcastReceiver extends BroadcastReceiver
-{
+public class GcmBroadcastReceiver extends BroadcastReceiver {
     @Override
-    public void onReceive(final Context context, Intent intent)
-    {
+    public void onReceive(final Context context, Intent intent) {
         Logger.i("Got a GCM message");
-        DataProcessor.runProcess(new Runnable()
-        {
+        DataProcessor.runProcess(new Runnable() {
             @Override
-            public void run()
-            {
-                BusHelper.submitCommandSync(context, new GetUserInboxCommand());
+            public void run() {
+                if(!AppPrefs.getInstance(context).getKillswitch().isActive()) {
+                    BusHelper.submitCommandSync(context, new GetUserInboxCommand());
+                }
             }
         });
     }
