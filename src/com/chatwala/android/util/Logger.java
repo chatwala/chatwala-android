@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 public class Logger {
     private static String TAG = "Chatwala";
     private static final boolean SHOULD_LOG = EnvironmentVariables.get().isDebug();
-    private static final boolean SHOULD_LOG_DEBUG = false;
+    private static final boolean SHOULD_LOG_DEBUG = true;
     private static boolean LOG_TO_ANDROID_DEFAULT = true;
     //private static int LOG_MAX_SIZE = 1024 * 512;
     //private static ChatwalaApplication app;

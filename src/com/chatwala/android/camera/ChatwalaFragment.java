@@ -54,6 +54,8 @@ public abstract class ChatwalaFragment extends Fragment {
 
     protected abstract void onBottomFragmentClicked();
 
+    protected abstract void onRecordingFinished();
+
     protected void addViewToTop(View v, boolean popTop) {
         addView(v, popTop, topContainer);
     }

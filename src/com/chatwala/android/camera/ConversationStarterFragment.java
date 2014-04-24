@@ -3,12 +3,10 @@ package com.chatwala.android.camera;
 import android.os.Environment;
 import android.widget.Toast;
 import com.chatwala.android.util.Logger;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by Eliezer on 4/23/2014.
@@ -32,27 +30,14 @@ public class ConversationStarterFragment extends ChatwalaFragment {
 
     @Override
     public void onActionButtonClicked() {
-        if(!camera.startRecording()) {
-            Toast.makeText(getActivity(), "Couldn't start recording", Toast.LENGTH_LONG).show();
-            return;
+        if(camera.isRecording()) {
+            getCwActivity().stopRecording();
         }
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(!camera.stopRecording()) {
-                    //Toast.makeText(getActivity(), "Couldn't stop recording", Toast.LENGTH_LONG).show();
-                }
-                else {
-                    try {
-                        org.apache.commons.io.IOUtils.copy(new FileInputStream(camera.getRecordingFile()), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
-                    }
-                    catch(Exception e) {
-
-                        Logger.e("Couldn't copy video", e);
-                    }
-                }
+        else {
+            if(!getCwActivity().startRecording(10000)) {
+                Toast.makeText(getActivity(), "Couldn't start recording", Toast.LENGTH_LONG).show();
             }
-        }, 10650);
+        }
     }
 
     @Override
@@ -67,5 +52,15 @@ public class ConversationStarterFragment extends ChatwalaFragment {
     @Override
     protected void onBottomFragmentClicked() {
 
+    }
+
+    @Override
+    protected void onRecordingFinished() {
+        try {
+            IOUtils.copy(new FileInputStream(camera.getRecordingFile()), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
+        }
+        catch(Exception e) {
+            Logger.e("Couldn't copy video", e);
+        }
     }
 }

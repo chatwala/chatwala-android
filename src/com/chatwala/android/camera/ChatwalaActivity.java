@@ -1,6 +1,7 @@
 package com.chatwala.android.camera;
 
 import android.graphics.SurfaceTexture;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -139,7 +140,7 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
+        //do nothing...camera handles it
     }
 
     @Override
@@ -147,7 +148,7 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
         Logger.i("Surface is getting destroyed");
         if(camera != null) {
             if (camera.isRecording()) {
-                camera.stopRecording();
+                camera.stopRecording(true);
             }
             camera.stopPreview();
         }
@@ -156,6 +157,43 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        //do nothing...camera handles it
+    }
 
+    public boolean startRecording(int maxRecordingMillis) {
+        MediaRecorder.OnInfoListener listener = new MediaRecorder.OnInfoListener() {
+            @Override
+            public void onInfo(MediaRecorder mediaRecorder, int what, int extra) {
+                if(what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
+                    if(camera != null) {
+                        Logger.d("Reached max recording duration and we still have the camera");
+                        camera.stopRecording(false);
+                    }
+                    else {
+                        Logger.d("Reached max recording duration and we don't have the camera");
+                    }
+                    currentFragment.onRecordingFinished();
+                }
+            }
+        };
+
+        if(!camera.canRecord() || !camera.startRecording(maxRecordingMillis, listener)) {
+            Logger.e("Couldn't start recording");
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    public boolean stopRecording() {
+        if(camera != null) {
+            camera.stopRecording(true);
+            currentFragment.onRecordingFinished();
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
