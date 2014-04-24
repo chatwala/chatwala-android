@@ -1,10 +1,14 @@
 package com.chatwala.android.messages;
 
+import co.touchlab.android.superbus.BusHelper;
 import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.database.ChatwalaMessage;
+import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.networking.requests.PutMessageThumbnailRequest;
+import com.chatwala.android.superbus.server20.DeleteMessageCommand;
+import com.j256.ormlite.dao.Dao;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -53,6 +57,20 @@ public class MessageManager {
                 NetworkManager networkManager = NetworkManager.getInstance();
                 return networkManager.postToQueue(
                         new PutMessageThumbnailRequest(getApp(), message, thumbnailFile).getCallable(getApp(), 3)).get();
+            }
+        });
+    }
+
+    public Future<CWResult<Boolean>> deleteMessage(final String messageId) {
+        return getQueue().submit(new Callable<CWResult<Boolean>>() {
+            @Override
+            public CWResult<Boolean> call() throws Exception {
+                Dao<ChatwalaMessage, String> dao = DatabaseHelper.getInstance(getApp()).getChatwalaMessageDao();
+                ChatwalaMessage message = dao.queryForId(messageId);
+                message.setIsDeleted(true);
+                dao.update(message);
+                BusHelper.submitCommandAsync(getApp(), new DeleteMessageCommand(message));
+                return new CWResult<Boolean>().setSuccess(true);
             }
         });
     }

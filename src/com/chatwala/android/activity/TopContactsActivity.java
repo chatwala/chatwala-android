@@ -48,8 +48,11 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         adapter = new TopContactsAdapter(this, new ArrayList<ContactEntry>(0), false, null);
         topContactsGrid.setAdapter(adapter);
 
-        Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
-        ((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
+        //Typeface fontDemi = ((ChatwalaApplication) getApplication()).fontMd;
+        //((TextView) findViewById(R.id.top_contacts_header)).setTypeface(fontDemi);
+       // findViewById(R.id.top_contacts_bottom).setVisibility(View.INVISIBLE);
+        findViewById(R.id.top_contacts_start_button).setVisibility(View.GONE);
+
     }
 
     @Override
@@ -92,16 +95,26 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
 
         adapter = new TopContactsAdapter(TopContactsActivity.this, contacts, false, new TopContactsAdapter.TopContactsEventListener() {
             @Override
-            public void onContactRemoved(int contactsLeft) {
-                if(contactsLeft == 0) {
+            public void onContactRemoved(int numContacts) {
+               /* if(contactsLeft == 0) {
                     startNewCameraActivity();
                     return;
+                }*/
+                if(numContacts==0) {
+                    findViewById(R.id.top_contacts_start_button).setVisibility(View.GONE);
+                    findViewById(R.id.top_contacts_bottom_text).setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
-            public void onContactClicked() {
+            public void onContactClicked(int numContacts) {
                 //not currently used
+                if(numContacts>0) {
+                    //show send button
+                    findViewById(R.id.top_contacts_start_button).setVisibility(View.VISIBLE);
+                    findViewById(R.id.top_contacts_bottom_text).setVisibility(View.GONE);
+                }
+
             }
 
             @Override
@@ -112,27 +125,34 @@ public class TopContactsActivity extends FragmentActivity implements LoaderManag
         });
         topContactsGrid.setAdapter(adapter);
 
+
         findViewById(R.id.top_contacts_top).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CWAnalytics.sendTapNextEvent(false, adapter.getContactsToSendTo().size());
-                startNewCameraActivity();
+                if(adapter.getContactsToSendTo().size()>0) {
+                    CWAnalytics.sendTapNextEvent(false, adapter.getContactsToSendTo().size());
+                    startNewCameraActivity();
+                }
             }
         });
 
         findViewById(R.id.top_contacts_start_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CWAnalytics.sendTapNextEvent(true, adapter.getContactsToSendTo().size());
-                startNewCameraActivity();
+                if(adapter.getContactsToSendTo().size()>0) {
+                    CWAnalytics.sendTapNextEvent(true, adapter.getContactsToSendTo().size());
+                    startNewCameraActivity();
+                }
             }
         });
 
         findViewById(R.id.top_contacts_bottom).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CWAnalytics.sendTapNextEvent(false, adapter.getContactsToSendTo().size());
-                startNewCameraActivity();
+                if(adapter.getContactsToSendTo().size()>0) {
+                    CWAnalytics.sendTapNextEvent(false, adapter.getContactsToSendTo().size());
+                    startNewCameraActivity();
+                }
             }
         });
     }

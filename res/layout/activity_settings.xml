@@ -133,7 +133,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/settings_arrow_right"/>
+                android:src="@drawable/settings_arrow_right" android:visibility="invisible"/>
         </LinearLayout>
         <View
             android:layout_width="fill_parent"
@@ -167,7 +167,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:src="@drawable/settings_arrow_right"/>
+                    android:src="@drawable/settings_arrow_right" android:visibility="invisible"/>
             </LinearLayout>
 
             <View
@@ -194,7 +194,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:src="@drawable/settings_arrow_right"/>
+                    android:src="@drawable/settings_arrow_right" android:visibility="invisible"/>
             </LinearLayout>
 
             <View
@@ -221,7 +221,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/settings_arrow_right"/>
+                        android:src="@drawable/settings_arrow_right" android:visibility="invisible"/>
             </LinearLayout>
 
             <View
@@ -248,7 +248,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:src="@drawable/settings_arrow_right"/>
+                    android:src="@drawable/settings_arrow_right" android:visibility="invisible"/>
             </LinearLayout>
 
         </LinearLayout>

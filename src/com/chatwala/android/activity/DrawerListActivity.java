@@ -1,8 +1,10 @@
 package com.chatwala.android.activity;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
@@ -33,6 +35,7 @@ import com.chatwala.android.dataops.DataProcessor;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.loaders.MessageLoader;
 import com.chatwala.android.loaders.UserLoader;
+import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.superbus.server20.GetUserInboxCommand;
 import com.chatwala.android.util.CWAnalytics;
 import com.squareup.picasso.Picasso;
@@ -145,23 +148,33 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+
                 CWAnalytics.sendDrawerOpened();
 
                 ChatwalaNotificationManager.removeNewMessagesNotification(getApplicationContext());
                 DataProcessor.runProcess(new Runnable() {
                     @Override
                     public void run() {
-                        BusHelper.submitCommandSync(getApplicationContext(), new GetUserInboxCommand());
+                        BusHelper.submitCommandAsync(getApplicationContext(), new GetUserInboxCommand());
                     }
                 });
 
                 loadUsers();
+
+                LocalBroadcastManager.getInstance(DrawerListActivity.this).registerReceiver(newMessageReceiver,
+                        new IntentFilter(new IntentFilter(BroadcastSender.NEW_MESSAGES_BROADCAST)));
             }
 
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
                 CWAnalytics.sendDrawerClosed();
+
+                //sometimes throws exceptions even though it shouldn't
+                try {
+                    LocalBroadcastManager.getInstance(DrawerListActivity.this).unregisterReceiver(newMessageReceiver);
+                }
+                catch(Exception ignore) {}
             }
         });
 
@@ -194,6 +207,13 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 finish();
             }
         });
+        messagesListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                showDeleteDialog(i);
+                return true;
+            }
+        });
         messagesListView.setAdapter(messageAdapter);
 
         addButton = (ImageView)findViewById(R.id.add_button);
@@ -221,9 +241,29 @@ public abstract class DrawerListActivity extends BaseChatWalaActivity {
                 SettingsActivity.startMe(DrawerListActivity.this);
             }
         });
+    }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(newMessageReceiver,
-                new IntentFilter(new IntentFilter(BroadcastSender.NEW_MESSAGES_BROADCAST)));
+    private void showDeleteDialog(final int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Are you sure you would like to delete this message?")
+                .setCancelable(false)
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        MessageManager.getInstance().deleteMessage(getMessageAdapter().getItem(position).getMessageId());
+                        getMessageAdapter().remove(position);
+                        if(getMessageAdapter().getCount() == 0) {
+                            getUserAdapter().removeBySenderId(currentSenderId);
+                            slideLists();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).create().show();
     }
 
     private void slideLists() {

@@ -17,12 +17,10 @@ import java.io.File;
  * Time: 2:31 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ChatwalaNotificationManager
-{
+public class ChatwalaNotificationManager {
     private static final int newMessagesNotificationId = 0;
 
-    public static void makeNewMessagesNotification(Context context)
-    {
+    public static void makeNewMessagesNotification(Context context) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.appicon)
@@ -42,17 +40,17 @@ public class ChatwalaNotificationManager
                 );
         mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(newMessagesNotificationId, mBuilder.build());
+        if(!AppPrefs.getInstance(context).getKillswitch().isActive()) {
+            mNotificationManager.notify(newMessagesNotificationId, mBuilder.build());
+        }
     }
 
-    public static void removeNewMessagesNotification(Context context)
-    {
+    public static void removeNewMessagesNotification(Context context) {
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(newMessagesNotificationId);
     }
 
-    public static void makeErrorInitialSendNotification(Context context, File pendingMessageFile)
-    {
+    public static void makeErrorInitialSendNotification(Context context, File pendingMessageFile) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.appicon)
