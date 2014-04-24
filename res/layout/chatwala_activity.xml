@@ -6,14 +6,14 @@
              android:layout_height="match_parent"
              android:background="@color/app_background" >
     <FrameLayout
-            android:id="@+id/main_fragment_container"
+            android:id="@+id/chatwala_fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/chat_watermark">
+            android:layout_height="match_parent">
 
     </FrameLayout>
 
     <com.chatwala.android.ui.CWButton
+            android:id="@+id/chatwala_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

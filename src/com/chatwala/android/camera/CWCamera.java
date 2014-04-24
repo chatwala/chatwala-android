@@ -1,12 +1,12 @@
 package com.chatwala.android.camera;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.view.Display;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
@@ -18,19 +18,23 @@ import java.util.List;
  * Created by Eliezer on 4/18/2014.
  */
 public class CWCamera {
-    private boolean isInitted = false;
-    private Camera frontCamera;
-    private Camera backCamera;
-    private int frontCameraId;
-    private int backCameraId;
+    private Camera camera;
+    private int cameraId;
     private CameraType cameraType = CameraType.FRONT;
     private CameraState cameraState = CameraState.CLOSED;
+    private Camera.Size bestPreviewSize;
     private MediaRecorder recorder;
+
+    private int displayRotation;
 
     private File recordingFile;
 
     private enum CameraState {
         CLOSED, READY, PREVIEW, RECORDING, ERROR
+    }
+
+    private enum ErrorCause {
+        CAMERA_ERROR, NO_CAMERA, PREVIEW, UNLOCK_CAMERA, RECORDER_PARAMS, RECORDER_START, RECORDER_STOP
     }
 
     private enum CameraType {
@@ -43,57 +47,79 @@ public class CWCamera {
         public static final CWCamera instance = new CWCamera();
     }
 
-    public static CWCamera getInstance() {
+    /*package*/ static CWCamera getInstance() {
         return Singleton.instance;
     }
 
-    public boolean init(Context context, int width, int height) {
-        if(isInitted) {
-            return true;
-        }
+    private void error(ErrorCause cause) {
+        Logger.e("Official CWCamera error - " + cause.toString());
+        release();
+        cameraState = CameraState.ERROR;
+    }
+
+    public void init(Context context) {
+        Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        displayRotation = display.getRotation();
+    }
+
+    public boolean init(int width, int height) {
+        Logger.i("Camera initting");
 
         cameraType = CameraType.FRONT;
-        openCameras(context, width, height);
-
-        if(frontCamera == null) {
-            if(backCamera == null) {
-                cameraState = CameraState.ERROR;
-                return false;
-            }
-            else {
-                cameraType = CameraType.BACK;
-            }
+        if(!openCamera(width, height)) {
+            return false;
         }
-
-        initMediaRecorder(context, width, height);
 
         cameraState = CameraState.READY;
 
-        if(frontCamera != null) {
-            frontCamera.setErrorCallback(new Camera.ErrorCallback() {
+        if(camera != null) {
+            camera.setErrorCallback(new Camera.ErrorCallback() {
                 @Override
                 public void onError(int i, Camera camera) {
-                    Logger.e("Got an error from the front camera (error = " + i + ")");
-                    cameraState = CameraState.ERROR;
-                }
-            });
-        }
-        if(backCamera != null && backCamera != frontCamera) {
-            backCamera.setErrorCallback(new Camera.ErrorCallback() {
-                @Override
-                public void onError(int i, Camera camera) {
-                    Logger.e("Got an error from the back camera (error = " + i + ")");
-                    cameraState = CameraState.ERROR;
+                    Logger.e("Got an error from the camera (error = " + i + ")");
+                    error(ErrorCause.CAMERA_ERROR);
                 }
             });
         }
 
-        isInitted = true;
+        Logger.i("Camera initted");
         return true;
     }
 
-    public boolean canUse() {
-        return isInitted && !hasError();
+    public boolean toggleCamera(int width, int height) {
+        Logger.i("Camera toggling");
+
+        if(cameraType == CameraType.FRONT) {
+            cameraType = CameraType.BACK;
+        }
+        else if(cameraType == CameraType.BACK) {
+            cameraType = CameraType.FRONT;
+        }
+
+        release();
+
+        if(!openCamera(width, height)) {
+            return false;
+        }
+
+        cameraState = CameraState.READY;
+
+        if(camera != null) {
+            camera.setErrorCallback(new Camera.ErrorCallback() {
+                @Override
+                public void onError(int i, Camera camera) {
+                    Logger.e("Got an error from the camera (error = " + i + ")");
+                    error(ErrorCause.CAMERA_ERROR);
+                }
+            });
+        }
+
+        Logger.i("Camera toggled");
+        return true;
+    }
+
+    public boolean canRecord() {
+        return cameraState == CameraState.PREVIEW && !hasError();
     }
 
     public boolean hasError() {
@@ -104,26 +130,35 @@ public class CWCamera {
         return cameraState == CameraState.PREVIEW;
     }
 
+    public boolean isRecording() {
+        return cameraState == CameraState.RECORDING;
+    }
+
     public File getRecordingFile() {
         return recordingFile;
     }
 
-    public boolean attachToPreview(SurfaceHolder surface) {
-        if(!hasError() && getCurrentCamera() != null) {
+    public Camera.Size getPreviewSize() {
+        return bestPreviewSize;
+    }
+
+    public boolean attachToPreview(SurfaceTexture surface) {
+        if(!hasError() && camera != null) {
             try {
                 if(isShowingPreview()) {
-                    getCurrentCamera().stopPreview();
+                    camera.stopPreview();
                 }
 
-                getCurrentCamera().setPreviewDisplay(surface);
-                getCurrentCamera().startPreview();
+                camera.setPreviewTexture(surface);
+                camera.startPreview();
 
                 cameraState = CameraState.PREVIEW;
+                Logger.i("Started preview");
                 return true;
             }
             catch(Exception e) {
                 Logger.e("Couldn't attach the camera to the preview", e);
-                cameraState = CameraState.ERROR;
+                error(ErrorCause.PREVIEW);
                 return false;
             }
         }
@@ -132,65 +167,117 @@ public class CWCamera {
         }
     }
 
+    public boolean stopPreview() {
+        if(!hasError() && camera != null && cameraState == CameraState.PREVIEW) {
+            camera.stopPreview();
+            cameraState = CameraState.READY;
+            Logger.i("Stopped preview");
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     public boolean startRecording() {
-        return true;
-    }
-
-    private Camera getCurrentCamera() {
-        if(cameraType == CameraType.FRONT) {
-            return frontCamera;
+        if(!hasError()) {
+            try {
+                recorder.start();
+                cameraState = CameraState.RECORDING;
+                Logger.i("Start recording");
+                return true;
+            }
+            catch(Exception e) {
+                try {
+                    camera.reconnect();
+                }
+                catch(Exception e2) {
+                    error(ErrorCause.RECORDER_START);
+                }
+                return false;
+            }
         }
         else {
-            return backCamera;
+            return false;
         }
     }
 
-    private int getCurrentCameraId() {
-        if(cameraType == CameraType.FRONT) {
-            return frontCameraId;
+    public boolean stopRecording() {
+        if(!hasError()) {
+            try {
+                recorder.stop();
+                recorder.reset();
+                cameraState = CameraState.READY;
+                Logger.i("Stopped recording");
+                return true;
+            }
+            catch(Exception e) {
+                if(recordingFile != null && recordingFile.exists()) {
+                    recorder.reset();
+                    Logger.i("Stopped recording");
+                    return true;
+                }
+                else {
+                    error(ErrorCause.RECORDER_STOP);
+                    return false;
+                }
+            }
         }
         else {
-            return backCameraId;
+            return false;
         }
     }
 
-    private void openCameras(Context context, int width, int height) {
-        if(isInitted) {
-            return;
-        }
-
+    private boolean openCamera(int width, int height) {
         int cameraCount = Camera.getNumberOfCameras();
         try {
-            if(cameraCount > 1) {
-                frontCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT);
-                frontCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
-                backCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
-                backCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-                setInitialParameters(frontCamera, context, width, height);
-                setInitialParameters(backCamera, context, width, height);
+            if(cameraType == CameraType.FRONT) {
+                if(cameraCount > 1) {
+                    camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT);
+                    cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                }
+                else if(cameraCount == 1) {
+                    camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+                    cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+                }
+                else {
+                    error(ErrorCause.NO_CAMERA);
+                    return false;
+                }
             }
-            else {
-                frontCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
-                backCamera = frontCamera;
-                frontCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-                backCameraId = frontCameraId;
-                setInitialParameters(frontCamera, context, width, height);
+            else if(cameraType == CameraType.BACK) {
+                if(cameraCount >= 1) {
+                    camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+                    cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+                }
+                else {
+                    error(ErrorCause.NO_CAMERA);
+                    return false;
+                }
             }
+
+            if(camera == null) {
+                error(ErrorCause.NO_CAMERA);
+                return false;
+            }
+
+            setupParameters(width, height);
+
+            Logger.i("Opened the camera");
+            return true;
         }
         catch(Exception e) {
             Logger.e("Couldn't open the camera", e);
+            return false;
         }
     }
 
-    private void initMediaRecorder(Context context, int width, int height) {
-        recorder = new MediaRecorder();
-        recorder.setCamera(getCurrentCamera());
-        if(!setRecorderParams(context, width, height)) {
-            releaseRecorder();
-        }
+    private void setupParameters(int width, int height) {
+        setCameraParameters(width, height);
+        initMediaRecorder(width, height);
     }
 
-    private void setInitialParameters(Camera camera, Context context, int width, int height) {
+    private void setCameraParameters(int width, int height) {
         try {
             if(camera != null) {
                 Camera.Parameters params = camera.getParameters();
@@ -198,8 +285,19 @@ public class CWCamera {
                 int[] bestFrameFrate = getBestCameraFrameRate(params.getSupportedPreviewFpsRange());
                 params.setPreviewFpsRange(bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
                                           bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
+                bestPreviewSize = getPreviewSize(width, height, params);
+                if(bestPreviewSize != null) {
+                    params.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
+                }
+
+                if (displayRotation == Surface.ROTATION_0) {
+                    camera.setDisplayOrientation(90);
+                }
+                if (displayRotation == Surface.ROTATION_270) {
+                    camera.setDisplayOrientation(180);
+                }
+
                 camera.setParameters(params);
-                setCameraPreviewSize(camera, context, width, height);
             }
         }
         catch(Exception e) {
@@ -211,32 +309,41 @@ public class CWCamera {
         return rateRanges.get(rateRanges.size() - 1);
     }
 
-    private void setCameraPreviewSize(Camera camera, Context context, int width, int height) {
+    private Camera.Size getPreviewSize(int width, int height, Camera.Parameters params) {
         if(camera != null) {
-            camera.stopPreview();
-            Camera.Parameters params = camera.getParameters();
-            Camera.Size bestSize = getBestSize(width, height, params.getSupportedPreviewSizes());
-
-            if(bestSize != null) {
-                params.setPreviewSize(bestSize.width, bestSize.height);
+            if(cameraState == CameraState.PREVIEW) {
+                camera.stopPreview();
             }
 
-            Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-            if (display.getRotation() == Surface.ROTATION_0) {
-                camera.setDisplayOrientation(90);
-            }
-            if (display.getRotation() == Surface.ROTATION_270) {
-                camera.setDisplayOrientation(180);
-            }
-
-            camera.setParameters(params);
+            return getBestSize(width, height, params.getSupportedPreviewSizes());
+        }
+        else {
+            return null;
         }
     }
 
-    private boolean setRecorderParams(Context context, int width, int height) {
-        if(getCurrentCamera() != null && recorder != null) {
+    private boolean initMediaRecorder(int width, int height) {
+        recorder = new MediaRecorder();
+        if(!setRecorderParams(width, height)) {
+            releaseRecorder();
             try {
-                Camera.Parameters params = getCurrentCamera().getParameters();
+                camera.reconnect();
+            } catch(Exception e) {
+                Logger.e("Couldn't reconnect to the camera", e);
+            }
+            error(ErrorCause.RECORDER_PARAMS);
+            return false;
+        }
+        Logger.i("Initted media recorder");
+        return true;
+    }
+
+    private boolean setRecorderParams(int width, int height) {
+        if(camera != null && recorder != null) {
+            try {
+                Camera.Parameters params = camera.getParameters();
+
+                recorder.setCamera(camera);
 
                 //must be before setOutputFormat
                 recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
@@ -246,7 +353,7 @@ public class CWCamera {
 
                 //everything under here until prepare must be after setVideoSource and setOutputFormat
                 int[] frameRateRange = new int[2];
-                getCurrentCamera().getParameters().getPreviewFpsRange(frameRateRange);
+                params.getPreviewFpsRange(frameRateRange);
                 int frameRate = frameRateRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
                 frameRate = (int) Math.floor(((double)frameRate / 1000));
                 recorder.setVideoFrameRate(frameRate);
@@ -261,19 +368,16 @@ public class CWCamera {
                     recorder.setVideoSize(bestSize.width, bestSize.height);
                 }
 
-                recorder.setVideoEncodingBitRate(CamcorderProfile.get(
-                                                    getCurrentCameraId(), CamcorderProfile.QUALITY_HIGH).videoBitRate);
+                recorder.setVideoEncodingBitRate(CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_HIGH).videoBitRate);
 
                 recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
                 recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
-                Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
                 int mrRotate = 0;
-
-                if (display.getRotation() == Surface.ROTATION_0) {
+                if (displayRotation == Surface.ROTATION_0) {
                     mrRotate = 270;
                 }
-                else if (display.getRotation() == Surface.ROTATION_270) {
+                else if (displayRotation == Surface.ROTATION_270) {
                     mrRotate = 180;
                 }
 
@@ -288,11 +392,15 @@ public class CWCamera {
                     recorder.setOrientationHint(mrRotate);
                 }
 
+                if(recordingFile != null && recordingFile.exists()) {
+                    recordingFile.delete();
+                }
                 recordingFile = MessageDataStore.makeTempVideoFile();
                 recorder.setOutputFile(recordingFile.getPath());
 
                 recorder.prepare();
 
+                Logger.i("Set the media recorder params");
                 return true;
             }
             catch(Exception e) {
@@ -331,6 +439,8 @@ public class CWCamera {
         if(recordingFile != null && recordingFile.exists()) {
             recordingFile.delete();
         }
+
+        Logger.i("CWCamera released");
     }
 
     private void releaseResources() {
@@ -341,19 +451,15 @@ public class CWCamera {
     }
 
     private void releaseCameras() {
-        if(getCurrentCamera() != null) {
+        if(camera != null) {
             if(isShowingPreview()) {
-                getCurrentCamera().stopPreview();
+                camera.stopPreview();
             }
+            camera.release();
+            camera = null;
         }
-        if(backCamera != frontCamera && backCamera != null) {
-            backCamera.release();
-            backCamera = null;
-        }
-        if(frontCamera != null) {
-            frontCamera.release();
-            frontCamera = null;
-        }
+
+        Logger.i("Released camera");
     }
 
     private void releaseRecorder() {
@@ -362,5 +468,6 @@ public class CWCamera {
             recorder.release();
             recorder = null;
         }
+        Logger.i("Released media recorder");
     }
 }
