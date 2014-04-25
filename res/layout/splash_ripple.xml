@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:background="@color/app_background"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
-    <FrameLayout
-        android:layout_width="fill_parent"
+              android:layout_height="match_parent"
+              android:background="@color/app_background"
+              android:orientation="vertical">
+    <com.chatwala.android.ui.RippleTimer
+        android:id="@+id/ripple_timer"
+        android:layout_width="match_parent"
         android:layout_height="0dip"
-        android:layout_weight="1">
-        <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@drawable/splash_icon"/>
-        <com.chatwala.android.ui.RippleTimer
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:alpha=".7"/>
-    </FrameLayout>
+        android:layout_weight="1"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
