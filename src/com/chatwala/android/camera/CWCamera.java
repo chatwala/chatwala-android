@@ -25,6 +25,8 @@ public class CWCamera {
     private Camera.Size bestPreviewSize;
     private MediaRecorder recorder;
 
+    private int containerWidth;
+    private int containerHeight;
     private int displayRotation;
 
     private File recordingFile;
@@ -66,8 +68,11 @@ public class CWCamera {
     public boolean init(int width, int height) {
         Logger.d("Camera initting");
 
+        containerWidth = width;
+        containerHeight = height;
+
         cameraType = CameraType.FRONT;
-        if(!openCamera(width, height)) {
+        if(!openCamera()) {
             return false;
         }
 
@@ -87,7 +92,7 @@ public class CWCamera {
         return true;
     }
 
-    public boolean toggleCamera(int width, int height) {
+    public boolean toggleCamera() {
         Logger.d("Camera toggling");
 
         if(cameraState != CameraState.PREVIEW) {
@@ -104,7 +109,7 @@ public class CWCamera {
 
         release();
 
-        if(!openCamera(width, height)) {
+        if(!openCamera()) {
             return false;
         }
 
@@ -138,10 +143,6 @@ public class CWCamera {
 
     public boolean isRecording() {
         return cameraState == CameraState.RECORDING;
-    }
-
-    public File getRecordingFile() {
-        return recordingFile;
     }
 
     public Camera.Size getPreviewSize() {
@@ -216,7 +217,8 @@ public class CWCamera {
         }
     }
 
-    public boolean stopRecording(boolean actuallyStop) {
+    public File stopRecording(boolean actuallyStop) {
+        File recordedFile = recordingFile;
         if(!hasError()) {
             try {
                 if(actuallyStop) {
@@ -226,30 +228,30 @@ public class CWCamera {
                     }
                     catch(Exception e) {}
                 }
-                recorder.reset();
-                cameraState = CameraState.READY;
+                cameraState = CameraState.PREVIEW;
+                initMediaRecorder(false);
                 Logger.d("Stopped recording");
-                return true;
+                return recordedFile;
             }
             catch(Exception e) {
                 if(recordingFile != null && recordingFile.exists()) {
-                    recorder.reset();
+                    initMediaRecorder(true);
                     Logger.d("Stopped recording");
-                    return true;
+                    return recordedFile;
                 }
                 else {
                     error(ErrorCause.RECORDER_STOP);
-                    return false;
+                    return null;
                 }
             }
         }
         else {
             Logger.e("Couldn't stop recording because we're in an error state");
-            return false;
+            return null;
         }
     }
 
-    private boolean openCamera(int width, int height) {
+    private boolean openCamera() {
         releaseCamera();
         int cameraCount = Camera.getNumberOfCameras();
         try {
@@ -283,7 +285,7 @@ public class CWCamera {
                 return false;
             }
 
-            setupParameters(width, height);
+            setupParameters();
 
             Logger.d("Opened the camera");
             return true;
@@ -294,12 +296,12 @@ public class CWCamera {
         }
     }
 
-    private void setupParameters(int width, int height) {
-        setCameraParameters(width, height);
-        initMediaRecorder(width, height);
+    private void setupParameters() {
+        setCameraParameters();
+        initMediaRecorder(true);
     }
 
-    private void setCameraParameters(int width, int height) {
+    private void setCameraParameters() {
         try {
             if(camera != null) {
                 Camera.Parameters params = camera.getParameters();
@@ -307,7 +309,7 @@ public class CWCamera {
                 int[] bestFrameFrate = getBestCameraFrameRate(params.getSupportedPreviewFpsRange());
                 params.setPreviewFpsRange(bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
                                           bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
-                bestPreviewSize = getPreviewSize(width, height, params);
+                bestPreviewSize = getPreviewSize(containerWidth, containerHeight, params);
                 if(bestPreviewSize != null) {
                     params.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
                 }
@@ -344,13 +346,21 @@ public class CWCamera {
         }
     }
 
-    private boolean initMediaRecorder(int width, int height) {
+    private boolean initMediaRecorder(boolean releaseRecorder) {
         if(recorder != null) {
-            releaseRecorder();
+            if(releaseRecorder) {
+                releaseRecorder();
+                recorder = new MediaRecorder();
+            }
+            else {
+                recorder.reset();
+            }
+        }
+        else {
+            recorder = new MediaRecorder();
         }
 
-        recorder = new MediaRecorder();
-        if(!setRecorderParams(width, height)) {
+        if(!setRecorderParams(containerWidth, containerHeight)) {
             releaseRecorder();
             try {
                 camera.reconnect();
@@ -427,9 +437,6 @@ public class CWCamera {
                     recorder.setOrientationHint(mrRotate);
                 }
 
-                if(recordingFile != null && recordingFile.exists()) {
-                    recordingFile.delete();
-                }
                 recordingFile = MessageDataStore.makeTempVideoFile();
                 recorder.setOutputFile(recordingFile.getPath());
 

@@ -83,7 +83,7 @@ public class CWButton extends FrameLayout {
         actionContainer.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
 
         if(actionView != null) {
-            actionView.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
+            actionView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER));
             actionContainer.addView(actionView);
         }
 
@@ -96,11 +96,21 @@ public class CWButton extends FrameLayout {
 
     public void setActionView(View actionView) {
         actionContainer.removeAllViews();
+        actionView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER));
         actionContainer.addView(actionView);
     }
 
     public void addActionView(View actionView) {
-        actionContainer.addView(actionView);
+        addActionView(actionView, actionContainer.getChildCount() - 1);
+    }
+
+    public void addActionView(View actionView, int position) {
+        actionView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        actionContainer.addView(actionView, position);
+    }
+
+    public void removeActionViewAt(int position) {
+        actionContainer.removeViewAt(position);
     }
 
     public void clearActionView() {

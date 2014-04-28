@@ -9,11 +9,15 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.FrameLayout;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
 import com.chatwala.android.activity.DrawerListActivity;
 import com.chatwala.android.ui.CWButton;
+import com.chatwala.android.ui.PacmanView;
 import com.chatwala.android.util.Logger;
+
+import java.io.File;
 
 /**
  * Created by Eliezer on 4/18/2014.
@@ -71,6 +75,7 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
             camera.release();
             camera = null;
         }
+        finish();
     }
 
     public ChatwalaApplication getApp() {
@@ -79,7 +84,6 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
 
     private void loadCamera() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        View v = findViewById(R.id.chatwala_fragment_container);
         recordingSurface = new ChatwalaRecordingTexture(ChatwalaActivity.this);
         acquireCameraTask = new AcquireCameraAsyncTask(new AcquireCameraAsyncTask.OnCameraReadyListener() {
             @Override
@@ -167,12 +171,12 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
                 if(what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
                     if(camera != null) {
                         Logger.d("Reached max recording duration and we still have the camera");
-                        camera.stopRecording(false);
+                        stopRecording(false);
                     }
                     else {
+                        currentFragment.onRecordingFinished(null);
                         Logger.d("Reached max recording duration and we don't have the camera");
                     }
-                    currentFragment.onRecordingFinished();
                 }
             }
         };
@@ -182,18 +186,52 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
             return false;
         }
         else {
+            PacmanView pacman = new PacmanView(this);
+            addActionView(pacman, 0);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+            pacman.setLayoutParams(lp);
+            pacman.startAnimation(maxRecordingMillis);
             return true;
         }
     }
 
     public boolean stopRecording() {
+        return stopRecording(true);
+    }
+
+    private boolean stopRecording(boolean actuallyStop) {
         if(camera != null) {
-            camera.stopRecording(true);
-            currentFragment.onRecordingFinished();
+            ((PacmanView) getActionViewAt(0)).stopAndRemove();
+            File recordedFile = camera.stopRecording(actuallyStop);
+            currentFragment.onRecordingFinished(recordedFile);
             return true;
         }
         else {
             return false;
         }
+    }
+
+    public void setActionView(View v) {
+        actionButton.setActionView(v);
+    }
+
+    public void addActionView(View v) {
+        actionButton.addActionView(v);
+    }
+
+    public void addActionView(View v, int position) {
+        actionButton.addActionView(v, position);
+    }
+
+    public View getActionViewAt(int position) {
+        return actionButton.getActionViewAt(position);
+    }
+
+    public void removeActionViewAt(int position) {
+        actionButton.removeActionViewAt(position);
+    }
+
+    public void clearActionView() {
+        actionButton.clearActionView();
     }
 }

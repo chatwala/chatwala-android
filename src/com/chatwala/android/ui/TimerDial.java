@@ -26,47 +26,34 @@ public class TimerDial extends View
     private Paint clearPaint;
     private Paint lightRedPaint;
 
-    public TimerDial(Context context)
-    {
+    public TimerDial(Context context) {
         super(context);
         init();
     }
 
-    public TimerDial(Context context, AttributeSet attrs)
-    {
+    public TimerDial(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public TimerDial(Context context, AttributeSet attrs, int defStyle)
-    {
+    public TimerDial(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
 
-    private void init()
-    {
+    private void init() {
         timerBarSize = getResources().getDimension(R.dimen.timer_bar_size);
 
         clearPaint = new Paint();
-
-        clearPaint.setColor(Color.WHITE);
-        clearPaint.setAlpha(100);
+        clearPaint.setColor(Color.TRANSPARENT);
         clearPaint.setStyle(Paint.Style.FILL);
 
-        baseRedPaint = new Paint();
-
-        baseRedPaint.setColor(getResources().getColor(R.color.dot_red));
-        baseRedPaint.setStyle(Paint.Style.FILL);
-
         lightRedPaint = new Paint();
-
         lightRedPaint.setColor(getResources().getColor(R.color.dot_red_light));
         lightRedPaint.setStyle(Paint.Style.FILL);
     }
 
-    public void resetAnimation(Integer playOnlyDuration, Integer endRecordTime)
-    {
+    public void resetAnimation(Integer playOnlyDuration, Integer endRecordTime) {
         currentOffset = 0;
         this.playOnlyDuration = playOnlyDuration;
         this.endRecordTime = endRecordTime;
