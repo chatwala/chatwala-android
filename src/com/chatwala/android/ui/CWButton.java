@@ -17,7 +17,7 @@ import com.chatwala.android.R;
  * Created by Eliezer on 4/1/2014.
  */
 public class CWButton extends FrameLayout {
-    private View modifiableView;
+    private FrameLayout actionContainer;
 
     public CWButton(Context context) {
         super(context);
@@ -58,39 +58,60 @@ public class CWButton extends FrameLayout {
                 outerOvalSize = defaultOuterSize;
             }
         }
+        int innerOvalSize = (int) Math.round(outerOvalSize * .80);
 
         View transparentOval = new View(context);
-        View modifiableView;
+        actionContainer = new FrameLayout(context);
+
+        View actionView = null;
         if(drawableRes != null) {
-            modifiableView = new ImageView(context);
-            ((ImageView) modifiableView).setImageDrawable(drawableRes);
-            ((ImageView) modifiableView).setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            actionView = new ImageView(context);
+            ((ImageView) actionView).setImageDrawable(drawableRes);
+            ((ImageView) actionView).setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         }
         else if(text != null) {
-            modifiableView = new TextView(context);
-            ((TextView) modifiableView).setGravity(Gravity.CENTER);
-            ((TextView) modifiableView).setText(text);
-            ((TextView) modifiableView).setTextColor(0);
-            ((TextView) modifiableView).setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Medium);
-            ((TextView) modifiableView).setTypeface(Typeface.DEFAULT_BOLD);
+            actionView = new TextView(context);
+            ((TextView) actionView).setGravity(Gravity.CENTER);
+            ((TextView) actionView).setText(text);
+            ((TextView) actionView).setTextColor(0);
+            ((TextView) actionView).setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Medium);
+            ((TextView) actionView).setTypeface(Typeface.DEFAULT_BOLD);
         }
-        else {
-            modifiableView = new View(context);
-        }
-        int innerOvalSize = (int) Math.round(outerOvalSize * .80);
 
         setLayoutParams(new LayoutParams(outerOvalSize, outerOvalSize));
         transparentOval.setLayoutParams(new LayoutParams(outerOvalSize, outerOvalSize, Gravity.CENTER));
-        modifiableView.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
+        actionContainer.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
+
+        if(actionView != null) {
+            actionView.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
+            actionContainer.addView(actionView);
+        }
 
         transparentOval.setBackgroundResource(R.drawable.cw_button_halo);
-        modifiableView.setBackgroundResource(R.drawable.cw_button);
+        actionContainer.setBackgroundResource(R.drawable.cw_button);
 
         addView(transparentOval);
-        addView(modifiableView);
+        addView(actionContainer);
     }
 
-    public View getModifiableView() {
-        return modifiableView;
+    public void setActionView(View actionView) {
+        actionContainer.removeAllViews();
+        actionContainer.addView(actionView);
+    }
+
+    public void addActionView(View actionView) {
+        actionContainer.addView(actionView);
+    }
+
+    public void clearActionView() {
+        actionContainer.removeAllViews();
+    }
+
+    public View getActionView() {
+        return getActionViewAt(0);
+    }
+
+    public View getActionViewAt(int i) {
+        return actionContainer.getChildAt(i);
     }
 }
