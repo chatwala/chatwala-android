@@ -906,10 +906,7 @@ public class NewCameraActivity extends DrawerListActivity {
                                 showFeedback = prefs.recordMessageSent();
                             }
 
-                            if(!prefs.isImageReviewed() && MessageDataStore.findUserImageInLocalStore(prefs.getUserId()).exists()) {
-                                UpdateProfilePicActivity.startMe(NewCameraActivity.this, true);
-                            }
-                            else if(showFeedback) {
+                            if(showFeedback) {
                                 FeedbackActivity.startMe(NewCameraActivity.this, true);
                             }
                             else {
