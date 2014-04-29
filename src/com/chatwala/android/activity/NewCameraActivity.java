@@ -916,7 +916,12 @@ public class NewCameraActivity extends DrawerListActivity {
                             finish();
                         }
                         else {
-                            Toast.makeText(NewCameraActivity.this, "Couldn't contact server.  Please try again later.", Toast.LENGTH_LONG).show();
+                            if(getCurrentMessageOrigin() == MessageOrigin.INITIATOR) {
+                                Toast.makeText(NewCameraActivity.this, "Unable to send message. Please try again.", Toast.LENGTH_LONG).show();
+                            }
+                            else {
+                                Toast.makeText(NewCameraActivity.this, "Unable to send reply. Please try again.", Toast.LENGTH_LONG).show();
+                            }
                             NewCameraActivity.startMe(NewCameraActivity.this);
                             finish();
                         }
