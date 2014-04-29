@@ -18,6 +18,8 @@ import com.chatwala.android.ui.PacmanView;
 import com.chatwala.android.util.Logger;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Eliezer on 4/18/2014.
@@ -44,14 +46,16 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
         ft.commit();
 
         actionButton = (CWButton) findViewById(R.id.chatwala_button);
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                currentFragment.onActionButtonClicked();
-            }
-        });
+        actionButton.setOnClickListener(onActionClick);
         actionButton.bringToFront();
     }
+
+    private View.OnClickListener onActionClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            currentFragment.onActionButtonClicked();
+        }
+    };
 
     @Override
     public void onResume() {
@@ -191,6 +195,14 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
             pacman.setLayoutParams(lp);
             pacman.startAnimation(maxRecordingMillis);
+            actionButton.setOnClickListener(null);
+
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                   actionButton.setOnClickListener(onActionClick);
+                }
+            }, 1000);
             return true;
         }
     }

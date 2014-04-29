@@ -59,6 +59,10 @@ public class ConversationStarterFragment extends ChatwalaFragment {
     public void onActionButtonClicked() {
         if(camera.isRecording()) {
             getCwActivity().stopRecording();
+            if(countdownTimer != null) {
+                countdownTimer.cancel();
+                countdownTimer = null;
+            }
         }
         else {
             startRecording(true);
@@ -100,15 +104,14 @@ public class ConversationStarterFragment extends ChatwalaFragment {
                 }
 
                 @Override
-                public void onFinish() {
-                    bottomText.setText("Done");
-                }
+                public void onFinish() {}
             }.start();
         }
     }
 
     @Override
     protected void onRecordingFinished(File recordedFile) {
+        bottomText.setText("Done");
         actionImage.setImageResource(R.drawable.record_circle);
         try {
             IOUtils.copy(new FileInputStream(recordedFile), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
