@@ -20,6 +20,7 @@ import com.chatwala.android.loaders.BroadcastSender;
 public class GetMessageFileCommand extends SqliteCommand
 {
     private ChatwalaMessage message;
+    private Object result;
 
     public GetMessageFileCommand(){}
 
@@ -50,7 +51,7 @@ public class GetMessageFileCommand extends SqliteCommand
     @Override
     public void callCommand(Context context) throws TransientException, PermanentException
     {
-        new GetMessageFileRequest(context, message).execute();
+        result = new GetMessageFileRequest(context, message).execute();
     }
 
     @Override
@@ -58,8 +59,10 @@ public class GetMessageFileCommand extends SqliteCommand
     {
         //if(MessageDataStore.findUserImageInLocalStore(messageMetadata.getSenderId()).exists())
         //{
-        BroadcastSender.makeNewMessagesBroadcast(context);
-        ChatwalaNotificationManager.makeNewMessagesNotification(context);
+        if(result != null) {
+            BroadcastSender.makeNewMessagesBroadcast(context);
+            ChatwalaNotificationManager.makeNewMessagesNotification(context);
+        }
         //}
     }
 

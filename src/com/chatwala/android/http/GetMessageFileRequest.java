@@ -9,6 +9,7 @@ import com.chatwala.android.database.ChatwalaMessage;
 import com.chatwala.android.database.DatabaseHelper;
 import com.chatwala.android.loaders.BroadcastSender;
 import com.chatwala.android.superbus.ClearStoreCommand;
+import com.chatwala.android.superbus.server20.DeleteMessageCommand;
 import com.chatwala.android.superbus.server20.GetMessageThumbnailCommand;
 import com.chatwala.android.superbus.server20.GetMessageUserThumbnailCommand;
 import com.chatwala.android.util.MessageDataStore;
@@ -132,11 +133,8 @@ public class GetMessageFileRequest extends BaseGetRequest
         //is valid?
         if(!chatwalaMessage.getMessageId().equals(metadataJson.optString("message_id"))) {
             
-            if(exists) {
-                databaseHelper.getChatwalaMessageDao().delete(chatwalaMessage);
-            }
-            messageFile.delete();
-            return chatwalaMessage;
+            BusHelper.submitCommandAsync(context, new DeleteMessageCommand(chatwalaMessage));
+            return null;
         }
 
         if(!exists)
