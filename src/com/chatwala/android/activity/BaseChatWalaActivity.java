@@ -4,11 +4,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ViewGroup;
-import co.touchlab.android.superbus.BusHelper;
-import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.EnvironmentVariables;
-import com.chatwala.android.dataops.DataProcessor;
-import com.chatwala.android.superbus.CheckKillswitchCommand;
 import com.chatwala.android.util.Logger;
 import com.google.analytics.tracking.android.EasyTracker;
 
@@ -25,10 +21,6 @@ public abstract class BaseChatWalaActivity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        if(!(this instanceof KillswitchActivity))
-        {
-            ChatwalaApplication.isKillswitchShowing.set(false);
-        }
     }
 
     @Override
@@ -56,15 +48,6 @@ public abstract class BaseChatWalaActivity extends Activity
                 return null;
             }
         }.execute();
-
-        DataProcessor.runProcess(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                BusHelper.submitCommandSync(BaseChatWalaActivity.this, new CheckKillswitchCommand());
-            }
-        });
     }
 
     @Override

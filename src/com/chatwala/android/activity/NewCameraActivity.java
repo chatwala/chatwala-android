@@ -54,6 +54,7 @@ import com.chatwala.android.superbus.server20.ReplyFlowCommand;
 import com.chatwala.android.ui.*;
 import com.chatwala.android.util.AndroidUtils;
 import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.KillswitchInfo;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.MessageDataStore;
 import com.chatwala.android.util.Referrer;
@@ -360,6 +361,15 @@ public class NewCameraActivity extends DrawerListActivity {
         super.onCreate(savedInstanceState);
         Logger.i("Beginning of onCreate()");
 
+        KillswitchInfo killswitch = AppPrefs.getInstance(this).getKillswitch();
+        if(killswitch.isActive()) {
+            Intent killswitchIntent = new Intent(this, KillswitchActivity.class);
+            killswitchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(killswitchIntent);
+            finish();
+            return;
+        }
+
         if(!getIntent().hasExtra(TopContactsActivity.TOP_CONTACTS_LIST_EXTRA)) {
             if(!AppPrefs.getInstance(this).wasTopContactsShown() ||
                     (AppPrefs.getInstance(this).getDeliveryMethod() == DeliveryMethod.TOP_CONTACTS &&
@@ -533,6 +543,15 @@ public class NewCameraActivity extends DrawerListActivity {
     @Override
     public void onResume() {
         super.onResume();
+
+        KillswitchInfo killswitch = AppPrefs.getInstance(this).getKillswitch();
+        if(killswitch.isActive()) {
+            Intent killswitchIntent = new Intent(this, KillswitchActivity.class);
+            killswitchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(killswitchIntent);
+            finish();
+            return;
+        }
 
         wasFirstButtonPressed = AppPrefs.getInstance(this).wasFirstButtonPressed();
         shouldShowPreview = AppPrefs.getInstance(this).getPrefShowPreview();

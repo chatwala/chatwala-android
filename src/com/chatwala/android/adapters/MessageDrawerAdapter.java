@@ -60,6 +60,11 @@ public class MessageDrawerAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public void remove(int i) {
+        messages.remove(i);
+        notifyDataSetChanged();
+    }
+
     public void clearMessages() {
         messages = new ArrayList<DrawerMessage>(0);
         notifyDataSetChanged();
