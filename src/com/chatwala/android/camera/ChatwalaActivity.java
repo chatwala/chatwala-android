@@ -1,13 +1,10 @@
 package com.chatwala.android.camera;
 
-import android.graphics.SurfaceTexture;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
-import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
 import com.chatwala.android.ChatwalaApplication;
@@ -24,11 +21,10 @@ import java.util.TimerTask;
 /**
  * Created by Eliezer on 4/18/2014.
  */
-public class ChatwalaActivity extends DrawerListActivity implements TextureView.SurfaceTextureListener {
+public class ChatwalaActivity extends DrawerListActivity {
     private ChatwalaFragment currentFragment;
     private ChatwalaFragment conversationStarterFragment;
     private CWCamera camera;
-    private ChatwalaRecordingTexture recordingSurface;
     private AcquireCameraAsyncTask acquireCameraTask;
     private CWButton actionButton;
 
@@ -88,7 +84,6 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
 
     private void loadCamera() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        recordingSurface = new ChatwalaRecordingTexture(ChatwalaActivity.this);
         acquireCameraTask = new AcquireCameraAsyncTask(new AcquireCameraAsyncTask.OnCameraReadyListener() {
             @Override
             public void onCameraReady(CWCamera camera) {
@@ -99,13 +94,9 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
                     Logger.e("Camera loaded with error");
                     return;
                 }
+
                 ChatwalaActivity.this.camera = camera;
-                recordingSurface.setSurfaceTextureListener(ChatwalaActivity.this);
-                currentFragment.onSurfaceCreated(recordingSurface);
-                if (recordingSurface.isAvailable()) {
-                    onSurfaceTextureAvailable(recordingSurface.getSurfaceTexture(), recordingSurface.getWidth(), recordingSurface.getHeight());
-                }
-                recordingSurface.forceOnMeasure();
+                currentFragment.onCameraReady(camera);
                 Logger.i("Camera loaded");
             }
         }, dm.widthPixels, dm.heightPixels / 2);
@@ -125,47 +116,6 @@ public class ChatwalaActivity extends DrawerListActivity implements TextureView.
     @Override
     protected void performAddButtonAction() {
 
-    }
-
-    @Override
-    public void onSurfaceTextureAvailable(final SurfaceTexture surface, int width, int height) {
-        Logger.i("A surface is available");
-        if(camera != null) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Logger.i("Surface ready and camera is good to go");
-                    camera.attachToPreview(surface);
-                    currentFragment.onCameraReady(camera);
-                }
-            }, 100);
-        }
-        else {
-            Logger.w("Surface ready and camera is not good to go...attempting to reload camera");
-            loadCamera();
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        //do nothing...camera handles it
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Logger.i("Surface is getting destroyed");
-        if(camera != null) {
-            if (camera.isRecording()) {
-                camera.stopRecording(true);
-            }
-            camera.stopPreview();
-        }
-        return true;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        //do nothing...camera handles it
     }
 
     public boolean startRecording(int maxRecordingMillis) {

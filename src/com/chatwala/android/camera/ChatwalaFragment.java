@@ -21,8 +21,6 @@ public abstract class ChatwalaFragment extends Fragment {
     private CroppingLayout topContainer;
     private FrameLayout bottomContainer;
 
-    private boolean isSurfaceAttached = false;
-
     protected ChatwalaApplication getApp() {
         return getCwActivity().getApp();
     }
@@ -51,16 +49,6 @@ public abstract class ChatwalaFragment extends Fragment {
             }
         });
         return v;
-    }
-
-    public abstract void onSurfaceCreated(ChatwalaRecordingTexture recordingSurface);
-
-    protected boolean isSurfaceAttached() {
-        return isSurfaceAttached;
-    }
-
-    protected void setIsSurfaceAttached(boolean isSurfaceAttached) {
-        this.isSurfaceAttached = isSurfaceAttached;
     }
 
     public abstract void onCameraReady(CWCamera camera);

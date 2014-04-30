@@ -1,9 +1,11 @@
 package com.chatwala.android.camera;
 
 import android.graphics.Color;
+import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
+import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,7 +20,7 @@ import java.io.FileOutputStream;
 /**
  * Created by Eliezer on 4/23/2014.
  */
-public class ConversationStarterFragment extends ChatwalaFragment {
+public class ConversationStarterFragment extends ChatwalaFragment implements TextureView.SurfaceTextureListener {
     private CWCamera camera;
     private ChatwalaRecordingTexture recordingSurface;
     private ImageView actionImage;
@@ -31,22 +33,17 @@ public class ConversationStarterFragment extends ChatwalaFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        recordingSurface = new ChatwalaRecordingTexture(getActivity());
+        recordingSurface.setSurfaceTextureListener(this);
+        addViewToTop(recordingSurface, false);
+        recordingSurface.forceOnMeasure();
+
         actionImage = new ImageView(getActivity());
         actionImage.setImageResource(R.drawable.record_circle);
         getCwActivity().setActionView(actionImage);
 
         bottomText = generateCwTextView(R.string.basic_instructions, Color.TRANSPARENT);
         setBottomView(bottomText);
-    }
-
-    @Override
-    public void onSurfaceCreated(ChatwalaRecordingTexture recordingSurface) {
-        Logger.i("Surface is ready for ConversationStarterFragment");
-        this.recordingSurface = recordingSurface;
-        if(!isSurfaceAttached()) {
-            addViewToTop(recordingSurface, false);
-            setIsSurfaceAttached(true);
-        }
     }
 
     @Override
@@ -121,10 +118,42 @@ public class ConversationStarterFragment extends ChatwalaFragment {
         }
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
+    private void attachCamera(final SurfaceTexture surfaceTexture) {
+        if(camera == null) {
+            recordingSurface.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    attachCamera(surfaceTexture);
+                }
+            }, 500);
+            return;
+        }
 
-        setIsSurfaceAttached(false);
+        camera.attachToPreview(surfaceTexture);
     }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i2) {
+        Logger.i("Surface is ready for ConversationStarterFragment");
+        attachCamera(surfaceTexture);
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        if(camera != null) {
+            if (camera.isRecording()) {
+                camera.stopRecording(true);
+            }
+            if(camera.isShowingPreview()) {
+                camera.stopPreview();
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i2) {}
 }
