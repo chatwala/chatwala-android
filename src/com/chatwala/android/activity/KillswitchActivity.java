@@ -55,6 +55,7 @@ public class KillswitchActivity extends BaseChatWalaActivity {
     public void onResume() {
         super.onResume();
 
+        killswitch = AppPrefs.getInstance(this).getKillswitch();
         if(killswitch == null || !killswitch.isActive()) {
             NewCameraActivity.startMe(this);
         }
