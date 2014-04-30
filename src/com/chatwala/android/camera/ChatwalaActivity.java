@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.FrameLayout;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
 import com.chatwala.android.activity.DrawerListActivity;
@@ -27,11 +28,14 @@ public class ChatwalaActivity extends DrawerListActivity {
     private CWCamera camera;
     private AcquireCameraAsyncTask acquireCameraTask;
     private CWButton actionButton;
+    private AppPrefs prefs;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chatwala_activity);
+
+        prefs = AppPrefs.getInstance(this);
 
         loadCamera();
 
@@ -80,6 +84,10 @@ public class ChatwalaActivity extends DrawerListActivity {
 
     public ChatwalaApplication getApp() {
         return ((ChatwalaApplication) getApplication());
+    }
+
+    public AppPrefs getPrefs() {
+        return prefs;
     }
 
     private void loadCamera() {

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
 import com.chatwala.android.ui.CroppingLayout;
@@ -49,6 +50,10 @@ public abstract class ChatwalaFragment extends Fragment {
             }
         });
         return v;
+    }
+
+    protected AppPrefs getPrefs() {
+        return getCwActivity().getPrefs();
     }
 
     public abstract void onCameraReady(CWCamera camera);
