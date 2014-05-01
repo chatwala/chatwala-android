@@ -500,14 +500,14 @@ public class NewCameraActivity extends DrawerListActivity {
 
     private void runWaterSplash() {
         Logger.i("Start of runWaterSplash()");
-        if (splash != null) {
+        if (splash != null)
+        {
             final ViewGroup root = findViewRoot();
             root.removeView(splash);
         }
 
-        final ViewGroup root = findViewRoot();
         splash = getLayoutInflater().inflate(R.layout.splash_ripple, null);
-        rippleTimer = (RippleTimer) splash.findViewById(R.id.ripple_timer);
+        final ViewGroup root = findViewRoot();
         root.addView(splash);
         Logger.i("End of runWaterSplash()");
     }
