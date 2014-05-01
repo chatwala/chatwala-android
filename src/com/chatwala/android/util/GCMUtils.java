@@ -49,7 +49,7 @@ public class GCMUtils
 
             try
             {
-                getAppVersion(context);
+                currentVersion = getAppVersion(context);
             }
             catch (Exception e)
             {
