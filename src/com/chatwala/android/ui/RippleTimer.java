@@ -1,114 +1,86 @@
 package com.chatwala.android.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Point;
 import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.ViewGroup;
-import android.view.ViewPropertyAnimator;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.view.Display;
+import android.view.View;
 import com.chatwala.android.R;
-import com.squareup.picasso.Picasso;
-
-import java.util.Random;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
- * User: eygraber
- * Date: 4/25/2014
- * Time: 2:00 PM
+ * User: kgalligan
+ * Date: 12/6/13
+ * Time: 2:39 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RippleTimer extends RelativeLayout {
-    private static final float WAVE = 100;
+public class RippleTimer extends View
+{
+    private long start = System.currentTimeMillis();
+    private Bitmap ripple;
+    private int screenWidth;
+    private int screenHeight;
 
-    private ImageView rippleView;
-    private ImageView iconView;
-    private boolean shouldMakeWaves = true;
-    private int progress = 0;
-    private boolean canceled = false;
-
-    public RippleTimer(Context context) {
+    public RippleTimer(Context context)
+    {
         super(context);
         init();
     }
 
-    public RippleTimer(Context context, AttributeSet attrs) {
+    public RippleTimer(Context context, AttributeSet attrs)
+    {
         super(context, attrs);
         init();
     }
 
-    public RippleTimer(Context context, AttributeSet attrs, int defStyle) {
+    public RippleTimer(Context context, AttributeSet attrs, int defStyle)
+    {
         super(context, attrs, defStyle);
         init();
     }
 
-    private void init() {
-        inflate(getContext(), R.layout.ripple_layout, this);
-
-        rippleView = (ImageView) findViewById(R.id.ripple_overlay);
-        iconView = (ImageView) findViewById(R.id.ripple_chatwala_icon);
-
-        makeWaves(WAVE);
-        setProgress(1);
-    }
-
-    public void cancel() {
-        this.canceled = true;
-    }
-
-    public void setProgress(final int progress) {
-        if(progress > 100) {
-            shouldMakeWaves = false;
-            return;
-        }
-
-        this.progress = progress;
-
-        postDelayed(new Runnable() {
+    private void init()
+    {
+        ripple = BitmapFactory.decodeResource(getResources(), R.drawable.ripple_overlay);
+        Display display = ((Activity)getContext()).getWindow().getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        screenWidth = size.x;
+        screenHeight = size.y;
+        setOnClickListener(new OnClickListener()
+        {
             @Override
-            public void run() {
-                if(!canceled) {
-                    setProgress(progress + new Random().nextInt(25));
-                }
+            public void onClick(View v)
+            {
+                //Nothing
             }
-        }, new Random().nextInt(500));
+        });
     }
 
-    private void makeWaves(final float translationX) {
-        ViewPropertyAnimator animator = rippleView.animate();
-        if(animator != null) {
-            float translationY = -(((float) progress / 100) * iconView.getMeasuredHeight());
-            if(translationX > 0) {
-                translationY += 5;
-            }
-            else {
-                translationY -= 5;
-            }
-            animator.setDuration(500)
-                    .translationXBy(translationX)
-                    .translationY(translationY)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (shouldMakeWaves && !canceled) {
-                                        makeWaves(-translationX);
-                                    }
-                                }
-                            });
-                        }
-                    })
-                    .start();
+    @Override
+    protected void onDraw(Canvas canvas)
+    {
+        super.onDraw(canvas);
+        long diff = (System.currentTimeMillis() - start);
+        long yDiff = Math.max(diff - 500, 0l)/4;
+
+        //Find First
+        long xPos = 0 - diff;
+        long minX = -ripple.getWidth();
+        while(xPos < minX)
+        {
+            xPos += ripple.getWidth();
         }
+        canvas.drawBitmap(ripple, xPos, 0 - yDiff, null);
+        canvas.drawBitmap(ripple, ripple.getWidth() + xPos, 0 - yDiff, null);
+
+//        if(yDiff > ripple.getHeight())
+        invalidate();
     }
+
 
 }

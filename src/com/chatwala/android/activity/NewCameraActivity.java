@@ -513,9 +513,6 @@ public class NewCameraActivity extends DrawerListActivity {
     }
 
     private void removeWaterSplash() {
-        if(rippleTimer != null) {
-            rippleTimer.cancel();
-        }
         if (splash != null) {
             final ViewGroup root = findViewRoot();
             Animation animation = AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out);
