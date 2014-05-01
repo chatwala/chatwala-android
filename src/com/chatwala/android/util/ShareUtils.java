@@ -118,7 +118,7 @@ public class ShareUtils
         return null;
     }
 
-    public static GetMessageReadUrlResponse getReadUrlFromShareUrl(Context context, Uri shareUrl) {
+    public static CWResult<GetMessageReadUrlResponse> getReadUrlFromShareUrl(Context context, Uri shareUrl) {
 
         String shareId = shareUrl.getQuery();
 
@@ -129,7 +129,7 @@ public class ShareUtils
         Future<CWResult<GetMessageReadUrlResponse>> future = NetworkManager.getInstance().postToQueue(callable);
 
         try {
-            return future.get().getResult();
+            return future.get();
         }
         catch (Exception e) {
             return null;

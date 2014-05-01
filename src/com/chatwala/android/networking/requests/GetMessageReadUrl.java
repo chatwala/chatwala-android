@@ -3,7 +3,6 @@ package com.chatwala.android.networking.requests;
 import android.content.Context;
 import com.chatwala.android.CWResult;
 import com.chatwala.android.EnvironmentVariables;
-import com.chatwala.android.http.server20.ChatwalaMessageStartInfo;
 import com.chatwala.android.networking.NetworkCallable;
 import com.chatwala.android.networking.NetworkLogger;
 import com.chatwala.android.networking.NetworkManager;
@@ -13,8 +12,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -85,17 +86,23 @@ public class GetMessageReadUrl implements Request<HttpURLConnection, GetMessageR
 
             JSONObject responseBody = new JSONObject(responseBuilder.toString());
 
+            int code = responseBody.getJSONObject("response_code").optInt("code", -1);
             String readUrl = responseBody.getString("read_url");
             String messageId = responseBody.getString("message_id");
 
-            GetMessageReadUrlResponse getMessageReadUrlResponse = new GetMessageReadUrlResponse();
-            getMessageReadUrlResponse.setMessageId(messageId);
-            getMessageReadUrlResponse.setReadUrl(readUrl);
-
+            GetMessageReadUrlResponse getMessageReadUrlResponse = new GetMessageReadUrlResponse(code, messageId, readUrl);
             CWResult<GetMessageReadUrlResponse> response = new CWResult<GetMessageReadUrlResponse>().setSuccess(getMessageReadUrlResponse);
 
             NetworkLogger.logHttpResponse(client, getUrl(), response);
             return response;
+        }
+        catch(ConnectException ce) {
+            GetMessageReadUrlResponse getMessageReadUrlResponse = new GetMessageReadUrlResponse(-2, null, null);
+            return new CWResult<GetMessageReadUrlResponse>().setSuccess(getMessageReadUrlResponse);
+        }
+        catch(FileNotFoundException fnfe) {
+            GetMessageReadUrlResponse getMessageReadUrlResponse = new GetMessageReadUrlResponse(-1, null, null);
+            return new CWResult<GetMessageReadUrlResponse>().setSuccess(getMessageReadUrlResponse);
         }
         catch(Exception e) {
             Logger.e("Got an error parsing the response", e);
@@ -110,6 +117,6 @@ public class GetMessageReadUrl implements Request<HttpURLConnection, GetMessageR
 
     @Override
     public String getGenericErrorMessage() {
-        return "There was an error uploading the message thumbnail.";
+        return "This is not a valid message.";
     }
 }

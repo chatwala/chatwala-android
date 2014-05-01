@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.TransientException;
 import com.chatwala.android.AppPrefs;
 import com.chatwala.android.CWResult;
 import com.chatwala.android.ChatwalaApplication;
@@ -48,6 +49,7 @@ import com.chatwala.android.networking.requests.GetMessageShortUrl;
 import com.chatwala.android.receivers.ReferrerReceiver;
 import com.chatwala.android.sms.Sms;
 import com.chatwala.android.sms.SmsManager;
+import com.chatwala.android.superbus.GetMessageFileCommand;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.server20.NewMessageFlowCommand;
 import com.chatwala.android.superbus.server20.ReplyFlowCommand;
@@ -1484,52 +1486,78 @@ public class NewCameraActivity extends DrawerListActivity {
         Logger.i("End of tearDownSurface");
     }
 
-    class MessageLoaderTask extends AsyncTask<Void, Void, ChatwalaMessage>
-    {
+    class MessageLoaderTask extends AsyncTask<Void, Void, ChatwalaMessage> {
+        private String message;
+
         @Override
-        protected ChatwalaMessage doInBackground(Void... params)
-        {
-            try
-            {
+        protected ChatwalaMessage doInBackground(Void... params) {
+            try {
                 String readUrl;
                 String playbackMessageId;
-                if (getIntent().hasExtra(MESSAGE_READ_URL_EXTRA) && getIntent().hasExtra(MESSAGE_ID))
-                {
+                if (getIntent().hasExtra(MESSAGE_READ_URL_EXTRA) && getIntent().hasExtra(MESSAGE_ID)) {
                     readUrl = getIntent().getStringExtra(MESSAGE_READ_URL_EXTRA);
                     playbackMessageId = getIntent().getStringExtra(MESSAGE_ID);
                 }
-                else
-                {
-                    GetMessageReadUrlResponse response = ShareUtils.getReadUrlFromShareUrl(NewCameraActivity.this, getIntent().getData());
-                    readUrl = response.getReadUrl();
-                    playbackMessageId = response.getMessageId();
-                    new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
+                else {
+                    CWResult<GetMessageReadUrlResponse> response = ShareUtils.getReadUrlFromShareUrl(NewCameraActivity.this, getIntent().getData());
+                    if(!response.isSuccess()) {
+                        message = response.getMessage();
+                        return null;
+                    }
+                    GetMessageReadUrlResponse readUrlResponse = response.getResult();
+                    if(readUrlResponse == null || readUrlResponse.getCode() == -1) {
+                        message = "This is not a valid message.";
+                        return null;
+                    }
+                    if(readUrlResponse.getCode() == -2) {
+                        message = "Message still downloading.";
+                        return null;
+                    }
+                    readUrl = readUrlResponse.getReadUrl();
+                    playbackMessageId = readUrlResponse.getMessageId();
+                    try {
+                        new PostAddToInboxRequest(NewCameraActivity.this, playbackMessageId, AppPrefs.getInstance(NewCameraActivity.this).getUserId()).execute();
+                    }
+                    catch(Exception e) {
+                        message = "Message still downloading.";
+                        return null;
+                    }
                 }
 
                 Dao<ChatwalaMessage, String> messageDao = DatabaseHelper.getInstance(NewCameraActivity.this).getChatwalaMessageDao();
                 playbackMessage = messageDao.queryForId(playbackMessageId);
 
-                if(playbackMessage == null || playbackMessage.getMessageFile() == null)
-                {
+                if(playbackMessage == null || playbackMessage.getMessageFile() == null) {
                     Logger.i("Refreshing message " + playbackMessageId);
                     playbackMessage = new ChatwalaMessage();
                     playbackMessage.setMessageId(playbackMessageId);
                     playbackMessage.setReadUrl(readUrl);
                     playbackMessage = (ChatwalaMessage)new GetMessageFileRequest(NewCameraActivity.this, playbackMessage).execute();
 
-                    if(playbackMessage == null)
-                        throw new IOException();
+                    if(playbackMessage == null) {
+                        message = "Message still downloading.";
+                        playbackMessage = new ChatwalaMessage();
+                        playbackMessage.setMessageId(playbackMessageId);
+                        playbackMessage.setReadUrl(readUrl);
+                        BusHelper.submitCommandAsync(NewCameraActivity.this, new GetMessageFileCommand(playbackMessage));
+                        return null;
+                    }
                 }
                 chatMessageVideoMetadata = VideoUtils.findMetadata(playbackMessage.getMessageFile());
 
-                if(playbackMessage.getMessageState() == ChatwalaMessage.MessageState.UNREAD)
-                {
+                if(playbackMessage.getMessageState() == ChatwalaMessage.MessageState.UNREAD) {
                     playbackMessage.setMessageState(ChatwalaMessage.MessageState.READ);
                     messageDao.update(playbackMessage);
                     BroadcastSender.makeNewMessagesBroadcast(NewCameraActivity.this);
                 }
 
                 return playbackMessage;
+            }
+            catch(TransientException te) {
+                message = "Message still downloading.";
+                chatMessageVideoMetadata = null;
+                playbackMessage = null;
+                return null;
             }
             catch (Exception e) {
                 Logger.e("Got an Exception while loading a message", e);
@@ -1540,11 +1568,12 @@ public class NewCameraActivity extends DrawerListActivity {
         }
 
         @Override
-        protected void onPostExecute(ChatwalaMessage chatMessage)
-        {
-            if(chatMessage == null)
-            {
-                Toast.makeText(NewCameraActivity.this, "Unable to load message. Please try again.", Toast.LENGTH_LONG).show();
+        protected void onPostExecute(ChatwalaMessage chatMessage) {
+            if(chatMessage == null)  {
+                if(message == null) {
+                    message = "Unable to load message. Please try again.";
+                }
+                Toast.makeText(NewCameraActivity.this, message, Toast.LENGTH_LONG).show();
                 NewCameraActivity.startMe(NewCameraActivity.this);
                 finish();
             }
