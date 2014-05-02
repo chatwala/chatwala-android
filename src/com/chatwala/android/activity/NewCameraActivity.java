@@ -51,10 +51,7 @@ import com.chatwala.android.sms.SmsManager;
 import com.chatwala.android.superbus.PostSubmitMessageCommand;
 import com.chatwala.android.superbus.server20.NewMessageFlowCommand;
 import com.chatwala.android.superbus.server20.ReplyFlowCommand;
-import com.chatwala.android.ui.CameraPreviewView;
-import com.chatwala.android.ui.CroppingLayout;
-import com.chatwala.android.ui.DynamicTextureVideoView;
-import com.chatwala.android.ui.TimerDial;
+import com.chatwala.android.ui.*;
 import com.chatwala.android.util.AndroidUtils;
 import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.KillswitchInfo;
@@ -152,6 +149,7 @@ public class NewCameraActivity extends DrawerListActivity {
     private ImageView timerKnob;
     private TimerDial timerDial;
     private View splash;
+    private RippleTimer rippleTimer;
     // ************* onCreate only *************
 
     // ************* DANGEROUS STATE *************
@@ -500,8 +498,7 @@ public class NewCameraActivity extends DrawerListActivity {
         tutorialView = ShowcaseView.insertShowcaseView(target, this, "Welcome to Chatwala.", "A new way to have conversations. Tap to get started.", co);
     }
 
-    private void runWaterSplash()
-    {
+    private void runWaterSplash() {
         Logger.i("Start of runWaterSplash()");
         if (splash != null)
         {
@@ -515,33 +512,23 @@ public class NewCameraActivity extends DrawerListActivity {
         Logger.i("End of runWaterSplash()");
     }
 
-    private void removeWaterSplash()
-    {
-        if (splash != null)
-        {
+    private void removeWaterSplash() {
+        if (splash != null) {
             final ViewGroup root = findViewRoot();
             Animation animation = AnimationUtils.loadAnimation(NewCameraActivity.this, R.anim.splash_fade_out);
 
-            final View innerSplash = splash;
-            animation.setAnimationListener(new Animation.AnimationListener()
-            {
+            final View weirdSplash = splash;
+            animation.setAnimationListener(new Animation.AnimationListener() {
                 @Override
-                public void onAnimationStart(Animation animation)
-                {
+                public void onAnimationStart(Animation animation) {}
 
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    root.removeView(weirdSplash);
                 }
 
                 @Override
-                public void onAnimationEnd(Animation animation)
-                {
-                    root.removeView(innerSplash);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation)
-                {
-
-                }
+                public void onAnimationRepeat(Animation animation) {}
             });
 
             splash.startAnimation(animation);

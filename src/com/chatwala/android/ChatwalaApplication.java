@@ -6,7 +6,11 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import co.touchlab.android.superbus.*;
+import co.touchlab.android.superbus.BusHelper;
+import co.touchlab.android.superbus.CommandPurgePolicy;
+import co.touchlab.android.superbus.ForegroundNotificationManager;
+import co.touchlab.android.superbus.StorageException;
+import co.touchlab.android.superbus.SuperbusEventListener;
 import co.touchlab.android.superbus.log.BusLog;
 import co.touchlab.android.superbus.network.ConnectionChangeBusEventListener;
 import co.touchlab.android.superbus.provider.PersistedApplication;
@@ -20,7 +24,11 @@ import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.networking.NetworkManager;
 import com.chatwala.android.sms.SmsManager;
 import com.chatwala.android.superbus.PostRegisterPushTokenCommand;
-import com.chatwala.android.util.*;
+import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.GCMUtils;
+import com.chatwala.android.util.KillswitchInfo;
+import com.chatwala.android.util.Logger;
+import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import org.json.JSONObject;
 
@@ -89,30 +97,6 @@ public class ChatwalaApplication extends Application implements PersistedApplica
             Logger.i("User id is " + userId);
         }
 
-        try {
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        KillswitchInfo oldKillswitch = AppPrefs.getInstance(getApplicationContext()).getKillswitch();
-                        CWResult<JSONObject> killswitchResult = NetworkManager.getInstance().getKillswitch(oldKillswitch).get();
-                        if(killswitchResult.isSuccess()) {
-                            AppPrefs.getInstance(getApplicationContext()).putKillswitch(killswitchResult.getResult());
-                        }
-                        else {
-                            AppPrefs.getInstance(getApplicationContext()).putKillswitch(new JSONObject());
-                        }
-                    }
-                    catch(Exception e) {
-                        Logger.e("Couldn't get the killswitch", e);
-                    }
-                }
-            }.start();
-        }
-        catch(Exception e) {
-            Logger.e("The killswitch checker thread crashed", e);
-        }
-
         DataProcessor.runProcess(new Runnable() {
             @Override
             public void run() {
@@ -171,6 +155,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
     public void onActivityStarted(Activity activity) {
         numActivities++;
         if(numActivities==1) {
+            checkKillswitch();
             CWAnalytics.sendAppOpenEvent();
         }
     }
@@ -207,6 +192,32 @@ public class ChatwalaApplication extends Application implements PersistedApplica
         @Override
         public SQLiteDatabase getDatabase() {
             return DatabaseHelper.getInstance(ChatwalaApplication.this).getWritableDatabase();
+        }
+    }
+
+    private void checkKillswitch() {
+        try {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        KillswitchInfo oldKillswitch = AppPrefs.getInstance(getApplicationContext()).getKillswitch();
+                        CWResult<JSONObject> killswitchResult = NetworkManager.getInstance().getKillswitch(oldKillswitch).get();
+                        if(killswitchResult.isSuccess()) {
+                            AppPrefs.getInstance(getApplicationContext()).putKillswitch(killswitchResult.getResult());
+                        }
+                        else {
+                            AppPrefs.getInstance(getApplicationContext()).putKillswitch(new JSONObject());
+                        }
+                    }
+                    catch(Exception e) {
+                        Logger.e("Couldn't get the killswitch", e);
+                    }
+                }
+            }.start();
+        }
+        catch(Exception e) {
+            Logger.e("The killswitch checker thread crashed", e);
         }
     }
 }

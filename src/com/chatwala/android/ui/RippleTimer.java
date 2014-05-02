@@ -79,7 +79,7 @@ public class RippleTimer extends View
         canvas.drawBitmap(ripple, ripple.getWidth() + xPos, 0 - yDiff, null);
 
 //        if(yDiff > ripple.getHeight())
-            invalidate();
+        invalidate();
     }
 
 
