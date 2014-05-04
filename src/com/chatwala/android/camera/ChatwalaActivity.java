@@ -15,7 +15,6 @@ import com.chatwala.android.ui.CWButton;
 import com.chatwala.android.ui.PacmanView;
 import com.chatwala.android.util.Logger;
 
-import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -172,8 +171,8 @@ public class ChatwalaActivity extends DrawerListActivity {
     private boolean stopRecording(boolean actuallyStop) {
         if(camera != null) {
             ((PacmanView) getActionViewAt(0)).stopAndRemove();
-            File recordedFile = camera.stopRecording(actuallyStop);
-            currentFragment.onRecordingFinished(recordedFile);
+            RecordingInfo recordingInfo = camera.stopRecording(actuallyStop);
+            currentFragment.onRecordingFinished(recordingInfo);
             return true;
         }
         else {

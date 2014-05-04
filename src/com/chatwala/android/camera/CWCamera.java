@@ -7,9 +7,9 @@ import android.media.MediaRecorder;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.util.DeviceUtils;
 import com.chatwala.android.util.Logger;
-import com.chatwala.android.util.MessageDataStore;
 
 import java.io.File;
 import java.util.List;
@@ -189,6 +189,7 @@ public class CWCamera {
         }
     }
 
+    private long recordingLength;
     public boolean startRecording(int maxRecordingMillis, MediaRecorder.OnInfoListener infoListener) {
         if(!hasError()) {
             try {
@@ -197,6 +198,7 @@ public class CWCamera {
                 recorder.prepare();
                 camera.unlock();
                 recorder.start();
+                recordingLength = System.currentTimeMillis();
                 cameraState = CameraState.RECORDING;
                 Logger.d("Start recording");
                 return true;
@@ -217,7 +219,7 @@ public class CWCamera {
         }
     }
 
-    public File stopRecording(boolean actuallyStop) {
+    public RecordingInfo stopRecording(boolean actuallyStop) {
         File recordedFile = recordingFile;
         if(!hasError()) {
             try {
@@ -225,19 +227,28 @@ public class CWCamera {
                     //we need this internal try...catch because we use maxDuration which calls stop in the background
                     try {
                         recorder.stop();
+                        recordingLength = System.currentTimeMillis() - recordingLength;
+                        if(recordingLength > 10000) {
+                            recordingLength = 10000;
+                        }
                     }
-                    catch(Exception e) {}
+                    catch(Exception e) {
+                        recordingLength = 10000;
+                    }
+                }
+                else {
+                    recordingLength = 10000;
                 }
                 cameraState = CameraState.PREVIEW;
                 initMediaRecorder(false);
                 Logger.d("Stopped recording");
-                return recordedFile;
+                return new RecordingInfo(recordedFile, recordingLength, actuallyStop);
             }
             catch(Exception e) {
                 if(recordingFile != null && recordingFile.exists()) {
                     initMediaRecorder(true);
                     Logger.d("Stopped recording");
-                    return recordedFile;
+                    return new RecordingInfo(recordedFile, recordingLength, actuallyStop);
                 }
                 else {
                     error(ErrorCause.RECORDER_STOP);
@@ -437,7 +448,7 @@ public class CWCamera {
                     recorder.setOrientationHint(mrRotate);
                 }
 
-                recordingFile = MessageDataStore.makeTempVideoFile();
+                recordingFile = MessageManager.getInstance().getNewRecordingFile();
                 recorder.setOutputFile(recordingFile.getPath());
 
                 Logger.d("Set the media recorder params");

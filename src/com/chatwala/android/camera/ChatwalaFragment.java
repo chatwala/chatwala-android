@@ -16,8 +16,6 @@ import com.chatwala.android.R;
 import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.util.DimenUtils;
 
-import java.io.File;
-
 public abstract class ChatwalaFragment extends Fragment {
     private CroppingLayout topContainer;
     private FrameLayout bottomContainer;
@@ -64,7 +62,7 @@ public abstract class ChatwalaFragment extends Fragment {
 
     protected abstract void onBottomFragmentClicked();
 
-    protected abstract void onRecordingFinished(File recordedFile);
+    protected abstract void onRecordingFinished(RecordingInfo recordingInfo);
 
     protected void addViewToTop(View v, boolean popTop) {
         addView(v, popTop, topContainer);

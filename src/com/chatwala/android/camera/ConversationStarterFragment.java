@@ -2,6 +2,7 @@ package com.chatwala.android.camera;
 
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -107,11 +108,42 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
     }
 
     @Override
-    protected void onRecordingFinished(File recordedFile) {
+    protected void onRecordingFinished(final RecordingInfo recordingInfo) {
         bottomText.setText("Done");
         actionImage.setImageResource(R.drawable.record_circle);
         try {
-            IOUtils.copy(new FileInputStream(recordedFile), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
+            IOUtils.copy(new FileInputStream(recordingInfo.getRecordingFile()), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
+            recordingInfo.getRecordingFile().delete();
+            new AsyncTask<Void, Void, VideoMetadata>() {
+
+                @Override
+                protected VideoMetadata doInBackground(Void... voids) {
+                    return VideoMetadata.parseVideoMetadata(new File(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
+                }
+
+                @Override
+                public void onPostExecute(VideoMetadata metadata) {
+                    if(metadata != null) {
+                        try {
+                            final ChatwalaPlaybackTexture pb;
+                            pb = new ChatwalaPlaybackTexture(getActivity(), metadata);
+                            pb.setOnPlaybackReadyListener(new ChatwalaPlaybackTexture.OnPlaybackReadyListener() {
+                                @Override
+                                public void onPlaybackReady() {
+                                    if(pb != null) {
+                                        pb.start();
+                                    }
+                                }
+                            });
+                            addViewToTop(pb, true);
+                        }
+                        catch(Exception e) {
+
+                        }
+                    }
+                }
+
+            }.execute();
         }
         catch(Exception e) {
             Logger.e("Couldn't copy video", e);
