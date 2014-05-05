@@ -85,14 +85,4 @@ public class PreviewFragment extends ChatwalaFragment {
         getCwActivity().showConversationStarter();
         return true;
     }
-
-    @Override
-    public void onCameraReady(CWCamera camera) {
-        //do nothing
-    }
-
-    @Override
-    protected void onRecordingFinished(RecordingInfo recordingInfo) {
-        //do nothing
-    }
 }

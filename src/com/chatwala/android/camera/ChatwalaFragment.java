@@ -53,15 +53,11 @@ public abstract class ChatwalaFragment extends Fragment {
         return getCwActivity().getPrefs();
     }
 
-    public abstract void onCameraReady(CWCamera camera);
-
     public abstract void onActionButtonClicked();
 
     protected abstract void onTopFragmentClicked();
 
     protected abstract void onBottomFragmentClicked();
-
-    protected abstract void onRecordingFinished(RecordingInfo recordingInfo);
 
     public boolean onBackPressed() {
         return false;

@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.chatwala.android.R;
+import com.chatwala.android.camera.ChatwalaActivity.OnRecordingFinishedListener;
 import com.chatwala.android.messages.MessageManager;
 import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.util.FutureCallback;
@@ -20,7 +21,6 @@ import java.util.concurrent.FutureTask;
  * Created by Eliezer on 4/23/2014.
  */
 public class ConversationStarterFragment extends ChatwalaFragment implements TextureView.SurfaceTextureListener {
-    private CWCamera camera;
     private ChatwalaRecordingTexture recordingSurface;
     private ImageView actionImage;
     private TextView bottomText;
@@ -47,14 +47,8 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
     }
 
     @Override
-    public void onCameraReady(CWCamera camera) {
-        Logger.i("Camera is ready for ConversationStarterFragment");
-        this.camera = camera;
-    }
-
-    @Override
     public void onActionButtonClicked() {
-        if(camera.isRecording()) {
+        if(getCwActivity().isRecording()) {
             getCwActivity().stopRecording();
             if(countdownTimer != null) {
                 countdownTimer.cancel();
@@ -68,22 +62,20 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
 
     @Override
     protected void onTopFragmentClicked() {
-        if(camera != null && !camera.hasError()) {
-            if(camera.toggleCamera()) {
-                camera.attachToPreview(recordingSurface.getSurfaceTexture());
-            }
+        if(getCwActivity().toggleCamera()) {
+            getCwActivity().setPreviewForCamera(recordingSurface);
         }
     }
 
     @Override
     protected void onBottomFragmentClicked() {
-        if(!camera.isRecording()) {
+        if(!getCwActivity().isRecording()) {
             startRecording(false);
         }
     }
 
     private void startRecording(boolean fromButtonPress) {
-        if(!getCwActivity().startRecording(10000)) {
+        if(!getCwActivity().startRecording(10000, recordingFinishedListener)) {
             Toast.makeText(getActivity(), "Couldn't start recording", Toast.LENGTH_LONG).show();
         }
         else {
@@ -106,55 +98,41 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
         }
     }
 
-    @Override
-    protected void onRecordingFinished(final RecordingInfo recordingInfo) {
-        bottomText.setText(R.string.basic_instructions);
-        actionImage.setImageResource(R.drawable.record_circle);
+    private OnRecordingFinishedListener recordingFinishedListener = new OnRecordingFinishedListener() {
+        @Override
+        public void onRecordingFinished(RecordingInfo recordingInfo) {
+            bottomText.setText(R.string.basic_instructions);
+            actionImage.setImageResource(R.drawable.record_circle);
 
-        if(true) {
-            MessageManager.getInstance().getMessageVideoMetadata(recordingInfo.getRecordingFile(), new FutureCallback<VideoMetadata>() {
-                @Override
-                public void runOnMainThread(FutureTask<VideoMetadata> future) {
-                    if (!future.isCancelled()) {
-                        getCwActivity().showPreview(future);
+            if(true) {
+                MessageManager.getInstance().getMessageVideoMetadata(recordingInfo.getRecordingFile(), new FutureCallback<VideoMetadata>() {
+                    @Override
+                    public void runOnMainThread(FutureTask<VideoMetadata> future) {
+                        if (!future.isCancelled()) {
+                            getCwActivity().showPreview(future);
+                        }
                     }
-                }
-            });
+                });
+            }
+            else {
+                MessageManager.getInstance().sendUnknownRecipientMessage(recordingInfo.getRecordingFile());
+            }
         }
-        else {
-            MessageManager.getInstance().sendUnknownRecipientMessage(recordingInfo.getRecordingFile());
-        }
-    }
-
-    private void attachCamera(final SurfaceTexture surfaceTexture) {
-        if(camera == null) {
-            recordingSurface.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    attachCamera(surfaceTexture);
-                }
-            }, 500);
-            return;
-        }
-
-        camera.attachToPreview(surfaceTexture);
-    }
+    };
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i2) {
         Logger.i("Surface is ready for ConversationStarterFragment");
-        attachCamera(surfaceTexture);
+        getCwActivity().setPreviewForCamera(recordingSurface);
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        if(camera != null) {
-            if (camera.isRecording()) {
-                camera.stopRecording(true);
-            }
-            if(camera.isShowingPreview()) {
-                camera.stopPreview();
-            }
+        if (getCwActivity().isRecording()) {
+            getCwActivity().stopRecording(true);
+        }
+        if(getCwActivity().isShowingCameraPreview()) {
+            getCwActivity().stopCameraPreview();
         }
         return true;
     }

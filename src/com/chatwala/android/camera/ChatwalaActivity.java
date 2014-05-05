@@ -4,6 +4,7 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
 import com.chatwala.android.AppPrefs;
@@ -28,6 +29,12 @@ public class ChatwalaActivity extends DrawerListActivity {
     private AcquireCameraAsyncTask acquireCameraTask;
     private CWButton actionButton;
     private AppPrefs prefs;
+
+    private OnRecordingFinishedListener recordingFinishedListener;
+
+    /*package*/ interface OnRecordingFinishedListener {
+        public void onRecordingFinished(RecordingInfo recordingInfo);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,7 +115,6 @@ public class ChatwalaActivity extends DrawerListActivity {
                 }
 
                 ChatwalaActivity.this.camera = camera;
-                currentFragment.onCameraReady(camera);
                 Logger.i("Camera loaded");
             }
         }, dm.widthPixels, dm.heightPixels / 2);
@@ -126,10 +132,7 @@ public class ChatwalaActivity extends DrawerListActivity {
     public void showConversationStarter() {
         try {
             swapFragment(conversationStarterFragment, "conversation_starter");
-            if(camera != null) {
-                conversationStarterFragment.onCameraReady(camera);
-            }
-            else {
+            if(camera == null) {
                 loadCamera();
             }
         }
@@ -152,7 +155,59 @@ public class ChatwalaActivity extends DrawerListActivity {
 
     }
 
-    public boolean startRecording(int maxRecordingMillis) {
+    public void setPreviewForCamera(final TextureView surface) {
+        if(camera == null && surface != null) {
+            surface.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setPreviewForCamera(surface);
+                }
+            }, 250);
+            return;
+        }
+
+        if(surface != null && surface.isAvailable()) {
+            surface.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    camera.attachToPreview(surface.getSurfaceTexture());
+                }
+            }, 250);
+        }
+    }
+
+    public boolean isShowingCameraPreview() {
+        if(camera == null) {
+            return false;
+        }
+        return camera.isShowingPreview();
+    }
+
+    public boolean stopCameraPreview() {
+        if(camera != null && camera.isShowingPreview()) {
+            return camera.stopPreview();
+        }
+        else {
+            return false;
+        }
+    }
+
+    public boolean toggleCamera() {
+        if(camera != null && !camera.hasError()) {
+            return camera.toggleCamera();
+        }
+        return false;
+    }
+
+    public boolean isRecording() {
+        if(camera == null) {
+            return false;
+        }
+        return camera.isRecording();
+    }
+
+    public boolean startRecording(int maxRecordingMillis, final OnRecordingFinishedListener recordingFinishedListener) {
+        this.recordingFinishedListener = recordingFinishedListener;
         MediaRecorder.OnInfoListener listener = new MediaRecorder.OnInfoListener() {
             @Override
             public void onInfo(MediaRecorder mediaRecorder, int what, int extra) {
@@ -162,7 +217,9 @@ public class ChatwalaActivity extends DrawerListActivity {
                         stopRecording(false);
                     }
                     else {
-                        currentFragment.onRecordingFinished(null);
+                        if(recordingFinishedListener != null) {
+                            recordingFinishedListener.onRecordingFinished(null);
+                        }
                         Logger.d("Reached max recording duration and we don't have the camera");
                     }
                 }
@@ -195,11 +252,13 @@ public class ChatwalaActivity extends DrawerListActivity {
         return stopRecording(true);
     }
 
-    private boolean stopRecording(boolean actuallyStop) {
+    public boolean stopRecording(boolean actuallyStop) {
         if(camera != null) {
             ((PacmanView) getActionViewAt(0)).stopAndRemove();
             RecordingInfo recordingInfo = camera.stopRecording(actuallyStop);
-            currentFragment.onRecordingFinished(recordingInfo);
+            if(recordingFinishedListener != null) {
+                recordingFinishedListener.onRecordingFinished(recordingInfo);
+            }
             return true;
         }
         else {
