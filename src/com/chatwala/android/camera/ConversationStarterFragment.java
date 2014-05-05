@@ -2,21 +2,19 @@ package com.chatwala.android.camera;
 
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.chatwala.android.R;
+import com.chatwala.android.messages.MessageManager;
+import com.chatwala.android.ui.CroppingLayout;
+import com.chatwala.android.util.FutureCallback;
 import com.chatwala.android.util.Logger;
-import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by Eliezer on 4/23/2014.
@@ -34,10 +32,11 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        final CroppingLayout cl = new CroppingLayout(getActivity());
         recordingSurface = new ChatwalaRecordingTexture(getActivity());
         recordingSurface.setSurfaceTextureListener(this);
-        addViewToTop(recordingSurface, false);
-        recordingSurface.forceOnMeasure();
+        cl.addView(recordingSurface);
+        setTopView(cl);
 
         actionImage = new ImageView(getActivity());
         actionImage.setImageResource(R.drawable.record_circle);
@@ -109,44 +108,21 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
 
     @Override
     protected void onRecordingFinished(final RecordingInfo recordingInfo) {
-        bottomText.setText("Done");
+        bottomText.setText(R.string.basic_instructions);
         actionImage.setImageResource(R.drawable.record_circle);
-        try {
-            IOUtils.copy(new FileInputStream(recordingInfo.getRecordingFile()), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
-            recordingInfo.getRecordingFile().delete();
-            new AsyncTask<Void, Void, VideoMetadata>() {
 
+        if(true) {
+            MessageManager.getInstance().getMessageVideoMetadata(recordingInfo.getRecordingFile(), new FutureCallback<VideoMetadata>() {
                 @Override
-                protected VideoMetadata doInBackground(Void... voids) {
-                    return VideoMetadata.parseVideoMetadata(new File(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
-                }
-
-                @Override
-                public void onPostExecute(VideoMetadata metadata) {
-                    if(metadata != null) {
-                        try {
-                            final ChatwalaPlaybackTexture pb;
-                            pb = new ChatwalaPlaybackTexture(getActivity(), metadata);
-                            pb.setOnPlaybackReadyListener(new ChatwalaPlaybackTexture.OnPlaybackReadyListener() {
-                                @Override
-                                public void onPlaybackReady() {
-                                    if(pb != null) {
-                                        pb.start();
-                                    }
-                                }
-                            });
-                            addViewToTop(pb, true);
-                        }
-                        catch(Exception e) {
-
-                        }
+                public void runOnMainThread(FutureTask<VideoMetadata> future) {
+                    if (!future.isCancelled()) {
+                        getCwActivity().showPreview(future);
                     }
                 }
-
-            }.execute();
+            });
         }
-        catch(Exception e) {
-            Logger.e("Couldn't copy video", e);
+        else {
+            MessageManager.getInstance().sendUnknownRecipientMessage(recordingInfo.getRecordingFile());
         }
     }
 

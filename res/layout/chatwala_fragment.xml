@@ -12,12 +12,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|bottom"
                 android:src="@drawable/chat_watermark_top"/>
-        <com.chatwala.android.ui.CroppingLayout
+        <FrameLayout
                 android:id="@+id/chatwala_fragment_top"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-        </com.chatwala.android.ui.CroppingLayout>
+        </FrameLayout>
 
     </FrameLayout>
     <FrameLayout

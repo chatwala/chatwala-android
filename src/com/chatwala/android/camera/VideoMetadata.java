@@ -2,11 +2,13 @@ package com.chatwala.android.camera;
 
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import com.chatwala.android.util.Logger;
 
 import java.io.File;
 
-public class VideoMetadata {
+public class VideoMetadata implements Parcelable {
     private File video;
     private int height;
     private int width;
@@ -54,12 +56,20 @@ public class VideoMetadata {
         }
     }
 
-    public VideoMetadata(File video, int width, int height, int duration, int rotation) {
+    private VideoMetadata(File video, int width, int height, int duration, int rotation) {
         this.video = video;
         this.width = width;
         this.height = height;
         this.duration = duration;
         this.rotation = rotation;
+    }
+
+    public VideoMetadata(Parcel p) {
+        video = new File(p.readString());
+        width = p.readInt();
+        height = p.readInt();
+        duration = p.readInt();
+        rotation = p.readInt();
     }
 
     public File getVideo() {
@@ -81,4 +91,33 @@ public class VideoMetadata {
     public int getRotation() {
         return rotation;
     }
+
+    //////////////////////////////
+    // Parcelable apis
+    //////////////////////////////
+    public static final Parcelable.Creator<VideoMetadata> CREATOR
+            = new Parcelable.Creator<VideoMetadata>() {
+        public VideoMetadata createFromParcel(Parcel p) {
+            return new VideoMetadata(p);
+        }
+
+        public VideoMetadata[] newArray(int size) {
+            return new VideoMetadata[size];
+        }
+    };
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel p, int flags) {
+        p.writeString(video.getPath());
+        p.writeInt(width);
+        p.writeInt(height);
+        p.writeInt(duration);
+        p.writeInt(rotation);
+    }
+    //////////////////////////////
+    // end Parcelable apis
+    //////////////////////////////
 }

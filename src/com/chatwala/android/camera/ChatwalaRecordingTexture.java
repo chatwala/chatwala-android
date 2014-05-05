@@ -12,10 +12,6 @@ public class ChatwalaRecordingTexture extends TextureView {
         super(context);
     }
 
-    public void forceOnMeasure() {
-        requestLayout();
-    }
-
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         CWCamera camera = CWCamera.getInstance();

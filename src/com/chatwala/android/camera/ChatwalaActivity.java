@@ -2,7 +2,6 @@ package com.chatwala.android.camera;
 
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -17,6 +16,7 @@ import com.chatwala.android.util.Logger;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by Eliezer on 4/18/2014.
@@ -40,9 +40,7 @@ public class ChatwalaActivity extends DrawerListActivity {
 
         conversationStarterFragment = new ConversationStarterFragment();
         currentFragment = conversationStarterFragment;
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft = ft.add(R.id.chatwala_fragment_container, currentFragment, "conversation_starter");
-        ft.commit();
+        showConversationStarter();
 
         actionButton = (CWButton) findViewById(R.id.chatwala_button);
         actionButton.setOnClickListener(onActionClick);
@@ -62,6 +60,13 @@ public class ChatwalaActivity extends DrawerListActivity {
 
         if(acquireCameraTask == null && camera == null) {
             loadCamera();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(currentFragment != null && !currentFragment.onBackPressed()) {
+            super.onBackPressed();
         }
     }
 
@@ -111,13 +116,35 @@ public class ChatwalaActivity extends DrawerListActivity {
         Logger.i("Loading camera");
     }
 
-    private void swapFragment(Fragment newFragment, String tag, boolean addToBackStack) {
+    private void swapFragment(ChatwalaFragment newFragment, String tag) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft = ft.replace(R.id.chatwala_fragment_container, newFragment, tag);
-        if(addToBackStack) {
-            ft.addToBackStack(null);
-        }
         ft.commit();
+        currentFragment = newFragment;
+    }
+
+    public void showConversationStarter() {
+        try {
+            swapFragment(conversationStarterFragment, "conversation_starter");
+            if(camera != null) {
+                conversationStarterFragment.onCameraReady(camera);
+            }
+            else {
+                loadCamera();
+            }
+        }
+        catch(Exception e) {
+            Logger.e("There was an error showing the conversation starter", e);
+        }
+    }
+
+    public void showPreview(FutureTask<VideoMetadata> future) {
+        try {
+            swapFragment(PreviewFragment.newInstance(future.get()), "preview");
+        }
+        catch(Exception e) {
+            Logger.e("There was an error showing the preview", e);
+        }
     }
 
     @Override

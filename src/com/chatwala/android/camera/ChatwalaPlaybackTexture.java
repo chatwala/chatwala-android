@@ -16,6 +16,7 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
         MediaPlayer.OnPreparedListener, AudioManager.OnAudioFocusChangeListener {
     private VideoMetadata metadata;
     private MediaPlayer mediaPlayer;
+    private boolean loopPlayback = false;
     private boolean hasAudioFocus = false;
     private OnPlaybackReadyListener listener;
 
@@ -23,9 +24,14 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
         public void onPlaybackReady();
     }
 
-    public ChatwalaPlaybackTexture(Context context, VideoMetadata metadata) throws IOException {
+    public void forceOnMeasure() {
+        requestLayout();
+    }
+
+    public ChatwalaPlaybackTexture(Context context, VideoMetadata metadata, boolean loopPlayback) throws IOException {
         super(context);
         this.metadata = metadata;
+        this.loopPlayback = loopPlayback;
 
         initMediaPlayer();
         setSurfaceTextureListener(this);
@@ -49,6 +55,7 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
 
     private void initMediaPlayer() throws IOException {
         mediaPlayer = new MediaPlayer();
+        mediaPlayer.setLooping(loopPlayback);
         mediaPlayer.setDataSource(metadata.getVideo().getPath());
         mediaPlayer.setOnPreparedListener(this);
     }
