@@ -10,18 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import com.chatwala.android.AppPrefs;
 import com.chatwala.android.ChatwalaApplication;
 import com.chatwala.android.R;
-import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.util.DimenUtils;
 
-import java.io.File;
-
 public abstract class ChatwalaFragment extends Fragment {
-    private CroppingLayout topContainer;
+    private FrameLayout topContainer;
     private FrameLayout bottomContainer;
-
-    private boolean isSurfaceAttached = false;
 
     protected ChatwalaApplication getApp() {
         return getCwActivity().getApp();
@@ -32,9 +28,9 @@ public abstract class ChatwalaFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public final View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.chatwala_fragment, container, false);
-        topContainer = (CroppingLayout) v.findViewById(R.id.chatwala_fragment_top);
+        topContainer = (FrameLayout) v.findViewById(R.id.chatwala_fragment_top);
         bottomContainer = (FrameLayout) v.findViewById(R.id.chatwala_fragment_bottom);
 
         topContainer.setOnClickListener(new View.OnClickListener() {
@@ -53,17 +49,9 @@ public abstract class ChatwalaFragment extends Fragment {
         return v;
     }
 
-    public abstract void onSurfaceCreated(ChatwalaRecordingTexture recordingSurface);
-
-    protected boolean isSurfaceAttached() {
-        return isSurfaceAttached;
+    protected AppPrefs getPrefs() {
+        return getCwActivity().getPrefs();
     }
-
-    protected void setIsSurfaceAttached(boolean isSurfaceAttached) {
-        this.isSurfaceAttached = isSurfaceAttached;
-    }
-
-    public abstract void onCameraReady(CWCamera camera);
 
     public abstract void onActionButtonClicked();
 
@@ -71,7 +59,9 @@ public abstract class ChatwalaFragment extends Fragment {
 
     protected abstract void onBottomFragmentClicked();
 
-    protected abstract void onRecordingFinished(File recordedFile);
+    public boolean onBackPressed() {
+        return false;
+    }
 
     protected void addViewToTop(View v, boolean popTop) {
         addView(v, popTop, topContainer);
@@ -82,32 +72,79 @@ public abstract class ChatwalaFragment extends Fragment {
     }
 
     protected void setTopView(View v) {
-        topContainer.removeAllViews();
+        topContainer.post(new Runnable() {
+            @Override
+            public void run() {
+                topContainer.removeAllViews();
+            }
+        });
         addView(v, false, topContainer);
     }
 
     protected void setBottomView(View v) {
-        bottomContainer.removeAllViews();
+        bottomContainer.post(new Runnable() {
+            @Override
+            public void run() {
+                bottomContainer.removeAllViews();
+            }
+        });
         addView(v, false, bottomContainer);
     }
 
-    private void addView(View v, boolean popTop, ViewGroup container) {
+    private void addView(final View v, final boolean popTop, final ViewGroup container) {
         if(popTop) {
-            container.removeViewAt(container.getChildCount() - 1);
+            container.post(new Runnable() {
+                @Override
+                public void run() {
+                    container.removeViewAt(container.getChildCount() - 1);
+                }
+            });
         }
 
-        container.addView(v);
+        container.post(new Runnable() {
+            @Override
+            public void run() {
+                container.addView(v);
+            }
+        });
+        container.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                forceOnMeasureForHierarchy(container);
+            }
+        }, 250);
+    }
+
+    private void forceOnMeasureForHierarchy(ViewGroup container) {
+        for(int i = 0; i < container.getChildCount(); i++) {
+            View v = container.getChildAt(i);
+            if(v != null) {
+                v.requestLayout();
+                v.invalidate();
+                if(v instanceof ViewGroup) {
+                    forceOnMeasureForHierarchy((ViewGroup)v);
+                }
+            }
+        }
+    }
+
+    protected TextView generateCwTextView(int textRes) {
+        return generateCwTextView(textRes, Color.TRANSPARENT);
     }
 
     protected TextView generateCwTextView(int textRes, int backgroundColor) {
         return generateCwTextView(getString(textRes), backgroundColor);
     }
 
+    protected TextView generateCwTextView(String text) {
+        return generateCwTextView(text, Color.TRANSPARENT);
+    }
+
     protected TextView generateCwTextView(String text, int backgroundColor) {
         Resources r = getResources();
         TextView tv = new TextView(getActivity());
         tv.setTypeface(getApp().fontMd);
-        tv.setBackgroundColor(Color.TRANSPARENT);
+        tv.setBackgroundColor(backgroundColor);
         tv.setGravity(Gravity.CENTER);
         tv.setText(text);
         tv.setTextColor(Color.BLACK);
