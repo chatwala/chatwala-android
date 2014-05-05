@@ -128,6 +128,17 @@ public class MessageManager {
         }, null);
     }
 
+    public FutureTask<Void> sendReply(final File recordedFile) {
+        return execute(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                IOUtils.copy(new FileInputStream(recordedFile), new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/test.mp4"));
+                recordedFile.delete();
+                return null;
+            }
+        }, null);
+    }
+
     public Future<CWResult<Boolean>> uploadMessageThumbnail(final ChatwalaMessage message, final File thumbnailFile) {
         return getQueue().submit(new Callable<CWResult<Boolean>>() {
             @Override

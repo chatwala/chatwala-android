@@ -5,6 +5,7 @@ import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.ViewGroup;
@@ -24,12 +25,24 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
         public void onPlaybackReady();
     }
 
-    public void forceOnMeasure() {
-        requestLayout();
+    public ChatwalaPlaybackTexture(Context context) {
+        super(context);
+    }
+
+    public ChatwalaPlaybackTexture(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    public ChatwalaPlaybackTexture(Context context, AttributeSet attrs, int theme) {
+        super(context, attrs, theme);
     }
 
     public ChatwalaPlaybackTexture(Context context, VideoMetadata metadata, boolean loopPlayback) throws IOException {
         super(context);
+        init(context, metadata, loopPlayback);
+    }
+
+    public void init(Context context, VideoMetadata metadata, boolean loopPlayback) throws IOException {
         this.metadata = metadata;
         this.loopPlayback = loopPlayback;
 
@@ -63,6 +76,20 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
     public void setOnCompletionListener(MediaPlayer.OnCompletionListener listener) {
         if (mediaPlayer != null) {
             mediaPlayer.setOnCompletionListener(listener);
+        }
+    }
+
+    public boolean isPlaying() {
+        if(mediaPlayer != null) {
+            try {
+                return mediaPlayer.isPlaying();
+            }
+            catch(Exception e) {
+                return false;
+            }
+        }
+        else {
+            return false;
         }
     }
 
@@ -103,6 +130,38 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
         }
     }
 
+    public void seekTo(int millis) {
+        if(mediaPlayer != null) {
+            try {
+                mediaPlayer.seekTo(millis);
+            }
+            catch(Exception e) {
+                Logger.e("Seeking with the media player in a bad state", e);
+            }
+        }
+    }
+
+    public void reset() {
+        if(mediaPlayer == null) {
+            try {
+                initMediaPlayer();
+                prepareMediaPlayer();
+            }
+            catch(Exception e) {
+                Logger.e("Couldn't init the media player", e);
+            }
+        }
+        else {
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.seekTo(0);
+            }
+            catch(Exception e) {
+                Logger.e("Couldn't reset the media player", e);
+            }
+        }
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (getParent() != null) {
@@ -137,11 +196,29 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
                 initMediaPlayer();
             }
 
-            Surface s = new Surface(surface);
+            prepareMediaPlayer();
+        }
+        catch(Exception e) {
+            Logger.e("Got an error when the playback texture became available", e);
+        }
+    }
+
+    private void prepareMediaPlayer() {
+        if(!isAvailable()) {
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    prepareMediaPlayer();
+                }
+            }, 500);
+        }
+
+        try {
+            Surface s = new Surface(getSurfaceTexture());
 
             if(metadata.getRotation() == 180) {
                 Matrix matrix = new Matrix();
-                matrix.setRotate(90f, width / 2, height / 2);
+                matrix.setRotate(90f, getWidth() / 2, getHeight() / 2);
                 setTransform(matrix);
             }
 
@@ -149,7 +226,7 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
             mediaPlayer.prepareAsync();
         }
         catch(Exception e) {
-            Logger.e("Got an error when the playback texture became available", e);
+            Logger.e("Couldn't prepare the media player", e);
         }
     }
 
@@ -167,6 +244,7 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
         }
 
         if(mediaPlayer != null) {
+            mediaPlayer.reset();
             mediaPlayer.release();
         }
         mediaPlayer = null;
@@ -179,7 +257,7 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
     }
 
     @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
+    public void onPrepared(final MediaPlayer mediaPlayer) {
         if(listener != null) {
             listener.onPlaybackReady();
         }

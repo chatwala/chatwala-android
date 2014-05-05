@@ -1,6 +1,8 @@
 package com.chatwala.android.camera;
 
+import android.content.Intent;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
@@ -13,11 +15,14 @@ import com.chatwala.android.R;
 import com.chatwala.android.activity.DrawerListActivity;
 import com.chatwala.android.ui.CWButton;
 import com.chatwala.android.ui.PacmanView;
+import com.chatwala.android.util.AndroidUtils;
 import com.chatwala.android.util.Logger;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.FutureTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Eliezer on 4/18/2014.
@@ -25,6 +30,7 @@ import java.util.concurrent.FutureTask;
 public class ChatwalaActivity extends DrawerListActivity {
     private ChatwalaFragment currentFragment;
     private ChatwalaFragment conversationStarterFragment;
+    private ChatwalaFragment conversationReplierFragment;
     private CWCamera camera;
     private AcquireCameraAsyncTask acquireCameraTask;
     private CWButton actionButton;
@@ -43,15 +49,58 @@ public class ChatwalaActivity extends DrawerListActivity {
 
         prefs = AppPrefs.getInstance(this);
 
-        loadCamera();
-
         conversationStarterFragment = new ConversationStarterFragment();
-        currentFragment = conversationStarterFragment;
-        showConversationStarter();
+
+        String messageId = getMessageFromIntent(getIntent());
+        if(messageId == null) {
+            if(isFinishing()) {
+                return;
+            }
+            else {
+                showConversationStarter();
+            }
+        }
+        else {
+            conversationReplierFragment = ConversationReplierFragment.newInstance(messageId);
+            currentFragment = conversationReplierFragment;
+            showConversationReplier();
+        }
+
+        loadCamera();
 
         actionButton = (CWButton) findViewById(R.id.chatwala_button);
         actionButton.setOnClickListener(onActionClick);
         actionButton.bringToFront();
+    }
+
+    private String getMessageFromIntent(Intent intent) {
+        if(intent == null || intent.getData() == null) {
+            return null;
+        }
+
+        Uri messageUri = intent.getData();
+        if(messageUri.getPath() == null) {
+            return null;
+        }
+
+        Pattern p = Pattern.compile("^(http|https)://(www\\.|)chatwala.com/(dev/|qa/|)\\?.*$");
+        String messageId = messageUri.getQuery() == null ? "" : messageUri.getQuery();
+        Matcher m = p.matcher(messageUri.toString());
+
+        if(!messageId.isEmpty() && m.matches()) {
+            return messageId;
+        }
+        else if(messageUri.getHost() != null && messageUri.getHost().contains("chatwala.com")) {
+            Intent browser = new Intent(Intent.ACTION_VIEW);
+            browser.addCategory(Intent.CATEGORY_BROWSABLE);
+            browser.setData(messageUri);
+
+            startActivity(AndroidUtils.getChooserIntentExcludingPackage(this, browser, "com.chatwala"));
+            return null;
+        }
+        else {
+            return null;
+        }
     }
 
     private View.OnClickListener onActionClick = new View.OnClickListener() {
@@ -141,9 +190,21 @@ public class ChatwalaActivity extends DrawerListActivity {
         }
     }
 
-    public void showPreview(FutureTask<VideoMetadata> future) {
+    public void showConversationReplier() {
         try {
-            swapFragment(PreviewFragment.newInstance(future.get()), "preview");
+            swapFragment(conversationReplierFragment, "conversation_replier");
+            if(camera == null) {
+                loadCamera();
+            }
+        }
+        catch(Exception e) {
+            Logger.e("There was an error showing the conversation replier", e);
+        }
+    }
+
+    public void showPreview(FutureTask<VideoMetadata> future, boolean isReply) {
+        try {
+            swapFragment(PreviewFragment.newInstance(future.get(), isReply), "preview");
         }
         catch(Exception e) {
             Logger.e("There was an error showing the preview", e);
@@ -170,7 +231,9 @@ public class ChatwalaActivity extends DrawerListActivity {
             surface.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    camera.attachToPreview(surface.getSurfaceTexture());
+                    if(camera != null && surface != null && surface.getSurfaceTexture() != null) {
+                        camera.attachToPreview(surface.getSurfaceTexture());
+                    }
                 }
             }, 250);
         }

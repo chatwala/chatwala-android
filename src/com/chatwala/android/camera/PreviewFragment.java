@@ -1,23 +1,26 @@
 package com.chatwala.android.camera;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import com.chatwala.android.R;
 import com.chatwala.android.messages.MessageManager;
-import com.chatwala.android.ui.CroppingLayout;
 import com.chatwala.android.util.Logger;
 
 import java.io.File;
 
 public class PreviewFragment extends ChatwalaFragment {
     private File recordedFile;
+    private boolean isReply;
 
     public PreviewFragment() {}
 
-    public static PreviewFragment newInstance(VideoMetadata metadata) {
+    public static PreviewFragment newInstance(VideoMetadata metadata, boolean isReply) {
         PreviewFragment frag = new PreviewFragment();
         Bundle args = new Bundle();
         args.putParcelable("metadata", metadata);
+        args.putBoolean("isReply", isReply);
         frag.setArguments(args);
         return frag;
     }
@@ -27,12 +30,13 @@ public class PreviewFragment extends ChatwalaFragment {
         super.onActivityCreated(savedInstanceState);
 
         VideoMetadata metadata = getArguments().getParcelable("metadata");
+        isReply = getArguments().getBoolean("isReply");
         if(metadata != null) {
             recordedFile = metadata.getVideo();
             try {
-                final CroppingLayout cl = new CroppingLayout(getActivity());
-                final ChatwalaPlaybackTexture pb;
-                pb = new ChatwalaPlaybackTexture(getActivity(), metadata, true);
+                View v = LayoutInflater.from(getActivity()).inflate(R.layout.preview_fragment_top_layout, null);
+                final ChatwalaPlaybackTexture pb = (ChatwalaPlaybackTexture) v.findViewById(R.id.preview_playback_surface);
+                pb.init(getActivity(), metadata, true);
                 pb.setOnPlaybackReadyListener(new ChatwalaPlaybackTexture.OnPlaybackReadyListener() {
                     @Override
                     public void onPlaybackReady() {
@@ -41,10 +45,16 @@ public class PreviewFragment extends ChatwalaFragment {
                         }
                     }
                 });
-                cl.addView(pb);
-                pb.forceOnMeasure();
-                setTopView(cl);
+                setTopView(v);
                 addViewToBottom(generateCwTextView(R.string.send_instructions), false);
+
+                v.findViewById(R.id.preview_close).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        recordedFile.delete();
+                        getCwActivity().showConversationStarter();
+                    }
+                });
 
                 ImageView actionImage = new ImageView(getActivity());
                 actionImage.setImageResource(R.drawable.ic_action_send_ios);
@@ -75,7 +85,12 @@ public class PreviewFragment extends ChatwalaFragment {
 
     private void sendMessage() {
         if(recordedFile != null) {
-            MessageManager.getInstance().sendUnknownRecipientMessage(recordedFile);
+            if(isReply) {
+                MessageManager.getInstance().sendReply(recordedFile);
+            }
+            else {
+                MessageManager.getInstance().sendUnknownRecipientMessage(recordedFile);
+            }
         }
         getCwActivity().showConversationStarter();
     }

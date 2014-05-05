@@ -128,6 +128,14 @@ public abstract class ChatwalaFragment extends Fragment {
         }
     }
 
+    protected void removeViewFromTop(View v) {
+        topContainer.removeView(v);
+    }
+
+    protected void removeViewFromBottom(View v) {
+        bottomContainer.removeView(v);
+    }
+
     protected TextView generateCwTextView(int textRes) {
         return generateCwTextView(textRes, Color.TRANSPARENT);
     }
@@ -136,11 +144,19 @@ public abstract class ChatwalaFragment extends Fragment {
         return generateCwTextView(getString(textRes), backgroundColor);
     }
 
+    protected TextView generateCwTextView(int textRes, int backgroundColor, int margin) {
+        return generateCwTextView(getString(textRes), backgroundColor, margin);
+    }
+
     protected TextView generateCwTextView(String text) {
         return generateCwTextView(text, Color.TRANSPARENT);
     }
 
     protected TextView generateCwTextView(String text, int backgroundColor) {
+        return generateCwTextView(text, backgroundColor, 20);
+    }
+
+    protected TextView generateCwTextView(String text, int backgroundColor, int margin) {
         Resources r = getResources();
         TextView tv = new TextView(getActivity());
         tv.setTypeface(getApp().fontMd);
@@ -151,8 +167,11 @@ public abstract class ChatwalaFragment extends Fragment {
         tv.setTextSize(DimenUtils.convertPixelsToDp(r.getDimension(R.dimen.message_text_size), getActivity()));
         tv.setLineSpacing(DimenUtils.convertPixelsToDp(r.getDimension(R.dimen.message_text_spacing), getActivity()), 1);
 
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        int margin = (int) DimenUtils.convertPixelsToDp(20, getActivity());
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        margin = (int) DimenUtils.convertPixelsToDp(margin, getActivity());
+        if(backgroundColor != Color.TRANSPARENT) {
+            margin = 0;
+        }
         lp.setMargins(margin, margin, margin, margin);
         lp.gravity = Gravity.CENTER;
         tv.setLayoutParams(lp);

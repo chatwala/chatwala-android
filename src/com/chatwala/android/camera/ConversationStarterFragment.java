@@ -47,6 +47,15 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        if(countdownTimer != null) {
+            countdownTimer.cancel();
+        }
+    }
+
+    @Override
     public void onActionButtonClicked() {
         if(getCwActivity().isRecording()) {
             getCwActivity().stopRecording();
@@ -84,12 +93,7 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
                 @Override
                 public void onTick(long tick) {
                     tick /= 1000 + 1;
-
-                    int res = R.string.recording_countdown;
-                    if(tick <= 5) {
-                        res = R.string.sending_reply_countdown;
-                    }
-                    bottomText.setText(getString(res, tick));
+                    bottomText.setText(getString(R.string.recording_countdown, tick));
                 }
 
                 @Override
@@ -109,7 +113,7 @@ public class ConversationStarterFragment extends ChatwalaFragment implements Tex
                     @Override
                     public void runOnMainThread(FutureTask<VideoMetadata> future) {
                         if (!future.isCancelled()) {
-                            getCwActivity().showPreview(future);
+                            getCwActivity().showPreview(future, false);
                         }
                     }
                 });
