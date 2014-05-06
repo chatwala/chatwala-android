@@ -154,7 +154,7 @@ public class ChatwalaPlaybackTexture extends TextureView implements TextureView.
         else {
             try {
                 mediaPlayer.stop();
-                mediaPlayer.seekTo(0);
+                mediaPlayer.prepareAsync();
             }
             catch(Exception e) {
                 Logger.e("Couldn't reset the media player", e);

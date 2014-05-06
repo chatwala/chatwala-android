@@ -15,6 +15,7 @@ import com.chatwala.android.R;
 import com.chatwala.android.activity.DrawerListActivity;
 import com.chatwala.android.ui.CWButton;
 import com.chatwala.android.ui.PacmanView;
+import com.chatwala.android.ui.RippleTimerFragment;
 import com.chatwala.android.util.AndroidUtils;
 import com.chatwala.android.util.Logger;
 
@@ -31,6 +32,8 @@ public class ChatwalaActivity extends DrawerListActivity {
     private ChatwalaFragment currentFragment;
     private ChatwalaFragment conversationStarterFragment;
     private ChatwalaFragment conversationReplierFragment;
+    private View rippleTimerContainer;
+    private RippleTimerFragment rippleTimer;
     private CWCamera camera;
     private AcquireCameraAsyncTask acquireCameraTask;
     private CWButton actionButton;
@@ -48,6 +51,9 @@ public class ChatwalaActivity extends DrawerListActivity {
         setContentView(R.layout.chatwala_activity);
 
         prefs = AppPrefs.getInstance(this);
+
+        rippleTimer = (RippleTimerFragment) getSupportFragmentManager().findFragmentById(R.id.ripple_timer);
+        rippleTimerContainer = findViewById(R.id.ripple_timer_container);
 
         conversationStarterFragment = new ConversationStarterFragment();
 
@@ -180,6 +186,7 @@ public class ChatwalaActivity extends DrawerListActivity {
 
     public void showConversationStarter() {
         try {
+            hideRippleTimer();
             swapFragment(conversationStarterFragment, "conversation_starter");
             if(camera == null) {
                 loadCamera();
@@ -211,6 +218,25 @@ public class ChatwalaActivity extends DrawerListActivity {
         }
     }
 
+    public void showRippleTimer() {
+        rippleTimer.reset();
+        rippleTimerContainer.setVisibility(View.VISIBLE);
+        rippleTimerContainer.bringToFront();
+    }
+
+    public boolean isRippleTimerShowing() {
+        return rippleTimerContainer.getVisibility() == View.VISIBLE;
+    }
+
+    public void hideRippleTimer() {
+        rippleTimer.cancel();
+        rippleTimerContainer.setVisibility(View.GONE);
+    }
+
+    public void setRippleTimerProgress(int progress) {
+        rippleTimer.setProgress(progress);
+    }
+
     @Override
     protected void performAddButtonAction() {
 
@@ -231,7 +257,7 @@ public class ChatwalaActivity extends DrawerListActivity {
             surface.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(camera != null && surface != null && surface.getSurfaceTexture() != null) {
+                    if (camera != null && surface != null && surface.getSurfaceTexture() != null) {
                         camera.attachToPreview(surface.getSurfaceTexture());
                     }
                 }

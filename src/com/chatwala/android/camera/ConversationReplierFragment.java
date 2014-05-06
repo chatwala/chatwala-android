@@ -26,7 +26,8 @@ import java.util.concurrent.FutureTask;
 /**
  * Created by Eliezer on 5/5/2014.
  */
-public class ConversationReplierFragment extends ChatwalaFragment implements TextureView.SurfaceTextureListener {
+public class ConversationReplierFragment extends ChatwalaFragment implements TextureView.SurfaceTextureListener,
+        MediaPlayer.OnCompletionListener, ChatwalaPlaybackTexture.OnPlaybackReadyListener {
     private ChatwalaRecordingTexture recordingSurface;
     private ChatwalaPlaybackTexture playbackSurface;
     private VideoMetadata playbackMetadata;
@@ -58,6 +59,9 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        getCwActivity().showRippleTimer();
+        getCwActivity().setRippleTimerProgress(50);
+
         final CroppingLayout topCl = new CroppingLayout(getActivity());
         recordingSurface = new ChatwalaRecordingTexture(getActivity());
         recordingSurface.setSurfaceTextureListener(this);
@@ -80,38 +84,8 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
                         if(playbackMetadata != null) {
                             final CroppingLayout bottomCl = new CroppingLayout(getActivity());
                             playbackSurface = new ChatwalaPlaybackTexture(getActivity(), playbackMetadata, false);
-                            playbackSurface.setOnPlaybackReadyListener(new ChatwalaPlaybackTexture.OnPlaybackReadyListener() {
-                                @Override
-                                public void onPlaybackReady() {
-                                    fragState = ReplierState.READY;
-                                    playbackSurface.seekTo(100);
-                                }
-                            });
-                            playbackSurface.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                                @Override
-                                public void onCompletion(MediaPlayer mediaPlayer) {
-                                    if(fragState != ReplierState.REACT) {
-                                        return;
-                                    }
-                                    fragState = ReplierState.REPLY;
-                                    addViewToBottom(bottomText, false);
-                                    countdownTimer = new CountDownTimer(11000, 1000) {
-                                        @Override
-                                        public void onTick(long tick) {
-                                            tick /= 1000 + 1;
-
-                                            int res = R.string.recording_reply_countdown;
-                                            if(tick <= 5) {
-                                                res = R.string.sending_reply_countdown;
-                                            }
-                                            bottomText.setText(getString(res, tick));
-                                        }
-
-                                        @Override
-                                        public void onFinish() {}
-                                    }.start();
-                                }
-                            });
+                            playbackSurface.setOnPlaybackReadyListener(ConversationReplierFragment.this);
+                            playbackSurface.setOnCompletionListener(ConversationReplierFragment.this);
                             bottomText = generateCwTextView("", Color.argb(125, 255, 255, 255));
                             bottomCl.addView(playbackSurface);
                             setBottomView(bottomCl);
@@ -128,6 +102,27 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
                 }
             }
         });
+    }
+
+    @Override
+    public void onPlaybackReady() {
+        fragState = ReplierState.READY;
+        playbackSurface.seekTo(100);
+        if(getCwActivity().isRippleTimerShowing()) {
+            playbackSurface.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getCwActivity().setRippleTimerProgress(100);
+                    getCwActivity().hideRippleTimer();
+                }
+            }, 2500);
+        }
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        getCwActivity().showConversationStarter();
+        return true;
     }
 
     @Override
@@ -153,7 +148,6 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
         if(previousRecordState == ReplierState.REPLY) {
             removeViewFromBottom(bottomText);
         }
-        fragState = ReplierState.READY;
     }
 
     @Override
@@ -162,12 +156,17 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
             previousRecordState = fragState;
             resetUi();
         }
-        else { //we're in a ready state, start'er up
+        else {
+            //TODO this needs to be handled more gracefully...does it ever have to be handled?
+            if(fragState != ReplierState.READY) {
+                return;
+            }
+
+            //we're in a ready state, start'er up
             actionImage.setImageResource(R.drawable.record_stop);
             removeViewFromTop(topText);
             playbackSurface.seekTo(0);
             playbackSurface.start();
-            fragState = ReplierState.REACT;
             getCwActivity().startRecording(playbackMetadata.getDuration() + 10000, new ChatwalaActivity.OnRecordingFinishedListener() {
                 @Override
                 public void onRecordingFinished(RecordingInfo recordingInfo) {
@@ -198,7 +197,32 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
                     }
                 }
             });
+            fragState = ReplierState.REACT;
         }
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+        if(fragState != ReplierState.REACT) {
+            return;
+        }
+        fragState = ReplierState.REPLY;
+        addViewToBottom(bottomText, false);
+        countdownTimer = new CountDownTimer(11000, 1000) {
+            @Override
+            public void onTick(long tick) {
+                tick /= 1000 + 1;
+
+                int res = R.string.recording_reply_countdown;
+                if(tick <= 5) {
+                    res = R.string.sending_reply_countdown;
+                }
+                bottomText.setText(getString(res, tick));
+            }
+
+            @Override
+            public void onFinish() {}
+        }.start();
     }
 
     private void showPreview(RecordingInfo recordingInfo) {
@@ -280,6 +304,7 @@ public class ConversationReplierFragment extends ChatwalaFragment implements Tex
                         public void onClick(DialogInterface dialog, int i) {
                             getReplierFragment().recordedFile.delete();
                             getReplierFragment().recordedFile = null;
+                            getReplierFragment().resetUi();
                             dialog.dismiss();
                         }
                     });

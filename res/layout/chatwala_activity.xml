@@ -19,4 +19,18 @@
             android:layout_gravity="center"
             cw:cw_button_size="100dp"/>
 
+    <FrameLayout
+            android:id="@+id/ripple_timer_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+        <fragment
+                android:id="@+id/ripple_timer"
+                android:name="com.chatwala.android.ui.RippleTimerFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+    </FrameLayout>
+
 </FrameLayout>

@@ -9,8 +9,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import com.chatwala.android.R;
 
-import java.util.Random;
-
 /**
  * Created with IntelliJ IDEA.
  * User: eygraber
@@ -26,6 +24,12 @@ public class RippleTimer extends RelativeLayout {
     private boolean shouldMakeWaves = true;
     private int progress = 0;
     private boolean canceled = false;
+
+    private OnTimerFinishedListener listener;
+
+    public interface OnTimerFinishedListener {
+        public void onLoadComplete();
+    }
 
     public RippleTimer(Context context) {
         super(context);
@@ -44,34 +48,35 @@ public class RippleTimer extends RelativeLayout {
 
     private void init() {
         inflate(getContext(), R.layout.ripple_layout, this);
-
         rippleView = (ImageView) findViewById(R.id.ripple_overlay);
         iconView = (ImageView) findViewById(R.id.ripple_chatwala_icon);
+    }
 
-        makeWaves(WAVE);
-        setProgress(1);
+    public void setOnTimerFinishedListener(OnTimerFinishedListener listener) {
+        this.listener = listener;
     }
 
     public void cancel() {
         this.canceled = true;
     }
 
+    public void reset() {
+        canceled = false;
+        shouldMakeWaves = true;
+        makeWaves(WAVE);
+        setProgress(1);
+    }
+
     public void setProgress(final int progress) {
-        if(progress > 100) {
+        if(progress >= 100) {
             shouldMakeWaves = false;
+            if(listener != null) {
+                listener.onLoadComplete();
+            }
             return;
         }
 
         this.progress = progress;
-
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(!canceled) {
-                    setProgress(progress + new Random().nextInt(25));
-                }
-            }
-        }, new Random().nextInt(500));
     }
 
     private void makeWaves(final float translationX) {
