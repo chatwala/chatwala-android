@@ -50,12 +50,6 @@ public class MessageManager {
 
     private MessageManager() {
         queue = Executors.newFixedThreadPool(NUM_THREADS);
-        queue.execute(new Runnable() {
-            @Override
-            public void run() {
-                loadFileStructure();
-            }
-        });
     }
 
     private static class Singleton {
@@ -64,6 +58,12 @@ public class MessageManager {
 
     public static MessageManager attachToApp(ChatwalaApplication app) {
         Singleton.instance.app = app;
+        Singleton.instance.queue.execute(new Runnable() {
+            @Override
+            public void run() {
+                Singleton.instance.loadFileStructure();
+            }
+        });
         return Singleton.instance;
     }
 
