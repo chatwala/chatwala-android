@@ -8,10 +8,11 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 import com.chatwala.android.messages.MessageManager;
-import com.chatwala.android.util.DeviceUtils;
 import com.chatwala.android.util.Logger;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -316,12 +317,16 @@ public class CWCamera {
         try {
             if(camera != null) {
                 Camera.Parameters params = camera.getParameters();
-                params.setRecordingHint(true);
+                //params.set("cam_mode", 1 );
+                //params.setRecordingHint(true);
                 int[] bestFrameFrate = getBestCameraFrameRate(params.getSupportedPreviewFpsRange());
                 params.setPreviewFpsRange(bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
                                           bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
+                Logger.d("Camera preview fps range is " + bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MIN_INDEX]
+                        + "-" + bestFrameFrate[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
                 bestPreviewSize = getPreviewSize(containerWidth, containerHeight, params);
                 if(bestPreviewSize != null) {
+                    Logger.d("Camera preview size is " + bestPreviewSize.width + "x" + bestPreviewSize.height);
                     params.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
                 }
 
@@ -350,7 +355,7 @@ public class CWCamera {
                 camera.stopPreview();
             }
 
-            return getBestSize(width, height, params.getSupportedPreviewSizes());
+            return getBestSize(width, height, params.getSupportedPreviewSizes(), 0.5);
         }
         else {
             return null;
@@ -410,7 +415,7 @@ public class CWCamera {
                 if(sizes == null) {
                     sizes = params.getSupportedPreviewSizes();
                 }
-                Camera.Size bestSize = getBestSize(width, height, sizes);
+                Camera.Size bestSize = getBestSize(width, height, sizes, 0.5);
 
                 if(bestSize != null) {
                     Logger.d("MediaRecorder video size is " + bestSize.width + "x" + bestSize.height);
@@ -419,9 +424,9 @@ public class CWCamera {
 
                 int bitrate = 600000; //CamcorderProfile.get(cameraId, CamcorderProfile.QUALITY_HIGH).videoBitRate;
                 //TODO this will eventually use DeviceManager so we can use resources to get the bitrate
-                if (DeviceUtils.isDeviceS4()) {
+                //if (DeviceUtils.isDeviceS4()) {
                     bitrate = 1600000;
-                }
+                //}
                 Logger.d("MediaRecorder bitrate is " + bitrate);
                 recorder.setVideoEncodingBitRate(bitrate);
 
@@ -465,24 +470,88 @@ public class CWCamera {
         }
     }
 
-    private Camera.Size getBestSize(int width, int height, List<Camera.Size> sizes) {
-        Camera.Size bestSize = null;
-        for (Camera.Size size : sizes) {
-            if (size.width <= width && size.height <= height) {
-                if (bestSize == null) {
-                    bestSize = size;
-                }
-                else {
-                    int resultArea = bestSize.width * bestSize.height;
-                    int newArea = size.width * size.height;
+    private Camera.Size getBestSize(int width, int height, List<Camera.Size> sizes, double aspectTolerance) {
+        //COMMONSWARE
+        /*double targetRatio = (double) width / height;
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
 
-                    if (newArea > resultArea) {
-                        bestSize = size;
-                    }
+        if (displayRotation == 90 || displayRotation == 270) {
+            targetRatio = (double) height / width;
+        }
+
+        // Try to find an size match aspect ratio and size
+        for (Camera.Size size : sizes) {
+            double ratio = (double) size.width / size.height;
+
+            if (Math.abs(ratio - targetRatio) <= aspectTolerance) {
+                if (Math.abs(size.height - height) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - height);
                 }
             }
         }
-        return bestSize;
+
+        // Cannot find the one match the aspect ratio, ignore
+        // the requirement
+        if (optimalSize == null) {
+            minDiff=Double.MAX_VALUE;
+
+            for (Camera.Size size : sizes) {
+                if (Math.abs(size.height - height) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - height);
+                }
+            }
+        }
+
+        return optimalSize;*/
+
+        //TOUCHLAB
+        /*Camera.Size best = sizes.get(0);
+
+        //Get biggest
+        for (Camera.Size supportedVideoSize : sizes) {
+            if(supportedVideoSize.width > best.width) {
+                best = supportedVideoSize;
+            }
+        }
+
+        for (int i = 1; i < sizes.size(); i++) {
+            Camera.Size size = sizes.get(i);
+            if (size.width >= height && size.width < best.width) {
+                best = size;
+            }
+        }
+
+        return best;*/
+
+        Collections.sort(sizes, new Comparator<Camera.Size>() {
+            @Override
+            public int compare(Camera.Size lhs, Camera.Size rhs) {
+                int leftProduct = lhs.height * lhs.width;
+                int rightProduct = rhs.height * rhs.width;
+                if(leftProduct > rightProduct) {
+                    return -1;
+                }
+                else if(leftProduct < rightProduct) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                }
+            }
+        });
+
+        int screenProduct = height * width;
+        for(Camera.Size size : sizes) {
+            int sizeProduct = size.height * size.width;
+            if(sizeProduct < screenProduct) {
+                return size;
+            }
+        }
+
+        return null;
     }
 
     public void release() {
