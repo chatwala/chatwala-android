@@ -346,7 +346,14 @@ public class CWCamera {
     }
 
     private int[] getBestCameraFrameRate(List<int[]> rateRanges) {
-        return rateRanges.get(rateRanges.size() - 1);
+        int[] bestRange = rateRanges.get(rateRanges.size() - 1);
+        if(bestRange[0] < 1000) {
+            bestRange[0] *= 1000;
+        }
+        if(bestRange[1] < 1000) {
+            bestRange[1] *= 1000;
+        }
+        return bestRange;
     }
 
     private Camera.Size getPreviewSize(int width, int height, Camera.Parameters params) {
@@ -407,7 +414,9 @@ public class CWCamera {
                 int[] frameRateRange = new int[2];
                 params.getPreviewFpsRange(frameRateRange);
                 int frameRate = frameRateRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
-                frameRate = (int) Math.floor(((double)frameRate / 1000));
+                if(frameRate > 1000) {
+                    frameRate = (int) Math.floor(((double) frameRate / 1000));
+                }
                 Logger.d("MediaRecorder framerate is " + frameRate);
                 recorder.setVideoFrameRate(frameRate);
 
@@ -545,6 +554,9 @@ public class CWCamera {
 
         int screenProduct = height * width;
         for(Camera.Size size : sizes) {
+            if(size.width == 1280 && size.height == 720) {
+                return size;
+            }
             int sizeProduct = size.height * size.width;
             if(sizeProduct < screenProduct) {
                 return size;
