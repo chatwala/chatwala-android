@@ -32,8 +32,6 @@ import com.chatwala.android.util.MessageDataStore;
 import com.crashlytics.android.Crashlytics;
 import org.json.JSONObject;
 
-import java.util.UUID;
-
 /**
  * Created with IntelliJ IDEA.
  * User: kgalligan
@@ -92,7 +90,7 @@ public class ChatwalaApplication extends Application implements PersistedApplica
 
         AppPrefs prefs = AppPrefs.getInstance(ChatwalaApplication.this);
         if(prefs.getUserId() == null) {
-            String userId = UUID.randomUUID().toString();
+            String userId = "482e0d1f-5e7e-4ddf-b7ee-25355ec6d91b";//UUID.randomUUID().toString();
             prefs.setUserId(userId);
             Logger.i("User id is " + userId);
         }

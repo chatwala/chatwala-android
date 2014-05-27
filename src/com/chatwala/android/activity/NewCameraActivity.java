@@ -489,6 +489,8 @@ public class NewCameraActivity extends DrawerListActivity {
             return;
         }
 
+        ShowcaseView.registerShot(this, FIRST_BUTTON_TUTORIAL_ID);
+
         ShowcaseView.ConfigOptions co = new ShowcaseView.ConfigOptions();
         co.showcaseId = FIRST_BUTTON_TUTORIAL_ID;
         co.hideOnClickOutside = false;

@@ -108,8 +108,8 @@ public class AppPrefs {
         Boolean firstOpen = mSp.getBoolean(PREF_FIRST_OPEN, true);
         if(firstOpen) {
             mSp.edit()
-                    .putBoolean(PREF_FIRST_BUTTON_PRESS, false)
-                    .putBoolean(PREF_SHOWED_TOP_CONTACTS, false).apply();
+                    .putBoolean(PREF_FIRST_BUTTON_PRESS, true)
+                    .putBoolean(PREF_SHOWED_TOP_CONTACTS, true).apply();
             setDeliveryMethod(DeliveryMethod.CWSMS);
         }
         else {
@@ -175,7 +175,7 @@ public class AppPrefs {
     }
 
     public boolean isImageReviewed() {
-        return mSp.getBoolean(PREF_IMAGE_REVIEWED, false);
+        return mSp.getBoolean(PREF_IMAGE_REVIEWED, true);
     }
 
     public String getPrefSelectedEmail() {

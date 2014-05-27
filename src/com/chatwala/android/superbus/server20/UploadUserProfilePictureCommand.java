@@ -5,17 +5,6 @@ import co.touchlab.android.superbus.Command;
 import co.touchlab.android.superbus.PermanentException;
 import co.touchlab.android.superbus.TransientException;
 import co.touchlab.android.superbus.provider.sqlite.SqliteCommand;
-import com.chatwala.android.AppPrefs;
-import com.chatwala.android.http.BaseSasPutRequest;
-import com.chatwala.android.http.server20.ChatwalaResponse;
-import com.chatwala.android.http.server20.GetUserPictureUploadURLRequest;
-import com.chatwala.android.util.MessageDataStore;
-import org.apache.commons.io.IOUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -53,7 +42,7 @@ public class UploadUserProfilePictureCommand extends SqliteCommand
     public void callCommand(Context context) throws TransientException, PermanentException
     {
 
-        File currentFile = new File(path);
+        /*File currentFile = new File(path);
 
         File newFile = MessageDataStore.findUserImageInLocalStore(AppPrefs.getInstance(context).getUserId());
 
@@ -87,7 +76,7 @@ public class UploadUserProfilePictureCommand extends SqliteCommand
         }
         catch(TransientException e) {
             throw e;
-        }
+        }*/
 
 
 
