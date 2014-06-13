@@ -4,67 +4,95 @@
     <string name="app_name_qa">chatwala_qa</string>
     <string name="app_name_dev">chatwala_dev</string>
     <string name="app_name_sandbox">chatwala_sandbox</string>
-    <string name="now_record_reply">Now reply!</string>
-    <string name="play_message_record_reaction">Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!</string>
-    <string name="basic_instructions_old">Tap to record and send a message. Your friend\'s reaction will appear here when they reply.</string>
-    <string name="basic_instructions_141"></string>
-    <string name="basic_instructions">Tap to record a message.\nSee your friends react here.</string>
 
-    <string name="facebook_flow_instructions">Start a conversation with your Facebook friends. Their reactions will appear here.</string>
-    <string name="facebook_flow_send_instructions">Tap to post this to Facebook and see your friends react.</string>
-
+    <!--Activity Labels-->
+    <string name="send_sms">Send SMS</string>
     <string name="top_contacts_title">Welcome to Chatwala</string>
+    <!--/Activity Labels-->
+
+    <!--Drawer-->
+    <string name="drawer_new_user_message_overlay_label">NEW</string>
+    <!--/Drawer-->
+
+    <!--Tutorial-->
+    <string name="tutorial_title">Welcome to Chatwala.</string>
+    <string name="tutorial_detail">A new way to have conversations. Tap to get started.</string>
+    <!--/Tutorial-->
+
+    <!--Top Contacts-->
     <string name="top_contacts_header_text">Tap friends to start conversations</string>
     <string name="top_contacts_bottom_text">Tap multiple friends to start a group</string>
+
     <string name="top_contacts_pre_recording_text">Recording in...%d\nYour friends will react here.\n\n(tip: smile big)</string>
     <string name="top_contacts_recording_text">Recording...%d\n\n(tip: say Hi)</string>
     <string name="top_contacts_sending_text">Sending sms in...%d</string>
+    <!--/Top Contacts-->
 
+    <!--Conversation Starter-->
+    <string name="basic_instructions">Tap to record a message.\nSee your friends react here.</string>
     <string name="recording_countdown">Recording...%d</string>
+    <!--/Conversation Starter-->
+
+    <!--Conversation Replier-->
+    <string name="play_message_record_reaction">Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!</string>
     <string name="recording_reply_countdown">Recording your reply...%d</string>
     <string name="sending_reply_countdown">Sending reply in...%d</string>
 
-    <string name="send_or_cancel_title">Send Video?</string>
-    <string name="send_or_cancel_send">Send</string>
-    <string name="send_or_cancel_cancel">Cancel</string>
+    <string name="message_send_or_cancel_title">Send Video?</string>
+    <string name="message_send_or_cancel_send">Send</string>
+    <string name="message_send_or_cancel_cancel">Cancel</string>
+    <!--/Conversation Replier-->
 
+    <!--Preview-->
     <string name="send_instructions">Tap to send this message.</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="sure">Sure!</string>
+    <!--/Preview-->
+
+    <!--Sharing-->
     <string name="message_subject">Chatwala Message</string>
-    <string name="couldnt_find_message">Couldn\'t load message. Please try again.</string>
-    <string name="loading_message_text">Loading your friend\'s message!</string>
+    <!--/Sharing-->
 
-    <string name="send_sms">Send SMS</string>
-    <string name="settings">Settings</string>
-    <string name="message_preview">Message Preview: </string>
-    <string name="delivery_method">Delivery method: </string>
-    <string name="refresh_interval">Refresh Interval: </string>
-    <string name="max_disk_usage">Max Disk Usage: </string>
-    <string name="edit_profile_picture">Edit Profile Picture</string>
-    <string name="terms_and_conditions">Terms &amp; Conditions</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="feedback">Feedback</string>
-    <string name="version_information">Version Information</string>
+    <!--Message Loading-->
+    <string name="message_loading_text">Loading your friend\'s message!</string>
+    <!--/Message Loading-->
 
-    <string name="update_profile_pic">Update Profile Pic</string>
-    <string name="change_profile_pic">CHANGE!</string>
-    <string name="change_profile_pic_bottom_panel">Tap CHANGE! to update your profile pic.</string>
-    <string name="no_profile_pic">You don\'t have a profile pic yet!</string>
-    <string name="save_profile_pic">SAVE!</string>
-    <string name="save_profile_pic_bottom_panel">Tap SAVE! to confirm your new profile pic.</string>
-
-    <string name="are_you_happy_text">Are you happy with Chatwala?</string>
-    <string name="rate_us_text">Great! How about rating us on the Play Store?</string>
-    <string name="sorry_message_text">Sorry about that. We want to improve. Send us a message?</string>
-
+    <!--Killswitch-->
     <string name="killswitch">KILLSWITCH</string>
+    <!--/Killswitch-->
 
-    <!--DEV-->
-    <!--<string name="facebookAppId">1472279299660540</string>-->
-    <!--QA-->
-    <!--<string name="facebookAppId">639218822814074</string>-->
-    <!--PROD-->
-    <string name="facebookAppId">213176338890949</string>
+    <!--Settings-->
+    <string name="settings_label">Settings</string>
+    <string name="version_information_title">Version Information</string>
+    <string name="version_information_version">Version:</string>
+    <string name="version_information_server">Server:</string>
+
+    <string name="blow_away_storage_confirmation_title">Clear Disk Space?</string>
+    <string name="blow_away_storage_confirmation_message">Chatwala is using \%%.2f MB out of \%%.2f GB.\nAre you sure you would like to clear disk space?</string>
+    <string name="blow_away_storage_confirmation">Chatwala storage cleared</string>
+
+    <string name="mark_all_as_read_confirmation_title">Mark All Messages as Read?</string>
+    <string name="mark_all_as_read_confirmation_message">Are you sure you would like to mark all messages as read?</string>
+    <string name="mark_all_as_read_confirmation">All messages marked as read</string>
+    <!--/Settings-->
+
+    <!--Update Profile Pic-->
+    <string name="update_profile_pic_label">Update Profile Pic</string>
+    <string name="change_profile_pic">CHANGE!</string>
+    <string name="change_profile_pic_bottom_text">Tap CHANGE! to update your profile pic.</string>
+    <string name="no_profile_pic">You don\'t have a profile pic yet!</string>
+    <!--/Update Profile Pic-->
+
+    <!--Feedback-->
+    <string name="feedback_label">Feedback</string>
+    <string name="feedback_intial_text">Are you happy with Chatwala?</string>
+    <string name="feedback_positive_text">Great! How about rating us on the Play Store?</string>
+    <string name="feedback_negative_text">Sorry about that. We want to improve. Send us a message?</string>
+    <string name="feedback_yes">Yes</string>
+    <string name="feedback_no">No</string>
+    <string name="feedback_sure">Sure!</string>
+    <!--/Feedback-->
+
+    <!--Notifications-->
+    <string name="notification_new_message_title">Chatwala</string>
+    <string name="notification_new_message_content">A message is waiting for you.</string>
+    <!--/Notifications-->
 </resources>

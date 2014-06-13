@@ -4,7 +4,11 @@ import android.os.Handler;
 import android.os.Looper;
 
 /**
- * Created by Eliezer on 3/31/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:51 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class ContactEntry implements Comparable<ContactEntry> {
     public interface OnSendStateChangedListener {
@@ -161,3 +165,4 @@ public class ContactEntry implements Comparable<ContactEntry> {
         }
     }
 }
+

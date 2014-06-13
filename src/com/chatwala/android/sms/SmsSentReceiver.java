@@ -5,11 +5,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.telephony.SmsManager;
-import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.CwAnalytics;
 
 /**
- * Created by Eliezer on 3/4/14.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:22 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class SmsSentReceiver extends BroadcastReceiver {
     @Override
@@ -25,15 +28,16 @@ public class SmsSentReceiver extends BroadcastReceiver {
             switch(getResultCode()) {
                 case Activity.RESULT_OK:
                     if (sms != null) {
-                        CWAnalytics.sendMessageSentConfirmedEvent(sms.getAnalyticsCategory());
-                    } else {
-                        CWAnalytics.sendMessageSentConfirmedEvent(null);
+                        CwAnalytics.sendMessageSentConfirmedEvent(sms.getAnalyticsCategory());
+                    }
+                    else {
+                        CwAnalytics.sendMessageSentConfirmedEvent(null);
                     }
                     break;
-                case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                case SmsManager.RESULT_ERROR_NO_SERVICE:
-                case SmsManager.RESULT_ERROR_NULL_PDU:
-                case SmsManager.RESULT_ERROR_RADIO_OFF:
+                case android.telephony.SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+                case android.telephony.SmsManager.RESULT_ERROR_NO_SERVICE:
+                case android.telephony.SmsManager.RESULT_ERROR_NULL_PDU:
+                case android.telephony.SmsManager.RESULT_ERROR_RADIO_OFF:
                 default:
                     if (sms != null) {
                         /*if (sms.canRetry()) {
@@ -48,10 +52,10 @@ public class SmsSentReceiver extends BroadcastReceiver {
                         else {
                             CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
                         }*/
-                        CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
+                        CwAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), false);
                     }
                     else {
-                        CWAnalytics.sendMessageSentFailedEvent(null, false);
+                        CwAnalytics.sendMessageSentFailedEvent(null, false);
                     }
             }
         }

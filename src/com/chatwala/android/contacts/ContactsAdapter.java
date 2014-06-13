@@ -21,7 +21,11 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by Eliezer on 3/31/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:52 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class ContactsAdapter extends BaseAdapter implements Filterable {
     public interface OnContactActionListener {
@@ -143,7 +147,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         }
 
         if(convertView == null) {
-            convertView = getLayoutInflater().inflate(R.layout.layout_contact, null);
+            convertView = getLayoutInflater().inflate(R.layout.contact_list_item_layout, null);
 
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.contact_item_name);
@@ -286,3 +290,4 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         CheckBox sentCb;
     }
 }
+

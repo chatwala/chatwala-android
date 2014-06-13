@@ -8,19 +8,21 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.chatwala.android.R;
-import com.chatwala.android.util.CWAnalytics;
 import com.chatwala.android.util.Logger;
-import com.squareup.picasso.Picasso;
+import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Eliezer on 4/1/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:58 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class TopContactsAdapter extends ContactsAdapter {
     private ArrayList<String> contactsToSendTo;
-    private Picasso pic;
 
     public interface TopContactsEventListener {
         public void onContactRemoved(int contactsLeft);
@@ -32,12 +34,6 @@ public class TopContactsAdapter extends ContactsAdapter {
 
     public TopContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered, TopContactsEventListener listener) {
         super(context, contacts, useFiltered, null);
-        try {
-            pic = Picasso.with(getContext());
-        }
-        catch(Exception e){
-            Logger.e("Couldn't load Picasso for the top contacts adapter", e);
-        }
         this.listener = listener;
 
         contactsToSendTo = new ArrayList<String>(contacts.size());
@@ -63,7 +59,7 @@ public class TopContactsAdapter extends ContactsAdapter {
         }
 
         if(convertView == null) {
-            convertView = getLayoutInflater().inflate(R.layout.layout_top_contacts_grid, null);
+            convertView = getLayoutInflater().inflate(R.layout.top_contacts_grid_item_layout, null);
 
             holder = new ViewHolder();
             holder.overlay = convertView.findViewById(R.id.contact_item_overlay);
@@ -84,11 +80,11 @@ public class TopContactsAdapter extends ContactsAdapter {
         holder.value.setText(entry.getValue());
 
         try {
-            pic.load(entry.getImage())
+            Ion.with(holder.image)
                     .error(R.drawable.default_contact_icon)
                     .placeholder(R.drawable.default_contact_icon)
-                    .noFade()
-                    .into(holder.image);
+                    .disableFadeIn()
+                    .load(entry.getImage());
         }
         catch(Exception e){
             Logger.e("Error loading the contacts image", e);
@@ -97,7 +93,7 @@ public class TopContactsAdapter extends ContactsAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               holder.check.setChecked(!holder.check.isChecked());
+                holder.check.setChecked(!holder.check.isChecked());
             }
         });
 
@@ -127,3 +123,4 @@ public class TopContactsAdapter extends ContactsAdapter {
         ImageView image;
     }
 }
+

@@ -160,7 +160,7 @@ public class ShowcaseView extends RelativeLayout
     /**
      * Set the view to showcase
      *
-     * @param view The {@link View} to showcase.
+     * @param view The {@link android.view.View} to showcase.
      * @deprecated Use setShowcase with a {@link com.espian.showcaseview.targets.ViewTarget}
      */
     @Deprecated
@@ -545,7 +545,7 @@ public class ShowcaseView extends RelativeLayout
 
     /**
      * Point to a specific view
-     * @param view The {@link View} to Showcase
+     * @param view The {@link android.view.View} to Showcase
      * @deprecated use pointTo(Target)
      */
     @Deprecated
@@ -846,24 +846,24 @@ public class ShowcaseView extends RelativeLayout
 
         /**
          * Does not work with the {@link ShowcaseViews} class as it does not make sense (only with
-         * {@link ShowcaseView}).
+         * {@link com.espian.showcaseview.ShowcaseView}).
          * @deprecated not compatible with Target API
          */
         @Deprecated
         public int insert = INSERT_TO_DECOR;
 
         /**
-         * If you want to use more than one Showcase with the {@link ConfigOptions#shotType} {@link
-         * ShowcaseView#TYPE_ONE_SHOT} in one Activity, set a unique value for every different
+         * If you want to use more than one Showcase with the {@link com.espian.showcaseview.ShowcaseView.ConfigOptions#shotType} {@link
+         * com.espian.showcaseview.ShowcaseView#TYPE_ONE_SHOT} in one Activity, set a unique value for every different
          * Showcase you want to use.
          */
         public int showcaseId = 0;
 
         /**
-         * If you want to use more than one Showcase with {@link ShowcaseView#TYPE_ONE_SHOT} in one
-         * Activity, set a unique {@link ConfigOptions#showcaseId} value for every different
+         * If you want to use more than one Showcase with {@link com.espian.showcaseview.ShowcaseView#TYPE_ONE_SHOT} in one
+         * Activity, set a unique {@link com.espian.showcaseview.ShowcaseView.ConfigOptions#showcaseId} value for every different
          * Showcase you want to use. If you want to use this in the {@link ShowcaseViews} class, you
-         * need to set a custom showcaseId for each {@link ShowcaseView}.
+         * need to set a custom showcaseId for each {@link com.espian.showcaseview.ShowcaseView}.
          */
         public int shotType = TYPE_NO_LIMIT;
 

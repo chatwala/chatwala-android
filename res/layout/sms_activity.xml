@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/app_background"
+              android:orientation="vertical">
+
+    <RelativeLayout
+            android:id="@+id/contacts_filter_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+
+        <EditText
+                android:id="@+id/contacts_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/contacts_filter_clear"
+                android:layout_alignBaseline="@+id/contacts_filter_clear"
+                android:layout_marginLeft="-5dp"
+                android:ems="10"
+                android:hint="Type names or tap to send"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#000"
+                android:textCursorDrawable="@null"
+                android:inputType="textNoSuggestions">
+            <requestFocus/>
+        </EditText>
+
+        <Button
+                android:id="@+id/contacts_filter_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:visibility="gone"
+                android:text="Clear"/>
+    </RelativeLayout>
+
+    <TextView
+            android:id="@+id/contacts_custom_copy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#000"
+            android:visibility="gone"/>
+
+    <TextView
+            android:id="@+id/recent_contacts_lbl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:layout_marginLeft="10dp"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textColor="#000"
+            android:text="Frequent Contacts:"/>
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp">
+
+        <GridView
+                android:id="@+id/recents_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:columnWidth="90dp"
+                android:numColumns="3"
+                android:verticalSpacing="5dp"
+                android:horizontalSpacing="5dp"
+                android:stretchMode="columnWidth"
+                android:gravity="center">
+        </GridView>
+
+        <ListView
+                android:id="@+id/contacts_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+        </ListView>
+    </FrameLayout>
+
+</LinearLayout>

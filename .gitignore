@@ -15,6 +15,7 @@ lint.xml
 *.class
 
 # generated files
+out/
 bin/
 gen/
 classes/
@@ -50,3 +51,4 @@ Thumbs.db
 
 # Craslytics
 res/values/com_crashlytics_export_strings.xml
+assets/crashlytics-build.properties

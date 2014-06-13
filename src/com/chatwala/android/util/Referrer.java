@@ -117,8 +117,8 @@ public class Referrer implements Parcelable {
     //////////////////////////////
     // Parcelable apis
     //////////////////////////////
-    public static final Parcelable.Creator<Referrer> CREATOR
-            = new Parcelable.Creator<Referrer>() {
+    public static final Creator<Referrer> CREATOR
+            = new Creator<Referrer>() {
         public Referrer createFromParcel(Parcel p) {
             return new Referrer(p);
         }

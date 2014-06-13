@@ -4,7 +4,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by Eliezer on 4/3/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:21 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class Sms implements Parcelable {
     private static final int ALLOWED_RETRIES = 6;

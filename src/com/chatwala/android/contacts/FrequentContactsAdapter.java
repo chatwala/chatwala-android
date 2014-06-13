@@ -10,24 +10,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.chatwala.android.R;
 import com.chatwala.android.util.Logger;
-import com.squareup.picasso.Picasso;
+import com.koushikdutta.ion.Ion;
 
 import java.util.List;
 
 /**
- * Created by Eliezer on 3/31/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:54 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class FrequentContactsAdapter extends ContactsAdapter {
-    private Picasso pic;
-
     public FrequentContactsAdapter(Context context, List<ContactEntry> contacts, boolean useFiltered, OnContactActionListener listener) {
         super(context, contacts, useFiltered, listener);
-        try {
-            pic = Picasso.with(getContext());
-        }
-        catch(Exception e){
-            Logger.e("Couldn't load Picasso for the frequent contacts adapter", e);
-        }
     }
 
     @Override
@@ -39,7 +35,7 @@ public class FrequentContactsAdapter extends ContactsAdapter {
         }
 
         if(convertView == null) {
-            convertView = getLayoutInflater().inflate(R.layout.layout_contact_grid, null);
+            convertView = getLayoutInflater().inflate(R.layout.contact_grid_item_layout, null);
 
             holder = new ViewHolder();
             holder.overlay = convertView.findViewById(R.id.contact_item_overlay);
@@ -81,11 +77,11 @@ public class FrequentContactsAdapter extends ContactsAdapter {
         holder.status.setText(contact.getSendingStatus());
 
         try {
-            pic.load(contact.getImage())
+            Ion.with(holder.image)
                     .error(R.drawable.default_contact_icon)
                     .placeholder(R.drawable.default_contact_icon)
-                    .noFade()
-                    .into(holder.image);
+                    .disableFadeIn()
+                    .load(contact.getImage());
         }
         catch(Exception e){
             Logger.e("Error loading the contacts image", e);
@@ -141,3 +137,4 @@ public class FrequentContactsAdapter extends ContactsAdapter {
         ImageView image;
     }
 }
+

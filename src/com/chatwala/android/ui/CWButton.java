@@ -2,34 +2,34 @@ package com.chatwala.android.ui;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 import com.chatwala.android.R;
 
 /**
- * Created by Eliezer on 4/1/2014.
+ * Created with IntelliJ IDEA.
+ * User: eygraber
+ * Date: 5/8/2014
+ * Time: 1:28 AM
+ * To change this template use File | Settings | File Templates.
  */
-public class CWButton extends FrameLayout {
-    private View modifiableView;
+public class CwButton extends FrameLayout {
+    private FrameLayout actionContainer;
 
-    public CWButton(Context context) {
+    public CwButton(Context context) {
         super(context);
         init(context);
     }
 
-    public CWButton(Context context, AttributeSet attrs) {
+    public CwButton(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public CWButton(Context context, AttributeSet attrs, int defStyle) {
+    public CwButton(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(context, attrs);
     }
@@ -41,56 +41,77 @@ public class CWButton extends FrameLayout {
     private void init(Context context, AttributeSet attrs) {
         int defaultOuterSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
         int outerOvalSize;
-        Drawable drawableRes = null;
-        String text = null;
+        boolean hideHalo = false;
 
         if(attrs == null) {
             outerOvalSize = defaultOuterSize;
         }
         else {
-            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CWButton);
+            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CwButton);
             if(a != null) {
-                outerOvalSize = a.getDimensionPixelSize(R.styleable.CWButton_cw_button_size, 100);
-                drawableRes = a.getDrawable(R.styleable.CWButton_cw_button_drawable);
-                text = a.getString(R.styleable.CWButton_cw_button_text);
+                outerOvalSize = a.getDimensionPixelSize(R.styleable.CwButton_cw_button_size, 100);
+                hideHalo = a.getBoolean(R.styleable.CwButton_cw_hide_halo, false);
             }
             else {
                 outerOvalSize = defaultOuterSize;
             }
         }
-
-        View transparentOval = new View(context);
-        View modifiableView;
-        if(drawableRes != null) {
-            modifiableView = new ImageView(context);
-            ((ImageView) modifiableView).setImageDrawable(drawableRes);
-            ((ImageView) modifiableView).setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        }
-        else if(text != null) {
-            modifiableView = new TextView(context);
-            ((TextView) modifiableView).setGravity(Gravity.CENTER);
-            ((TextView) modifiableView).setText(text);
-            ((TextView) modifiableView).setTextColor(0);
-            ((TextView) modifiableView).setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Medium);
-            ((TextView) modifiableView).setTypeface(Typeface.DEFAULT_BOLD);
-        }
-        else {
-            modifiableView = new View(context);
-        }
         int innerOvalSize = (int) Math.round(outerOvalSize * .80);
 
+        View haloView = new View(context);
+        actionContainer = new FrameLayout(context);
+
         setLayoutParams(new LayoutParams(outerOvalSize, outerOvalSize));
-        transparentOval.setLayoutParams(new LayoutParams(outerOvalSize, outerOvalSize, Gravity.CENTER));
-        modifiableView.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
+        haloView.setLayoutParams(new LayoutParams(outerOvalSize, outerOvalSize, Gravity.CENTER));
+        actionContainer.setLayoutParams(new LayoutParams(innerOvalSize, innerOvalSize, Gravity.CENTER));
 
-        transparentOval.setBackgroundResource(R.drawable.cw_button_halo);
-        modifiableView.setBackgroundResource(R.drawable.cw_button);
+        haloView.setBackgroundResource(R.drawable.cw_button_halo);
+        actionContainer.setBackgroundResource(R.drawable.cw_button);
 
-        addView(transparentOval);
-        addView(modifiableView);
+        for(int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if(child != null) {
+                removeViewAt(i);
+                actionContainer.addView(child);
+            }
+        }
+
+        if(hideHalo) {
+            haloView.setVisibility(GONE);
+        }
+
+        addView(haloView);
+        addView(actionContainer);
     }
 
-    public View getModifiableView() {
-        return modifiableView;
+    public void setActionView(View actionView) {
+        actionContainer.removeAllViews();
+        actionView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        actionContainer.addView(actionView);
+    }
+
+    public void addActionView(View actionView) {
+        addActionView(actionView, actionContainer.getChildCount() - 1);
+    }
+
+    public void addActionView(View actionView, int position) {
+        actionView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        actionContainer.addView(actionView, position);
+    }
+
+    public void removeActionViewAt(int position) {
+        actionContainer.removeViewAt(position);
+    }
+
+    public void clearActionView() {
+        actionContainer.removeAllViews();
+    }
+
+    public View getActionView() {
+        return getActionViewAt(0);
+    }
+
+    public View getActionViewAt(int i) {
+        return actionContainer.getChildAt(i);
     }
 }

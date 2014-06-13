@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="small_preview_width">128dp</dimen>
-    <dimen name="small_preview_height">192dp</dimen>
-    <dimen name="large_preview_width">320dp</dimen>
-    <dimen name="large_preview_height">480dp</dimen>
-    <dimen name="timer_bar_size">10dp</dimen>
-    <dimen name="timer_dial_diameter">100dp</dimen>
-    <dimen name="timer_dial_radius">50dp</dimen>
     <dimen name="message_text_size">22sp</dimen>
     <dimen name="message_text_spacing">14sp</dimen>
+
+    <dimen name="thumb_width">150dip</dimen>
+    <dimen name="thumb_height">72dip</dimen>
 </resources>

@@ -10,7 +10,8 @@
     <color name="drawer_background">#122344</color>
     <color name="drawer_button_default">#384362</color>
     <color name="drawer_button_pressed">#db013f</color>
-    <color name="settings_button_background">#162c51</color>
-    <color name="settings_button_accent">#314364</color>
-    <color name="text_white">#FFFFFF</color>
+    <color name="settings_row_background">#162c51</color>
+    <color name="settings_row_accent">#314364</color>
+
+    <color name="drawer_new_user_message">#997A1844</color>
 </resources>

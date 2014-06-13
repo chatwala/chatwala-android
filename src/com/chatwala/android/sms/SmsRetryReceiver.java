@@ -4,10 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.util.CwAnalytics;
 
 /**
- * Created by Eliezer on 4/3/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:23 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class SmsRetryReceiver extends BroadcastReceiver {
     @Override
@@ -20,9 +24,10 @@ public class SmsRetryReceiver extends BroadcastReceiver {
                 sms = smsBundle.getParcelable(extraKey);
             }
             if(sms != null) {
-                CWAnalytics.sendMessageSentRetryEvent(sms.getAnalyticsCategory(), sms.getNumRetries() + 1);
+                CwAnalytics.sendMessageSentRetryEvent(sms.getAnalyticsCategory(), sms.getNumRetries() + 1);
                 SmsManager.getInstance().sendSms(sms);
             }
         }
     }
 }
+

@@ -5,7 +5,11 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 /**
- * Created by Eliezer on 3/17/14.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 6:41 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class ContactImageView extends ImageView {
     public ContactImageView(Context context) {

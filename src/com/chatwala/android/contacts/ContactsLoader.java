@@ -10,7 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Eliezer on 3/31/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:53 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class ContactsLoader extends AsyncTaskLoader<List<ContactEntry>> {
     private List<ContactEntry> contacts;
@@ -146,3 +150,4 @@ public class ContactsLoader extends AsyncTaskLoader<List<ContactEntry>> {
         contacts = null;
     }
 }
+

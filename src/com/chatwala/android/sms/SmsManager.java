@@ -3,8 +3,8 @@ package com.chatwala.android.sms;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
-import com.chatwala.android.ChatwalaApplication;
-import com.chatwala.android.util.CWAnalytics;
+import com.chatwala.android.app.ChatwalaApplication;
+import com.chatwala.android.util.CwAnalytics;
 import com.chatwala.android.util.Logger;
 
 import java.util.concurrent.ExecutorService;
@@ -12,10 +12,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by Eliezer on 4/3/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/14/2014
+ * Time: 5:21 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class SmsManager {
-    public static final String DEFAULT_MESSAGE = "Hey, I sent you a video message on Chatwala: ";
+    public static final String DEFAULT_MESSAGE = "I sent you a Chatwala video: ";
     public static final String SMS_EXTRA = "SMS";
     public static final int MAX_SMS_MESSAGE_LENGTH = 160;
 
@@ -63,11 +67,11 @@ public class SmsManager {
                             smsSentIntent, 0);
                     android.telephony.SmsManager.getDefault().sendTextMessage(sms.getNumber(), null,
                             sms.getFullMessage(), sentPendingIntent, null);
-                    CWAnalytics.sendMessageSentEvent(sms.getAnalyticsCategory());
+                    CwAnalytics.sendMessageSentEvent(sms.getAnalyticsCategory());
                 }
                 catch(Exception e) {
                     Logger.e("There was an exception while sending SMS(s)", e);
-                    CWAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), true);
+                    CwAnalytics.sendMessageSentFailedEvent(sms.getAnalyticsCategory(), true);
                 }
             }
         });

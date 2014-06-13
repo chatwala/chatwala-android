@@ -1,7 +1,7 @@
 package com.chatwala.android.util;
 
 import android.util.Log;
-import com.chatwala.android.EnvironmentVariables;
+import com.chatwala.android.app.EnvironmentVariables;
 import com.crashlytics.android.Crashlytics;
 
 import java.util.concurrent.ExecutorService;
@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 public class Logger {
     private static String TAG = "Chatwala";
     private static final boolean SHOULD_LOG = EnvironmentVariables.get().isDebug();
-    private static final boolean SHOULD_LOG_DEBUG = false;
+    private static final boolean SHOULD_LOG_DEBUG = true;
     private static boolean LOG_TO_ANDROID_DEFAULT = true;
     //private static int LOG_MAX_SIZE = 1024 * 512;
     //private static ChatwalaApplication app;
@@ -53,13 +53,29 @@ public class Logger {
     }*/
 
     private static class LogTask implements Runnable {
+        protected String tag;
         protected String message;
         protected Throwable t;
         protected int level;
         protected StackTraceElement ste;
         protected boolean logToAndroid;
 
-        public LogTask(String message, Throwable t, int level, StackTraceElement ste, boolean logToAndroid) {
+        public LogTask(String message, Throwable t, int level, StackTraceElement ste, boolean logToAndroid, Object... args) {
+            this(null, message, t, level, ste, logToAndroid, args);
+        }
+
+        public LogTask(String tag, String message, Throwable t, int level, StackTraceElement ste, boolean logToAndroid, Object... args) {
+            if(tag == null) {
+                this.tag = TAG;
+            }
+            else {
+                this.tag = tag;
+            }
+            if(args != null) {
+                try {
+                    message = String.format(message, args);
+                } catch(Exception ignore) {}
+            }
             this.message = message;
             this.t = t;
             this.level = level;
@@ -70,7 +86,7 @@ public class Logger {
         @Override
         public void run() {
             if((SHOULD_LOG && logToAndroid) || level == Log.ERROR || level == Log.WARN) {
-                logToAndroid(createAndroidMessage(message), t, level);
+                logToAndroid(tag, createAndroidMessage(message), t, level);
             }
 
             if(t != null) {
@@ -175,9 +191,14 @@ public class Logger {
         }
     }
 
-    private static void log(String message, Throwable t, int level, boolean logToAndroid) {
+    private static void log(String message, Throwable t, int level, boolean logToAndroid, Object... args) {
         StackTraceElement ste = Thread.currentThread().getStackTrace()[4];
-        executor.execute(new LogTask(message, t, level, ste, logToAndroid));
+        executor.execute(new LogTask(message, t, level, ste, logToAndroid, args));
+    }
+
+    private static void log(String tag, String message, Throwable t, int level, boolean logToAndroid, Object... args) {
+        StackTraceElement ste = Thread.currentThread().getStackTrace()[4];
+        executor.execute(new LogTask(tag, message, t, level, ste, logToAndroid, args));
     }
 
     private static void log_crashlytics(String crashlyticsTag, String message, Throwable t, int level, boolean logToAndroid) {
@@ -191,27 +212,51 @@ public class Logger {
         }
     }
 
-    public static void d(String message) {
+    public static void d(String message, Object... args) {
         if(SHOULD_LOG_DEBUG) {
-            log(message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+            log(message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT, args);
         }
     }
 
-    public static void d(String message, Throwable t) {
+    public static void d(String message, Throwable t, Object... args) {
         if(SHOULD_LOG_DEBUG) {
-            log(message, t, Log.DEBUG, LOG_TO_ANDROID_DEFAULT);
+            log(message, t, Log.DEBUG, LOG_TO_ANDROID_DEFAULT, args);
         }
     }
 
-    public static void d(String message, boolean logToAndroid) {
+    public static void d(String message, boolean logToAndroid, Object... args) {
         if(SHOULD_LOG_DEBUG) {
-            log(message, null, Log.DEBUG, logToAndroid);
+            log(message, null, Log.DEBUG, logToAndroid, args);
         }
     }
 
-    public static void d(String message, Throwable t, boolean logToAndroid) {
+    public static void d(String message, Throwable t, boolean logToAndroid, Object... args) {
         if(SHOULD_LOG_DEBUG) {
-            log(message, t, Log.DEBUG, logToAndroid);
+            log(message, t, Log.DEBUG, logToAndroid, args);
+        }
+    }
+
+    public static void d(String tag, String message, Object... args) {
+        if(SHOULD_LOG_DEBUG) {
+            log(tag, message, null, Log.DEBUG, LOG_TO_ANDROID_DEFAULT, args);
+        }
+    }
+
+    public static void d(String tag, String message, Throwable t, Object... args) {
+        if(SHOULD_LOG_DEBUG) {
+            log(tag, message, t, Log.DEBUG, LOG_TO_ANDROID_DEFAULT, args);
+        }
+    }
+
+    public static void d(String tag, String message, boolean logToAndroid, Object... args) {
+        if(SHOULD_LOG_DEBUG) {
+            log(tag, message, null, Log.DEBUG, logToAndroid, args);
+        }
+    }
+
+    public static void d(String tag, String message, Throwable t, boolean logToAndroid, Object... args) {
+        if(SHOULD_LOG_DEBUG) {
+            log(message, t, Log.DEBUG, logToAndroid, args);
         }
     }
 
@@ -219,80 +264,144 @@ public class Logger {
         log("", null, Log.ERROR, LOG_TO_ANDROID_DEFAULT);
     }
 
-    public static void e(String message) {
-        log(message, null, Log.ERROR, LOG_TO_ANDROID_DEFAULT);
+    public static void e(String message, Object... args) {
+        log(message, null, Log.ERROR, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void e(String message, Throwable t) {
-        log(message, t, Log.ERROR, LOG_TO_ANDROID_DEFAULT);
+    public static void e(String message, Throwable t, Object... args) {
+        log(message, t, Log.ERROR, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void e(String message, boolean logToAndroid) {
-        log(message, null, Log.ERROR, logToAndroid);
+    public static void e(String message, boolean logToAndroid, Object... args) {
+        log(message, null, Log.ERROR, logToAndroid, args);
     }
 
-    public static void e(String message, Throwable t, boolean logToAndroid) {
-        log(message, t, Log.ERROR, logToAndroid);
+    public static void e(String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(message, t, Log.ERROR, logToAndroid, args);
+    }
+
+    public static void e(String tag, String message, Object... args) {
+        log(tag, message, null, Log.ERROR, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void e(String tag, String message, Throwable t, Object... args) {
+        log(message, t, Log.ERROR, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void e(String tag, String message, boolean logToAndroid, Object... args) {
+        log(message, null, Log.ERROR, logToAndroid, args);
+    }
+
+    public static void e(String tag, String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(message, t, Log.ERROR, logToAndroid, args);
     }
 
     public static void i() {
         log("", null, Log.INFO, LOG_TO_ANDROID_DEFAULT);
     }
 
-    public static void i(String message) {
-        log(message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT);
+    public static void i(String message, Object... args) {
+        log(message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void i(String message, Throwable t) {
-        log(message, t, Log.INFO, LOG_TO_ANDROID_DEFAULT);
+    public static void i(String message, Throwable t, Object... args) {
+        log(message, t, Log.INFO, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void i(String message, boolean logToAndroid) {
-        log(message, null, Log.INFO, logToAndroid);
+    public static void i(String message, boolean logToAndroid, Object... args) {
+        log(message, null, Log.INFO, logToAndroid, args);
     }
 
-    public static void i(String message, Throwable t, boolean logToAndroid) {
-        log(message, t, Log.INFO, logToAndroid);
+    public static void i(String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(message, t, Log.INFO, logToAndroid, args);
+    }
+
+    public static void i(String tag, String message, Object... args) {
+        log(tag, message, null, Log.INFO, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void i(String tag, String message, Throwable t, Object... args) {
+        log(tag, message, t, Log.INFO, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void i(String tag, String message, boolean logToAndroid, Object... args) {
+        log(tag, message, null, Log.INFO, logToAndroid, args);
+    }
+
+    public static void i(String tag, String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(tag, message, t, Log.INFO, logToAndroid, args);
     }
 
     public static void v() {
         log("", null, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT);
     }
 
-    public static void v(String message) {
-        log(message, null, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT);
+    public static void v(String message, Object... args) {
+        log(message, null, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void v(String message, Throwable t) {
-        log(message, t, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT);
+    public static void v(String message, Throwable t, Object... args) {
+        log(message, t, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void v(String message, boolean logToAndroid) {
-        log(message, null, Log.VERBOSE, logToAndroid);
+    public static void v(String message, boolean logToAndroid, Object... args) {
+        log(message, null, Log.VERBOSE, logToAndroid, args);
     }
 
-    public static void v(String message, Throwable t, boolean logToAndroid) {
-        log(message, t, Log.VERBOSE, logToAndroid);
+    public static void v(String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(message, t, Log.VERBOSE, logToAndroid, args);
+    }
+
+    public static void v(String tag, String message, Object... args) {
+        log(tag, message, null, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void v(String tag, String message, Throwable t, Object... args) {
+        log(tag, message, t, Log.VERBOSE, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void v(String tag, String message, boolean logToAndroid, Object... args) {
+        log(tag, message, null, Log.VERBOSE, logToAndroid, args);
+    }
+
+    public static void v(String tag, String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(tag, message, t, Log.VERBOSE, logToAndroid, args);
     }
 
     public static void w() {
         log("", null, Log.WARN, LOG_TO_ANDROID_DEFAULT);
     }
 
-    public static void w(String message) {
-        log(message, null, Log.WARN, LOG_TO_ANDROID_DEFAULT);
+    public static void w(String message, Object... args) {
+        log(message, null, Log.WARN, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void w(String message, Throwable t) {
-        log(message, t, Log.WARN, LOG_TO_ANDROID_DEFAULT);
+    public static void w(String message, Throwable t, Object... args) {
+        log(message, t, Log.WARN, LOG_TO_ANDROID_DEFAULT, args);
     }
 
-    public static void w(String message, boolean logToAndroid) {
-        log(message, null, Log.WARN, logToAndroid);
+    public static void w(String message, boolean logToAndroid, Object... args) {
+        log(message, null, Log.WARN, logToAndroid, args);
     }
 
-    public static void w(String message, Throwable t, boolean logToAndroid) {
-        log(message, t, Log.WARN, logToAndroid);
+    public static void w(String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(message, t, Log.WARN, logToAndroid, args);
+    }
+
+    public static void w(String tag, String message, Object... args) {
+        log(tag, message, null, Log.WARN, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void w(String tag, String message, Throwable t, Object... args) {
+        log(tag, message, t, Log.WARN, LOG_TO_ANDROID_DEFAULT, args);
+    }
+
+    public static void w(String tag, String message, boolean logToAndroid, Object... args) {
+        log(tag, message, null, Log.WARN, logToAndroid, args);
+    }
+
+    public static void w(String tag, String message, Throwable t, boolean logToAndroid, Object... args) {
+        log(tag, message, t, Log.WARN, logToAndroid, args);
     }
 
     public static void network(String message) {
@@ -399,49 +508,49 @@ public class Logger {
         });
     }
 
-    private static void logToAndroid(String message, Throwable t, int level) {
+    private static void logToAndroid(String tag, String message, Throwable t, int level) {
         switch(level) {
             case Log.ASSERT:
                 System.out.println(message);
                 break;
             case Log.DEBUG:
                 if(t == null) {
-                    Log.d(TAG, message);
+                    Log.d(tag, message);
                 }
                 else {
-                    Log.d(TAG, message, t);
+                    Log.d(tag, message, t);
                 }
                 break;
             case Log.ERROR:
                 if(t == null) {
-                    Log.e(TAG, message);
+                    Log.e(tag, message);
                 }
                 else {
-                    Log.e(TAG, message, t);
+                    Log.e(tag, message, t);
                 }
                 break;
             case Log.INFO:
                 if(t == null) {
-                    Log.i(TAG, message);
+                    Log.i(tag, message);
                 }
                 else {
-                    Log.i(TAG, message, t);
+                    Log.i(tag, message, t);
                 }
                 break;
             case Log.VERBOSE:
                 if(t == null) {
-                    Log.v(TAG, message);
+                    Log.v(tag, message);
                 }
                 else {
-                    Log.v(TAG, message, t);
+                    Log.v(tag, message, t);
                 }
                 break;
             case Log.WARN:
                 if(t == null) {
-                    Log.w(TAG, message);
+                    Log.w(tag, message);
                 }
                 else {
-                    Log.w(TAG, message, t);
+                    Log.w(tag, message, t);
                 }
                 break;
         }

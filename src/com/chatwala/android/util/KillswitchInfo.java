@@ -5,7 +5,11 @@ import android.content.pm.PackageInfo;
 import org.json.JSONObject;
 
 /**
- * Created by Eliezer on 4/9/2014.
+ * Created with IntelliJ IDEA.
+ * User: Eliezer
+ * Date: 5/8/2014
+ * Time: 4:19 PM
+ * To change this template use File | Settings | File Templates.
  */
 public class KillswitchInfo {
     public static final String MINIMUM_LIVE_VERSION_KEY = "minimumLiveVersion";
