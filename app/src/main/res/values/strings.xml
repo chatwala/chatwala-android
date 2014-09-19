@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">chatwala</string>
+    <string name="app_name_qa">chatwala_qa</string>
+    <string name="app_name_dev">chatwala_dev</string>
+    <string name="app_name_sandbox">chatwala_sandbox</string>
+
+    <!--Activity Labels-->
+    <string name="send_sms">Send SMS</string>
+    <string name="top_contacts_title">Welcome to Chatwala</string>
+    <!--/Activity Labels-->
+
+    <!--Drawer-->
+    <string name="drawer_new_user_message_overlay_label">NEW</string>
+    <!--/Drawer-->
+
+    <!--Tutorial-->
+    <string name="tutorial_title">Welcome to Chatwala.</string>
+    <string name="tutorial_detail">A new way to have conversations. Tap to get started.</string>
+    <!--/Tutorial-->
+
+    <!--Top Contacts-->
+    <string name="top_contacts_header_text">Tap friends to start conversations</string>
+    <string name="top_contacts_bottom_text">Tap multiple friends to start a group</string>
+
+    <string name="top_contacts_pre_recording_text">Recording in...%d\nYour friends will react here.\n\n(tip: smile big)</string>
+    <string name="top_contacts_recording_text">Recording...%d\n\n(tip: say Hi)</string>
+    <string name="top_contacts_sending_text">Sending sms in...%d</string>
+    <!--/Top Contacts-->
+
+    <!--Conversation Starter-->
+    <string name="basic_instructions">Tap to record a message.\nSee your friends react here.</string>
+    <string name="recording_countdown">Recording...%d</string>
+    <!--/Conversation Starter-->
+
+    <!--Conversation Replier-->
+    <string name="play_message_record_reaction">Play your friend\'s message and record your reaction.\nThen reply, preview &amp; send it!</string>
+    <string name="recording_reply_countdown">Recording your reply...%d</string>
+    <string name="sending_reply_countdown">Sending reply in...%d</string>
+
+    <string name="message_send_or_cancel_title">Send Video?</string>
+    <string name="message_send_or_cancel_send">Send</string>
+    <string name="message_send_or_cancel_cancel">Cancel</string>
+    <!--/Conversation Replier-->
+
+    <!--Preview-->
+    <string name="send_instructions">Tap to send this message.</string>
+    <!--/Preview-->
+
+    <!--Sharing-->
+    <string name="message_subject">Chatwala Message</string>
+    <!--/Sharing-->
+
+    <!--Message Loading-->
+    <string name="message_loading_text">Loading your friend\'s message!</string>
+    <!--/Message Loading-->
+
+    <!--Killswitch-->
+    <string name="killswitch">KILLSWITCH</string>
+    <!--/Killswitch-->
+
+    <!--Settings-->
+    <string name="settings_label">Settings</string>
+    <string name="version_information_title">Version Information</string>
+    <string name="version_information_version">Version:</string>
+    <string name="version_information_server">Server:</string>
+
+    <string name="blow_away_storage_confirmation_title">Clear Disk Space?</string>
+    <string name="blow_away_storage_confirmation_message">Chatwala is using \%%.2f MB out of \%%.2f GB.\nAre you sure you would like to clear disk space?</string>
+    <string name="blow_away_storage_confirmation">Chatwala storage cleared</string>
+
+    <string name="mark_all_as_read_confirmation_title">Mark All Messages as Read?</string>
+    <string name="mark_all_as_read_confirmation_message">Are you sure you would like to mark all messages as read?</string>
+    <string name="mark_all_as_read_confirmation">All messages marked as read</string>
+    <!--/Settings-->
+
+    <!--Update Profile Pic-->
+    <string name="update_profile_pic_label">Update Profile Pic</string>
+    <string name="change_profile_pic">CHANGE!</string>
+    <string name="change_profile_pic_bottom_text">Tap CHANGE! to update your profile pic.</string>
+    <string name="no_profile_pic">You don\'t have a profile pic yet!</string>
+    <!--/Update Profile Pic-->
+
+    <!--Feedback-->
+    <string name="feedback_label">Feedback</string>
+    <string name="feedback_intial_text">Are you happy with Chatwala?</string>
+    <string name="feedback_positive_text">Great! How about rating us on the Play Store?</string>
+    <string name="feedback_negative_text">Sorry about that. We want to improve. Send us a message?</string>
+    <string name="feedback_yes">Yes</string>
+    <string name="feedback_no">No</string>
+    <string name="feedback_sure">Sure!</string>
+    <!--/Feedback-->
+
+    <!--Notifications-->
+    <string name="notification_new_message_title">Chatwala</string>
+    <string name="notification_new_message_content">A message is waiting for you.</string>
+    <!--/Notifications-->
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CwButton">
+        <attr name="cw_button_size" format="dimension" />
+        <attr name="cw_hide_halo" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="SettingsRow">
+        <attr name="settings_row_text" format="string" />
+        <attr name="settings_row_selections" format="reference" />
+    </declare-styleable>
+</resources>

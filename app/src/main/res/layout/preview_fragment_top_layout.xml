@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <com.chatwala.android.ui.CroppingLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <com.chatwala.android.camera.ChatwalaPlaybackTexture
+                android:id="@+id/preview_playback_surface"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+    </com.chatwala.android.ui.CroppingLayout>
+
+    <ImageView
+            android:id="@+id/preview_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:src="@drawable/message_close"/>
+
+</FrameLayout>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dot_red">#d60037</color>
+    <color name="dot_red_light">#ff6082</color>
+    <color name="app_background">#ede8e2</color>
+    <color name="message_background_alpha">#aaffffff</color>
+    <color name="message_background_clear">#00ffffff</color>
+    <color name="message_dialag_text_color">#ede8e2</color>
+
+    <color name="drawer_background">#122344</color>
+    <color name="drawer_button_default">#384362</color>
+    <color name="drawer_button_pressed">#db013f</color>
+    <color name="settings_row_background">#162c51</color>
+    <color name="settings_row_accent">#314364</color>
+
+    <color name="drawer_new_user_message">#997A1844</color>
+</resources>

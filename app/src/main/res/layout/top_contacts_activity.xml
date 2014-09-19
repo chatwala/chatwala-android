@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:cw="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingLeft="10dp"
+              android:paddingRight="10dp"
+              android:paddingBottom="10dp"
+              android:background="@color/app_background"
+              android:orientation="vertical">
+
+    <LinearLayout
+            android:id="@+id/top_contacts_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".15"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/top_contacts_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:textColor="#000"
+                android:text="@string/top_contacts_header_text" android:textStyle="normal"/>
+
+    </LinearLayout>
+
+    <GridView
+            android:id="@+id/top_contacts_grid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".75"
+            android:columnWidth="90dp"
+            android:numColumns="3"
+            android:verticalSpacing="5dp"
+            android:horizontalSpacing="5dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            android:layout_gravity="center"/>
+
+    <LinearLayout
+            android:id="@+id/top_contacts_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".25"
+            android:gravity="center"
+            android:descendantFocusability="afterDescendants"
+            android:orientation="horizontal">
+
+        <com.chatwala.android.ui.CwButton
+                android:id="@+id/top_contacts_start_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:textAppearanceLarge"
+                cw:cw_button_size="100dp"
+                android:visibility="gone">
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_action_send"/>
+
+        </com.chatwala.android.ui.CwButton>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/top_contacts_bottom_text"
+                android:id="@+id/top_contacts_bottom_text"
+                android:enabled="true"
+                android:visibility="visible"
+                android:clickable="false"
+                android:textColor="#000000" android:textStyle="normal"/>
+
+    </LinearLayout>
+
+</LinearLayout>
