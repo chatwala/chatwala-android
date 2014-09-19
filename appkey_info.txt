@@ -1,2 +1,0 @@
-alias: chatwala
-password: TwoToneThr33z
