@@ -6,9 +6,10 @@ import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.AddUnknownRecipientMessageToInboxRequest;
 import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -28,7 +29,10 @@ public class AddUnknownRecipientMessageToInboxJob extends CwJob {
     private AddUnknownRecipientMessageToInboxJob() {}
 
     private AddUnknownRecipientMessageToInboxJob(ChatwalaMessage message) {
-        super(new CwJobParams(Priority.API_LOW_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.API_LOW_PRIORITY));
         this.message = message;
     }
 
@@ -38,7 +42,7 @@ public class AddUnknownRecipientMessageToInboxJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         AddUnknownRecipientMessageToInboxRequest request = new AddUnknownRecipientMessageToInboxRequest(message);
         request.log();
         CwHttpResponse<JSONObject> response = HttpClient.getJSONObject(request);
@@ -52,7 +56,12 @@ public class AddUnknownRecipientMessageToInboxJob extends CwJob {
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getApiQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

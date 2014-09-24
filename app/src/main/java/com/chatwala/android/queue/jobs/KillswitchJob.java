@@ -6,10 +6,11 @@ import com.chatwala.android.http.HttpClient;
 import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.KillswitchRequest;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.KillswitchInfo;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -25,7 +26,10 @@ public class KillswitchJob extends CwJob {
     }
 
     private KillswitchJob() {
-        super(new CwJobParams(Priority.API_LOW_PRIORITY).requireNetwork());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .retryLimit(5)
+                .priority(Priority.API_LOW_PRIORITY));
     }
 
     @Override
@@ -34,7 +38,7 @@ public class KillswitchJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         KillswitchRequest request = new KillswitchRequest();
         request.log();
         CwHttpResponse<JSONObject> response = HttpClient.getJSONObject(request);
@@ -55,12 +59,12 @@ public class KillswitchJob extends CwJob {
     }
 
     @Override
-    protected int getRetryLimit() {
-        return 5;
+    protected JobQueue getQueueToPostTo() {
+        return getApiQueue();
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
-        return getApiQueue();
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

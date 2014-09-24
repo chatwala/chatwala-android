@@ -8,10 +8,11 @@ import com.chatwala.android.http.HttpClient;
 import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.RegisterGcmTokenRequest;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -32,7 +33,9 @@ public class RegisterGcmTokenJob extends CwJob {
     private RegisterGcmTokenJob() {}
 
     private RegisterGcmTokenJob(Context context) {
-        super(new CwJobParams(Priority.API_LOW_PRIORITY).requireNetwork());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .priority(Priority.API_LOW_PRIORITY));
         this.context = context;
     }
 
@@ -42,7 +45,7 @@ public class RegisterGcmTokenJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         if(gcmToken == null) {
             GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
             gcmToken = gcm.register("419895337876");
@@ -58,7 +61,12 @@ public class RegisterGcmTokenJob extends CwJob {
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getApiQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

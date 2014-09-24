@@ -3,20 +3,11 @@ package com.chatwala.android.messages;
 import android.os.Parcel;
 import android.os.Parcelable;
 import com.chatwala.android.util.Logger;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.field.DatabaseField;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.lang.reflect.Type;
 
 /**
  * Created with IntelliJ IDEA.
@@ -376,31 +367,5 @@ public abstract class ChatwalaMessageBase implements Parcelable {
     //////////////////////////////
     // end Parcelable apis
     //////////////////////////////
-
-    public static class GsonSerializerAdapter implements JsonSerializer<ChatwalaMessageBase>, JsonDeserializer<ChatwalaMessageBase> {
-        @Override
-        public JsonElement serialize(ChatwalaMessageBase src, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject result = new JsonObject();
-            result.add("type", new JsonPrimitive(src.getClass().getSimpleName()));
-            result.add("properties", context.serialize(src, src.getClass()));
-            return result;
-        }
-
-
-        @Override
-        public ChatwalaMessageBase deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            JsonObject jsonObject = json.getAsJsonObject();
-            String type = jsonObject.get("type").getAsString();
-            JsonElement element = jsonObject.get("properties");
-
-            try {
-                String thepackage = "com.chatwala.android.messages.";
-                return context.deserialize(element, Class.forName(thepackage + type));
-            } catch (ClassNotFoundException cnfe) {
-                throw new JsonParseException("Unknown element type: " + type, cnfe);
-            }
-        }
-    }
 
 }

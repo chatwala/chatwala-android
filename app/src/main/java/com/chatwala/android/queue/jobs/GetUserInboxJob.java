@@ -8,11 +8,12 @@ import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.GetUserInboxRequest;
 import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,7 +36,9 @@ public class GetUserInboxJob extends CwJob {
     }
 
     private GetUserInboxJob() {
-        super(new CwJobParams(Priority.API_MID_PRIORITY).requireNetwork());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .priority(Priority.API_MID_PRIORITY));
     }
 
     @Override
@@ -44,7 +47,7 @@ public class GetUserInboxJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         if(FileManager.getTotalAvailableSpaceInMb() < 100) {
             FileManager.clearMessageStorage();
             if(FileManager.getTotalAvailableSpaceInMb() < 100) {
@@ -109,7 +112,12 @@ public class GetUserInboxJob extends CwJob {
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getApiQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

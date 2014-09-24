@@ -31,7 +31,9 @@ import com.chatwala.android.files.FileManager;
 import com.chatwala.android.messages.*;
 import com.chatwala.android.queue.jobs.GetUserInboxJob;
 import com.chatwala.android.util.CwAnalytics;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.events.MethodRegistration;
+import com.staticbloc.events.RunType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -64,6 +66,8 @@ public abstract class DrawerListActivity extends BaseChatwalaActivity {
     private ImageView backButton;
     private ImageView feedbackButton;
     private ImageView newUserMessageButton;
+
+    private Events events = Events.getDefault();
 
     private enum DrawerState {
         USERS, MESSAGES
@@ -151,7 +155,7 @@ public abstract class DrawerListActivity extends BaseChatwalaActivity {
                     loadMessages(currentSenderId);
                 }
 
-                EventBus.getDefault().register(DrawerListActivity.this);
+                subscribeToEvents();
             }
 
             @Override
@@ -159,11 +163,7 @@ public abstract class DrawerListActivity extends BaseChatwalaActivity {
                 super.onDrawerClosed(drawerView);
                 CwAnalytics.sendDrawerClosed();
 
-                //this may crash if registration did not go through. just be safe
-                try {
-                    EventBus.getDefault().unregister(DrawerListActivity.this);
-                }
-                catch (Throwable ignore) {}
+                events.unsubscribe(this);
             }
         });
 
@@ -300,8 +300,13 @@ public abstract class DrawerListActivity extends BaseChatwalaActivity {
         drawerToggleButton.bringToFront();
 
         if(drawerLayout.isDrawerOpen(navigationDrawer)) {
-            EventBus.getDefault().register(this);
+            subscribeToEvents();
         }
+    }
+
+    private void subscribeToEvents() {
+        events.subscribe(this,
+                new MethodRegistration<DrawerUpdateEvent>(DrawerUpdateEvent.class, "onDrawerUpdateEvent", RunType.MAIN));
     }
 
     @Override
@@ -309,15 +314,11 @@ public abstract class DrawerListActivity extends BaseChatwalaActivity {
         super.onPause();
 
         if(drawerLayout.isDrawerOpen(navigationDrawer)) {
-            //this may crash if registration did not go through. just be safe
-            try {
-                EventBus.getDefault().unregister(this);
-            }
-            catch (Throwable ignore) {}
+            events.unsubscribe(this);
         }
     }
 
-    public void onEventMainThread(DrawerUpdateEvent event) {
+    public void onDrawerUpdateEvent(DrawerUpdateEvent event) {
         if(drawerState == DrawerState.USERS) {
             if(event.isLoadEvent()) {
                 loadUsers();

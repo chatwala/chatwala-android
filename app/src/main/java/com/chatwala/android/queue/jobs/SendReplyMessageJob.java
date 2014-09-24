@@ -16,14 +16,15 @@ import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.messages.ChatwalaSentMessage;
 import com.chatwala.android.messages.MessageState;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.FileUtils;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.VideoUtils;
 import com.chatwala.android.util.ZipUtils;
-import com.path.android.jobqueue.JobManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -44,15 +45,6 @@ public class SendReplyMessageJob extends CwJob {
     private double newMessageStartRecording;
     private String replyWriteUrl;
 
-    private boolean initted = false;
-    private boolean startSucceeded = false;
-    private boolean uploadUserThumbSucceeded = false;
-    private boolean uploadMessageThumbSucceeded = false;
-    private boolean putPreviouslyFailed = false;
-    private boolean putSucceeded = false;
-    private boolean finalizeSucceeded = false;
-    private boolean markRepliedSucceeded = false;
-
     public static CwJob post(ChatwalaMessage replyingToMessage, File recordedFile) {
         return new SendReplyMessageJob(replyingToMessage, recordedFile).postMeToQueue();
     }
@@ -60,7 +52,10 @@ public class SendReplyMessageJob extends CwJob {
     private SendReplyMessageJob() {}
 
     private SendReplyMessageJob(ChatwalaMessage replyingToMessage, File recordedFile) {
-        super(new CwJobParams(Priority.UPLOAD_IMMEDIATE_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.UPLOAD_IMMEDIATE_PRIORITY));
 
         this.replyingToMessage = replyingToMessage;
         this.recordedFile = recordedFile;
@@ -74,8 +69,8 @@ public class SendReplyMessageJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
-        if(!initted) {
+    public void performJob() throws Throwable {
+        if(!isSubsectionComplete("initted")) {
             if(!recordedFile.exists()) {
                 //TODO how'd this happen? Who do we alert about this?
                 Logger.w("Recorded file doesn't exist?");
@@ -89,10 +84,10 @@ public class SendReplyMessageJob extends CwJob {
             double replyingToStartRecording = replyingToMessage.getStartRecording() * 1000d;
             double replyingToVideoDuration = metadata.getDuration();
             newMessageStartRecording = (replyingToVideoDuration - replyingToStartRecording) / 1000d;
-            initted = true;
+            setSubsectionComplete("initted");
         }
 
-        if(!startSucceeded) {
+        if(!isSubsectionComplete("startSucceeded")) {
             StartReplyMessageRequest request = new StartReplyMessageRequest(newMessage, replyingToMessage, newMessageStartRecording);
             request.log();
             CwHttpResponse<JSONObject> response = HttpClient.getJSONObject(request);
@@ -100,19 +95,19 @@ public class SendReplyMessageJob extends CwJob {
             newMessage.populateFromMetadata(response.getData().getJSONObject("message_meta_data"));
             FileUtils.writeStringToFile(newMessage.getMessageMetadataString(), FileManager.getMetadataFromOutboxMessageDir(newMessage));
             replyWriteUrl = response.getData().getString("write_url");
-            startSucceeded = true;
+            setSubsectionComplete("startSucceeded");
         }
 
-        if(!uploadUserThumbSucceeded) {
+        if(!isSubsectionComplete("uploadUserThumbSucceeded")) {
             //create the user's profile pic if one doesn't exist
             if(!ImageManager.profilePicExists()) {
                 ImageManager.createProfilePicFromVideoFrame(recordedFile);
                 UploadUserProfilePicJob.post();
             }
-            uploadUserThumbSucceeded = true;
+            setSubsectionComplete("uploadUserThumbSucceeded");
         }
 
-        if(putPreviouslyFailed) {
+        if(isSubsectionComplete("putPreviouslyFailed")) {
             RenewWriteUrlForMessageRequest renewRequest = new RenewWriteUrlForMessageRequest(newMessage);
             renewRequest.log();
             CwHttpResponse<JSONObject> renewResponse = HttpClient.getJSONObject(renewRequest);
@@ -122,7 +117,7 @@ public class SendReplyMessageJob extends CwJob {
             }
             replyWriteUrl = renewResponse.getData().getString("write_url");
         }
-        if(!putSucceeded) {
+        if(!isSubsectionComplete("putSucceeded")) {
             if(!recordedFile.exists()) {
                 //TODO how'd this happen? Who do we alert about this?
                 Logger.w("Recorded file doesn't exist?");
@@ -143,16 +138,16 @@ public class SendReplyMessageJob extends CwJob {
                 }
             }
             catch(Throwable e) {
-                putPreviouslyFailed = true;
+                setSubsectionComplete("putPreviouslyFailed");
                 throw e;
             }
-            putSucceeded = true;
-            putPreviouslyFailed = false;
+            setSubsectionComplete("putSucceeded");
+            clearSubsection("putPreviouslyFailed");
             FileUtils.move(recordedFile, newMessage.getLocalVideoFile());
             FileUtils.move(metadata, newMessage.getLocalMetadataFile());
         }
 
-        if(!finalizeSucceeded) {
+        if(!isSubsectionComplete("finalizeSucceeded")) {
             CompleteReplyMessageRequest finalizeRequest = new CompleteReplyMessageRequest(newMessage);
             finalizeRequest.log();
             CwHttpResponse<JSONObject> finalizeResponse = HttpClient.getJSONObject(finalizeRequest);
@@ -168,25 +163,30 @@ public class SendReplyMessageJob extends CwJob {
 
             DatabaseHelper.get().getChatwalaSentMessageDao().createOrUpdate(newMessage);
 
-            finalizeSucceeded = true;
+            setSubsectionComplete("finalizeSucceeded");
         }
 
-        if(!uploadMessageThumbSucceeded) {
+        if(!isSubsectionComplete("uploadMessageThumbSucceeded")) {
             ImageManager.createMessageThumbFromVideoFrame(newMessage.getLocalVideoFile(), newMessage);
             UploadMessageThumbJob.post(newMessage);
-            uploadMessageThumbSucceeded = true;
+            setSubsectionComplete("uploadMessageThumbSucceeded");
         }
 
-        if(!markRepliedSucceeded) {
+        if(!isSubsectionComplete("markRepliedSucceeded")) {
             replyingToMessage.setMessageState(MessageState.REPLIED);
             DatabaseHelper.get().getChatwalaMessageDao().createOrUpdate(replyingToMessage);
-            EventBus.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
-            markRepliedSucceeded = true;
+            Events.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
+            setSubsectionComplete("markRepliedSucceeded");
         }
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getUploadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

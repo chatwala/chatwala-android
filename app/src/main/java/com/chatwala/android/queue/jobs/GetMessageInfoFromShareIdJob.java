@@ -2,18 +2,19 @@ package com.chatwala.android.queue.jobs;
 
 import com.chatwala.android.db.DatabaseHelper;
 import com.chatwala.android.events.ChatwalaMessageEvent;
-import com.chatwala.android.events.Event;
+import com.chatwala.android.events.Extras;
 import com.chatwala.android.http.CwHttpResponse;
 import com.chatwala.android.http.HttpClient;
 import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.GetMessageInfoFromShareIdRequest;
 import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.CwResult;
-import com.path.android.jobqueue.JobManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -33,7 +34,9 @@ public class GetMessageInfoFromShareIdJob extends CwJob {
     private GetMessageInfoFromShareIdJob() {}
 
     private GetMessageInfoFromShareIdJob(String shareId) {
-        super(shareId, new CwJobParams(Priority.API_IMMEDIATE_PRIORITY).requireNetwork());
+        super(shareId, new JobInitializer()
+                        .requiresNetwork(true)
+                        .priority(Priority.API_IMMEDIATE_PRIORITY));
         this.shareId = shareId;
     }
 
@@ -43,7 +46,7 @@ public class GetMessageInfoFromShareIdJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         GetMessageInfoFromShareIdRequest request = new GetMessageInfoFromShareIdRequest(shareId);
         request.log();
         CwHttpResponse<JSONObject> response = HttpClient.getJSONObject(request);
@@ -54,15 +57,15 @@ public class GetMessageInfoFromShareIdJob extends CwJob {
             }
             else {
                 if(response.getResponseCode() == 200) {
-                    EventBus.getDefault().post(new ChatwalaMessageEvent(getEventId(), Event.Extra.WALA_BAD_SHARE_ID));
+                    Events.getDefault().post(new ChatwalaMessageEvent(getEventId(), Extras.WALA_BAD_SHARE_ID));
                 }
                 else {
-                    EventBus.getDefault().post(new ChatwalaMessageEvent(getEventId(), Event.Extra.WALA_STILL_PUTTING));
+                    Events.getDefault().post(new ChatwalaMessageEvent(getEventId(), Extras.WALA_STILL_PUTTING));
                 }
             }
         }
         else if(response.getResponseCode() == 400) {
-            EventBus.getDefault().post(new ChatwalaMessageEvent(getEventId(), Event.Extra.WALA_BAD_SHARE_ID));
+            Events.getDefault().post(new ChatwalaMessageEvent(getEventId(), Extras.WALA_BAD_SHARE_ID));
         }
         else {
             throw new RuntimeException("Didn't get a 200 response code...try again");
@@ -73,7 +76,7 @@ public class GetMessageInfoFromShareIdJob extends CwJob {
         ChatwalaMessage message = DatabaseHelper.get().getChatwalaMessageDao().queryForId(messageId);
         if(message != null) {
             if(message.isInLocalStorage()) {
-                EventBus.getDefault().post(new ChatwalaMessageEvent(getEventId(), new CwResult<ChatwalaMessage>(message)));
+                Events.getDefault().post(new ChatwalaMessageEvent(getEventId(), new CwResult<ChatwalaMessage>(message)));
                 return;
             }
         }
@@ -87,12 +90,17 @@ public class GetMessageInfoFromShareIdJob extends CwJob {
     }
 
     @Override
-    protected void onCancel() {
-        EventBus.getDefault().post(new ChatwalaMessageEvent(getEventId(), Event.Extra.WALA_GENERIC_ERROR));
+    public void onCanceled() {
+        Events.getDefault().post(new ChatwalaMessageEvent(getEventId(), Extras.WALA_GENERIC_ERROR));
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getApiQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

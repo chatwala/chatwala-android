@@ -7,9 +7,10 @@ import com.chatwala.android.http.requests.RenewWriteUrlForMessageThumbRequest;
 import com.chatwala.android.http.requests.UploadMessageThumbnailRequest;
 import com.chatwala.android.messages.ChatwalaMessageBase;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -29,7 +30,10 @@ public class UploadMessageThumbJob extends CwJob {
     private UploadMessageThumbJob() {}
 
     private UploadMessageThumbJob(ChatwalaMessageBase message) {
-        super(new CwJobParams(Priority.UPLOAD_HIGH_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.UPLOAD_HIGH_PRIORITY));
         this.message = message;
     }
 
@@ -39,7 +43,7 @@ public class UploadMessageThumbJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         RenewWriteUrlForMessageThumbRequest renewRequest = new RenewWriteUrlForMessageThumbRequest(message);
         renewRequest.log();
         CwHttpResponse<JSONObject> renewResponse = HttpClient.getJSONObject(renewRequest);
@@ -59,7 +63,12 @@ public class UploadMessageThumbJob extends CwJob {
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getUploadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

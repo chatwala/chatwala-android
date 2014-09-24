@@ -1,9 +1,9 @@
 package com.chatwala.android.queue;
 
-import com.chatwala.android.events.Event;
-import com.path.android.jobqueue.Job;
-import com.path.android.jobqueue.JobManager;
-import com.path.android.jobqueue.Params;
+import com.chatwala.android.events.Ids;
+import com.staticbloc.jobs.BasicJob;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,7 +12,7 @@ import com.path.android.jobqueue.Params;
  * Time: 4:10 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class CwJob extends Job {
+public abstract class CwJob extends BasicJob {
     private String eventId;
 
     /**
@@ -20,15 +20,15 @@ public abstract class CwJob extends Job {
      * The only reason we need to do that if for GSON. This should never get called.
      */
     protected CwJob() {
-        super(new Params(1));
+        super(new JobInitializer());
     }
 
-    protected CwJob(CwJobParams params) {
-        this(Event.Id.UNUSED, params);
+    protected CwJob(JobInitializer initializer) {
+        this(Ids.UNUSED, initializer);
     }
 
-    protected CwJob(String eventId, CwJobParams params) {
-        super(params);
+    protected CwJob(String eventId, JobInitializer initializer) {
+        super(initializer);
         this.eventId = eventId;
     }
 
@@ -58,42 +58,26 @@ public abstract class CwJob extends Job {
      */
     public abstract String getUID();
 
-    protected abstract JobManager getQueueToPostTo();
+    protected abstract JobQueue getQueueToPostTo();
 
     protected CwJob postMeToQueue() {
-        JobQueues.postToQueue(this, getQueueToPostTo());
+        getQueueToPostTo().add(this);
         return this;
     }
 
-    protected void postMeToQueue(JobManager queueToPostTo) {
-        JobQueues.postToQueue(this, queueToPostTo);
+    protected void postMeToQueue(JobQueue queueToPostTo) {
+        queueToPostTo.add(this);
     }
 
-    protected JobManager getApiQueue() {
+    protected JobQueue getApiQueue() {
         return JobQueues.getApiQueue();
     }
 
-    protected JobManager getDownloadQueue() {
+    protected JobQueue getDownloadQueue() {
         return JobQueues.getDownloadQueue();
     }
 
-    protected JobManager getUploadQueue() {
+    protected JobQueue getUploadQueue() {
         return JobQueues.getUploadQueue();
-    }
-
-    @Override
-    public void onAdded() {}
-
-    @Override
-    protected void onCancel() {}
-
-    @Override
-    protected boolean shouldReRunOnThrowable(Throwable throwable) {
-        return true;
-    }
-
-    @Override
-    protected int getRetryLimit() {
-        return 10;
     }
 }

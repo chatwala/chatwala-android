@@ -4,7 +4,7 @@ import com.chatwala.android.events.BaseChatwalaMessageEvent;
 import com.chatwala.android.events.ChatwalaSentMessageEvent;
 import com.chatwala.android.messages.ChatwalaSentMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.Priority;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.util.CwResult;
 
 /**
@@ -23,7 +23,7 @@ public class GetSentWalaJob extends BaseGetWalaJob<ChatwalaSentMessage> {
         return new GetSentWalaJob(message, eventId).postMeToQueue();
     }
 
-    public static CwJob post(ChatwalaSentMessage message, String eventId, Priority priority) {
+    public static CwJob post(ChatwalaSentMessage message, String eventId, int priority) {
         return new GetSentWalaJob(message, eventId, priority).postMeToQueue();
     }
 
@@ -33,7 +33,7 @@ public class GetSentWalaJob extends BaseGetWalaJob<ChatwalaSentMessage> {
         super(eventId, message);
     }
 
-    private GetSentWalaJob(ChatwalaSentMessage message, String eventId, Priority priority) {
+    private GetSentWalaJob(ChatwalaSentMessage message, String eventId, int priority) {
         super(eventId, message, priority);
     }
 
@@ -54,4 +54,9 @@ public class GetSentWalaJob extends BaseGetWalaJob<ChatwalaSentMessage> {
 
     @Override
     protected void deleteMessage() {}
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
+    }
 }

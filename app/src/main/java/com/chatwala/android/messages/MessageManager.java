@@ -6,7 +6,7 @@ import com.chatwala.android.camera.VideoMetadata;
 import com.chatwala.android.db.DatabaseHelper;
 import com.chatwala.android.events.ChatwalaMessageEvent;
 import com.chatwala.android.events.DrawerUpdateEvent;
-import com.chatwala.android.events.Event;
+import com.chatwala.android.events.Extras;
 import com.chatwala.android.http.CwHttpResponse;
 import com.chatwala.android.http.HttpClient;
 import com.chatwala.android.http.NetworkLogger;
@@ -16,7 +16,7 @@ import com.chatwala.android.queue.jobs.*;
 import com.chatwala.android.util.CwResult;
 import com.chatwala.android.util.Logger;
 import com.chatwala.android.util.VideoUtils;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -128,11 +128,11 @@ public class MessageManager {
                 try {
                     ChatwalaMessage message = DatabaseHelper.get().getChatwalaMessageDao().queryForId(messageId);
                     if(message != null && message.isInLocalStorage()) {
-                        EventBus.getDefault().post(new ChatwalaMessageEvent(messageId, new CwResult<ChatwalaMessage>(message)));
+                        Events.getDefault().post(new ChatwalaMessageEvent(messageId, new CwResult<ChatwalaMessage>(message)));
                     }
                     else {
                         if(message == null) {
-                            EventBus.getDefault().post(new ChatwalaMessageEvent(messageId, Event.Extra.WALA_GENERIC_ERROR));
+                            Events.getDefault().post(new ChatwalaMessageEvent(messageId, Extras.WALA_GENERIC_ERROR));
                         }
                         else {
                             GetWalaJob.post(message, false, Priority.DOWNLOAD_IMMEDIATE_PRIORITY);
@@ -141,7 +141,7 @@ public class MessageManager {
                 }
                 catch(Exception e) {
                     Logger.e("Got an error trying to get a wala", e);
-                    EventBus.getDefault().post(new ChatwalaMessageEvent(messageId, Event.Extra.WALA_GENERIC_ERROR));
+                    Events.getDefault().post(new ChatwalaMessageEvent(messageId, Extras.WALA_GENERIC_ERROR));
                 }
 
             }
@@ -165,7 +165,7 @@ public class MessageManager {
                     try {
                         message.setMessageState(MessageState.READ);
                         message.getDao().update(message);
-                        EventBus.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
+                        Events.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
                     }
                     catch(Exception e) {
                         Logger.e("There was an error marking a message as unread", e);
@@ -182,7 +182,7 @@ public class MessageManager {
                 try {
                     DatabaseHelper.get().getChatwalaMessageDao().updateRaw("UPDATE message SET messageState = 'READ'");
                     CwNotificationManager.removeNewMessagesNotification();
-                    EventBus.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.REFRESH_EVENT_EXTRA));
+                    Events.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.REFRESH_EVENT_EXTRA));
                 } catch(Exception ignore){}
             }
         });

@@ -8,18 +8,18 @@ import com.chatwala.android.http.HttpClient;
 import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.GetUserImageRequest;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.BitmapUtils;
 import com.chatwala.android.util.Logger;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpResponse;
-import com.path.android.jobqueue.JobManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,7 +36,6 @@ public class GetUserImageJob extends CwJob {
     private File localImage;
     private File localThumb;
     private File tmpImageFile = null;
-    private transient Throwable exceptionToThrow;
 
     public static CwJob post(String userId, String url) {
         return new GetUserImageJob(userId, url).postMeToQueue();
@@ -45,7 +44,10 @@ public class GetUserImageJob extends CwJob {
     private GetUserImageJob() {}
 
     private GetUserImageJob(String userId, String url) {
-        super(new CwJobParams(Priority.DOWNLOAD_LOW_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.DOWNLOAD_LOW_PRIORITY));
 
         this.userId = userId;
         this.url = url;
@@ -60,7 +62,7 @@ public class GetUserImageJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         if(tmpImageFile != null && tmpImageFile.exists()) {
             handleDownloadedFile();
             return;
@@ -76,17 +78,13 @@ public class GetUserImageJob extends CwJob {
         or if it's been cached for more than CACHE_EXPIRE_MINUTES.
         */
         if(!localImage.exists() || System.currentTimeMillis() - localImage.lastModified() > 1000 * 60 * CACHE_EXPIRE_MINUTES) {
-            final Semaphore waitForResponse = new Semaphore(1, true);
-            waitForResponse.acquire();
-
             GetUserImageRequest request = new GetUserImageRequest(userId, url);
             request.log();
             HttpClient.requestFile(request, tmpImageFile.getAbsolutePath(), new AsyncHttpClient.FileCallback() {
                 @Override
                 public void onCompleted(Exception e, AsyncHttpResponse rawResponse, File file) {
                     if (tmpImageFile == null || !tmpImageFile.exists()) {
-                        setExceptionToThrow(new RuntimeException("Didn't get downloaded file"));
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(new RuntimeException("Didn't get downloaded file"));
                         return;
                     }
 
@@ -94,8 +92,7 @@ public class GetUserImageJob extends CwJob {
                         if (tmpImageFile.exists()) {
                             tmpImageFile.delete();
                         }
-                        setExceptionToThrow(e);
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(e);
                         return;
                     }
 
@@ -107,8 +104,7 @@ public class GetUserImageJob extends CwJob {
                         if (tmpImageFile.exists()) {
                             tmpImageFile.delete();
                         }
-                        setExceptionToThrow(new FileNotFoundException("Got a 404 when downloading a user thumb"));
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(new FileNotFoundException("Got a 404 when downloading a user thumb"));
                         return;
                     }
 
@@ -122,7 +118,7 @@ public class GetUserImageJob extends CwJob {
                         if(localThumb.exists()) {
                             localThumb.setLastModified(System.currentTimeMillis());
                         }
-                        waitForResponse.release();
+                        notifyAsyncTaskDone();
                         return;
                     }
 
@@ -130,8 +126,7 @@ public class GetUserImageJob extends CwJob {
                         if (tmpImageFile.exists()) {
                             tmpImageFile.delete();
                         }
-                        setExceptionToThrow(new FileNotFoundException("Got an empty file"));
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(new FileNotFoundException("Got an empty file"));
                         return;
                     }
 
@@ -140,19 +135,13 @@ public class GetUserImageJob extends CwJob {
                             ImageManager.setUserImageLastModified(userId, response.getLastModified());
                         }
                         handleDownloadedFile();
+                        notifyAsyncTaskDone();
                     } catch (Throwable innerE) {
                         Logger.e("There was an error handling the downloaded user image", innerE);
-                        setExceptionToThrow(innerE);
-                    } finally {
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(innerE);
                     }
                 }
             }, HttpClient.SHORTER_FILE_TIMEOUT);
-
-            waitForResponse.acquire();
-            if(exceptionToThrow != null) {
-                throw exceptionToThrow;
-            }
         }
     }
 
@@ -162,15 +151,16 @@ public class GetUserImageJob extends CwJob {
         tmpImageFile.delete();
         localImage.setLastModified(System.currentTimeMillis());
         ImageManager.createDrawerThumbFromFile(localImage, FileManager.getUserThumb(userId));
-        EventBus.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.REFRESH_EVENT_EXTRA));
-    }
-
-    private void setExceptionToThrow(Throwable exceptionToThrow) {
-        this.exceptionToThrow = exceptionToThrow;
+        Events.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.REFRESH_EVENT_EXTRA));
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getDownloadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

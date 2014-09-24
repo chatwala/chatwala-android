@@ -7,19 +7,19 @@ import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.GetUserImageRequest;
 import com.chatwala.android.http.requests.GetUserProfilePicReadUrlRequest;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.users.UserManager;
 import com.chatwala.android.util.BitmapUtils;
 import com.chatwala.android.util.Logger;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpResponse;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,14 +34,16 @@ public class GetUserProfilePictureJob extends CwJob {
     private String readUrl;
     private File localImage;
     private File tmpImageFile = null;
-    private transient Throwable exceptionToThrow;
 
     public static CwJob post() {
         return new GetUserProfilePictureJob().postMeToQueue();
     }
 
     private GetUserProfilePictureJob() {
-        super(new CwJobParams(Priority.DOWNLOAD_LOW_PRIORITY).requireNetwork());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .retryLimit(3)
+                .priority(Priority.DOWNLOAD_LOW_PRIORITY));
         this.localImage = FileManager.getUserProfilePic();
         this.tmpImageFile = FileManager.getTempImageFile();
     }
@@ -52,7 +54,7 @@ public class GetUserProfilePictureJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         if(tmpImageFile != null && tmpImageFile.exists()) {
             handleDownloadedFile();
             return;
@@ -76,17 +78,13 @@ public class GetUserProfilePictureJob extends CwJob {
         }
 
         if(!localImage.exists() || System.currentTimeMillis() - localImage.lastModified() > 1000 * 60 * CACHE_EXPIRE_MINUTES) {
-            final Semaphore waitForResponse = new Semaphore(1, true);
-            waitForResponse.acquire();
-
             GetUserImageRequest request = new GetUserImageRequest(UserManager.getUserId(), readUrl, UserManager.getUserProfilePicLastModified());
             request.log();
             HttpClient.requestFile(request, tmpImageFile.getAbsolutePath(), new AsyncHttpClient.FileCallback() {
                 @Override
                 public void onCompleted(Exception e, AsyncHttpResponse rawResponse, File file) {
                     if (tmpImageFile == null || !tmpImageFile.exists()) {
-                        setExceptionToThrow(new RuntimeException("Didn't get downloaded file"));
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(new RuntimeException("Didn't get downloaded file"));
                         return;
                     }
 
@@ -94,8 +92,7 @@ public class GetUserProfilePictureJob extends CwJob {
                         if (tmpImageFile.exists()) {
                             tmpImageFile.delete();
                         }
-                        setExceptionToThrow(e);
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(e);
                         return;
                     }
 
@@ -108,7 +105,7 @@ public class GetUserProfilePictureJob extends CwJob {
                             tmpImageFile.delete();
                         }
                         //just let it go...most likely this is a new user who doesn't have a profile pic yet
-                        waitForResponse.release();
+                        notifyAsyncTaskDone();
                         return;
                     }
 
@@ -119,7 +116,7 @@ public class GetUserProfilePictureJob extends CwJob {
                         if(localImage.exists()) {
                             localImage.setLastModified(System.currentTimeMillis());
                         }
-                        waitForResponse.release();
+                        notifyAsyncTaskDone();
                         return;
                     }
 
@@ -127,8 +124,7 @@ public class GetUserProfilePictureJob extends CwJob {
                         if (tmpImageFile.exists()) {
                             tmpImageFile.delete();
                         }
-                        setExceptionToThrow(new FileNotFoundException("Got an empty file"));
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(new FileNotFoundException("Got an empty file"));
                         return;
                     }
 
@@ -137,19 +133,13 @@ public class GetUserProfilePictureJob extends CwJob {
                             UserManager.setUserProfilePicLastModified(response.getLastModified());
                         }
                         handleDownloadedFile();
+                        notifyAsyncTaskDone();
                     } catch (Throwable innerE) {
                         Logger.e("There was an error handling the downloaded user's profile pic", innerE);
-                        setExceptionToThrow(innerE);
-                    } finally {
-                        waitForResponse.release();
+                        raiseThrowableFromAsyncTask(innerE);
                     }
                 }
             }, HttpClient.SHORTER_FILE_TIMEOUT);
-
-            waitForResponse.acquire();
-            if(exceptionToThrow != null) {
-                throw exceptionToThrow;
-            }
         }
     }
 
@@ -160,17 +150,13 @@ public class GetUserProfilePictureJob extends CwJob {
         localImage.setLastModified(System.currentTimeMillis());
     }
 
-    private void setExceptionToThrow(Throwable exceptionToThrow) {
-        this.exceptionToThrow = exceptionToThrow;
-    }
-
     @Override
-    public int getRetryLimit() {
-        return 3;
-    }
-
-    @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getDownloadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

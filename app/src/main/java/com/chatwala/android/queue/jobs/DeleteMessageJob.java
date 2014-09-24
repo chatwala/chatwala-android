@@ -8,10 +8,11 @@ import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.DeleteMessageRequest;
 import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
-import com.path.android.jobqueue.JobManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -24,11 +25,6 @@ import org.json.JSONObject;
 public class DeleteMessageJob extends CwJob {
     private ChatwalaMessage message;
 
-    private boolean markedAsDeleted = false;
-    private boolean deleteRequestSucceeded = false;
-    private boolean filesActuallyDeleted = false;
-    private boolean messageDeletedFromDatabase = false;
-
     public static CwJob post(ChatwalaMessage message) {
         return new DeleteMessageJob(message).postMeToQueue();
     }
@@ -36,7 +32,10 @@ public class DeleteMessageJob extends CwJob {
     private DeleteMessageJob() {}
 
     private DeleteMessageJob(ChatwalaMessage message) {
-        super(new CwJobParams(Priority.API_MID_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.API_MID_PRIORITY));
         this.message = message;
     }
 
@@ -46,14 +45,14 @@ public class DeleteMessageJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
-        if(!markedAsDeleted) {
+    public void performJob() throws Throwable {
+        if(!isSubsectionComplete("markedAsDeleted")) {
             message.setDeleted(true);
             message.getDao().update(message);
-            markedAsDeleted = true;
+            setSubsectionComplete("markedAsDeleted");
         }
 
-        if(!deleteRequestSucceeded) {
+        if(!isSubsectionComplete("deleteRequestSucceeded")) {
             CwHttpRequest request = new DeleteMessageRequest(message);
             request.log();
             CwHttpResponse<JSONObject> response = HttpClient.getJSONObject(request);
@@ -61,24 +60,29 @@ public class DeleteMessageJob extends CwJob {
             if(response.getResponseCode() != 200) {
                 throw new RuntimeException("The delete call did not return a 200");
             }
-            deleteRequestSucceeded = true;
+            setSubsectionComplete("deleteRequestSucceeded");
         }
 
-        if(!filesActuallyDeleted) {
+        if(!isSubsectionComplete("filesActuallyDeleted")) {
             message.deleteAllLocalFiles();
-            filesActuallyDeleted = true;
+            setSubsectionComplete("filesActuallyDeleted");
         }
 
-        if(!messageDeletedFromDatabase) {
+        if(!isSubsectionComplete("messageDeletedFromDatabase")) {
             message.getDao().delete(message);
-            messageDeletedFromDatabase = true;
+            setSubsectionComplete("messageDeletedFromDatabase");
         }
 
-        EventBus.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
+        Events.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getApiQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

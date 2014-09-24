@@ -16,7 +16,6 @@ import com.chatwala.android.queue.jobs.GetUserSentboxJob;
 import com.chatwala.android.queue.jobs.KillswitchJob;
 import com.chatwala.android.queue.jobs.RegisterGcmTokenJob;
 import com.chatwala.android.sms.SmsManager;
-import com.chatwala.android.sms.SmsScanner;
 import com.chatwala.android.users.UserManager;
 import com.chatwala.android.util.CwAnalytics;
 import com.chatwala.android.util.DefaultUncaughtExceptionHandler;
@@ -25,10 +24,8 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.koushikdutta.ion.Ion;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -121,7 +118,7 @@ public class ChatwalaApplication extends Application implements Application.Acti
     }
 
     private void scanForSmsLinks() {
-        List<String> scannedSmsLinks = SmsScanner.getRecentChatwalaSmsLinks(getApplicationContext(), 1L, TimeUnit.DAYS);
+        /*List<String> scannedSmsLinks = SmsScanner.getRecentChatwalaSmsLinks(getApplicationContext(), 1L, TimeUnit.DAYS);
         if(!scannedSmsLinks.isEmpty()) {
             AppPrefs.setFirstLink(scannedSmsLinks.get(0));
             for(String link : scannedSmsLinks) {
@@ -129,7 +126,7 @@ public class ChatwalaApplication extends Application implements Application.Acti
                     MessageManager.getInstance().startGetMessageForShareId(link);
                 }
             }
-        }
+        }*/
     }
 
     private void initIon() {

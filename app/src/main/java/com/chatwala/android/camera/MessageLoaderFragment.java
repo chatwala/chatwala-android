@@ -2,11 +2,14 @@ package com.chatwala.android.camera;
 
 import android.os.Bundle;
 import android.widget.Toast;
+import com.chatwala.android.R;
 import com.chatwala.android.events.ChatwalaMessageEvent;
-import com.chatwala.android.events.Event;
+import com.chatwala.android.events.Extras;
 import com.chatwala.android.events.ProgressEvent;
 import com.chatwala.android.messages.MessageManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.events.MethodRegistration;
+import com.staticbloc.events.RunType;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,7 +36,9 @@ public class MessageLoaderFragment extends ChatwalaFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        EventBus.getDefault().register(this);
+        Events.getDefault().subscribe(this,
+                new MethodRegistration<ProgressEvent>(ProgressEvent.class, "onMessageLoadProgressEvent", RunType.MAIN),
+                new MethodRegistration<ChatwalaMessageEvent>(ChatwalaMessageEvent.class, "onMessageReadyEvent", RunType.MAIN));
 
         messageVal = getArguments().getString("messageVal");
 
@@ -47,13 +52,13 @@ public class MessageLoaderFragment extends ChatwalaFragment {
         getCwActivity().showMessageLoadingTimer();
     }
 
-    public void onEventMainThread(ProgressEvent e) {
+    public void onMessageLoadProgressEvent(ProgressEvent e) {
         if(e.getId().equals(messageVal)) {
             getCwActivity().setMessageLoadingTimerProgress(e.getProgress());
         }
     }
 
-    public void onEventMainThread(ChatwalaMessageEvent e) {
+    public void onMessageReadyEvent(ChatwalaMessageEvent e) {
         if(e.getId().equals(messageVal)) {
             if(e.isSuccess()) {
                 getCwActivity().showConversationReplier(e.getResult());
@@ -63,10 +68,10 @@ public class MessageLoaderFragment extends ChatwalaFragment {
                     getCwActivity().hideMessageLoadingTimer();
                 }
                 getCwActivity().showConversationStarter();
-                if(e.getExtra() == Event.Extra.WALA_BAD_SHARE_ID) {
+                if(e.getExtra() == Extras.WALA_BAD_SHARE_ID) {
                     Toast.makeText(getActivity(), "This is not a valid message", Toast.LENGTH_LONG).show();
                 }
-                else if(e.getExtra() == Event.Extra.WALA_STILL_PUTTING) {
+                else if(e.getExtra() == Extras.WALA_STILL_PUTTING) {
                     Toast.makeText(getActivity(), "Your message is still downloading", Toast.LENGTH_LONG).show();
                 }
                 else {
@@ -80,11 +85,7 @@ public class MessageLoaderFragment extends ChatwalaFragment {
     public void onPause() {
         super.onPause();
 
-        //this may crash if registration did not go through. just be safe
-        try {
-            EventBus.getDefault().unregister(this);
-        }
-        catch (Throwable ignore) {}
+        Events.getDefault().unsubscribe(this);
     }
 
     @Override

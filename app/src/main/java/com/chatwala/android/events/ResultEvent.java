@@ -1,6 +1,7 @@
 package com.chatwala.android.events;
 
 import com.chatwala.android.util.CwResult;
+import com.staticbloc.events.Event;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,7 +10,7 @@ import com.chatwala.android.util.CwResult;
  * Time: 3:32 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class ResultEvent<T> extends Event {
+public abstract class ResultEvent<T> extends Event<Integer> {
     private CwResult<T> result;
 
     public ResultEvent(String id, CwResult<T> result) {

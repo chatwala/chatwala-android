@@ -1,5 +1,7 @@
 package com.chatwala.android.events;
 
+import com.staticbloc.events.Event;
+
 /**
  * Created with IntelliJ IDEA.
  * User: eygraber
@@ -7,9 +9,8 @@ package com.chatwala.android.events;
  * Time: 6:20 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ProgressEvent extends Event {
+public class ProgressEvent extends Event<Object> {
     private int progress;
-
 
     public ProgressEvent(String id, int progress) {
         super(id);

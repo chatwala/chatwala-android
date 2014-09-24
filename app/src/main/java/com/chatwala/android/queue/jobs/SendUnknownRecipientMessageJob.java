@@ -12,11 +12,12 @@ import com.chatwala.android.http.requests.StartUnknownRecipientMessageRequest;
 import com.chatwala.android.http.requests.UploadWalaRequest;
 import com.chatwala.android.messages.ChatwalaSentMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.FileUtils;
 import com.chatwala.android.util.ZipUtils;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,14 +33,6 @@ import java.io.File;
 public class SendUnknownRecipientMessageJob extends CwJob {
     private File recordedFile;
     private String messageId;
-
-    private boolean moveToOutboxFinished = false;
-    private boolean startSucceeded = false;
-    private boolean uploadUserThumbSucceeded = false;
-    private boolean uploadMessageThumbSucceeded = false;
-    private boolean putPreviouslyFailed = false;
-    private boolean putSucceeded = false;
-    private boolean finalizeSucceeded = false;
 
     private ChatwalaSentMessage message = null;
     private String messageWriteUrl = null;
@@ -82,7 +75,10 @@ public class SendUnknownRecipientMessageJob extends CwJob {
     private SendUnknownRecipientMessageJob() {}
 
     private SendUnknownRecipientMessageJob(File recordedFile, String messageId) {
-        super(new CwJobParams(Priority.UPLOAD_IMMEDIATE_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.UPLOAD_IMMEDIATE_PRIORITY));
 
         this.recordedFile = recordedFile;
         this.messageId = messageId;
@@ -95,19 +91,19 @@ public class SendUnknownRecipientMessageJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         if(message == null) {
             message = new ChatwalaSentMessage(messageId);
         }
 
-        if(!moveToOutboxFinished) {
+        if(!isSubsectionComplete("moveToOutboxFinished")) {
             File outboxVideoFile = message.getOutboxVideoFile();
             FileUtils.move(recordedFile, outboxVideoFile);
             recordedFile = outboxVideoFile;
-            moveToOutboxFinished = true;
+            setSubsectionComplete("moveToOutboxFinished");
         }
 
-        if(!startSucceeded) {
+        if(!isSubsectionComplete("startSucceeded")) {
             StartUnknownRecipientMessageRequest startRequest = new StartUnknownRecipientMessageRequest(messageId);
             startRequest.log();
             CwHttpResponse<JSONObject> startResponse = HttpClient.getJSONObject(startRequest);
@@ -119,19 +115,19 @@ public class SendUnknownRecipientMessageJob extends CwJob {
             message.populateFromMetadata(response.getMetadata());
             FileUtils.writeStringToFile(message.getMessageMetadataString(), FileManager.getMetadataFromOutboxMessageDir(message));
             messageWriteUrl = response.getMessageWriteUrl();
-            startSucceeded = true;
+            setSubsectionComplete("startSucceeded");
         }
 
-        if(!uploadUserThumbSucceeded) {
+        if(!isSubsectionComplete("uploadUserThumbSucceeded")) {
             //create the user's profile pic if one doesn't exist
             if(!ImageManager.profilePicExists()) {
                 ImageManager.createProfilePicFromVideoFrame(recordedFile);
                 UploadUserProfilePicJob.post();
             }
-            uploadUserThumbSucceeded = true;
+            setSubsectionComplete("uploadUserThumbSucceeded");
         }
 
-        if(putPreviouslyFailed) {
+        if(isSubsectionComplete("putPreviouslyFailed")) {
             RenewWriteUrlForMessageRequest renewRequest = new RenewWriteUrlForMessageRequest(message);
             renewRequest.log();
             CwHttpResponse<JSONObject> renewResponse = HttpClient.getJSONObject(renewRequest);
@@ -141,7 +137,7 @@ public class SendUnknownRecipientMessageJob extends CwJob {
             }
             messageWriteUrl = renewResponse.getData().getString("write_url");
         }
-        if(!putSucceeded) {
+        if(!isSubsectionComplete("putSucceeded")) {
             if(!recordedFile.exists()) {
                 //TODO how'd this happen? Who do we alert about this?
                 return;
@@ -161,16 +157,16 @@ public class SendUnknownRecipientMessageJob extends CwJob {
                 }
             }
             catch(Throwable e) {
-                putPreviouslyFailed = true;
+                setSubsectionComplete("putPreviouslyFailed");
                 throw e;
             }
-            putSucceeded = true;
-            putPreviouslyFailed = false;
+            setSubsectionComplete("putSucceeded");
+            clearSubsection("putPreviouslyFailed");
             FileUtils.move(recordedFile, message.getLocalVideoFile());
             FileUtils.move(metadata, message.getLocalMetadataFile());
         }
 
-        if(!finalizeSucceeded) {
+        if(!isSubsectionComplete("finalizeSucceeded")) {
             CompleteUnknownRecipientMessageRequest finalizeRequest = new CompleteUnknownRecipientMessageRequest(message);
             finalizeRequest.log();
             CwHttpResponse<JSONObject> finalizeResponse = HttpClient.getJSONObject(finalizeRequest);
@@ -184,18 +180,23 @@ public class SendUnknownRecipientMessageJob extends CwJob {
 
             DatabaseHelper.get().getChatwalaSentMessageDao().createOrUpdate(message);
 
-            finalizeSucceeded = true;
+            setSubsectionComplete("finalizeSucceeded");
         }
 
-        if(!uploadMessageThumbSucceeded) {
+        if(!isSubsectionComplete("uploadMessageThumbSucceeded")) {
             ImageManager.createMessageThumbFromVideoFrame(message.getLocalVideoFile(), message);
             UploadMessageThumbJob.post(message);
-            uploadMessageThumbSucceeded = true;
+            setSubsectionComplete("uploadMessageThumbSucceeded");
         }
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getUploadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

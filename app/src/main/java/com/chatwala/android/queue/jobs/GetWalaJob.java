@@ -5,7 +5,7 @@ import com.chatwala.android.events.BaseChatwalaMessageEvent;
 import com.chatwala.android.events.ChatwalaMessageEvent;
 import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.Priority;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.util.CwResult;
 
 /**
@@ -26,11 +26,11 @@ public class GetWalaJob extends BaseGetWalaJob<ChatwalaMessage> {
         return new GetWalaJob(message, createNotificationOnDownload, eventId).postMeToQueue();
     }
 
-    public static CwJob post(ChatwalaMessage message, boolean createNotificationOnDownload, Priority priority) {
+    public static CwJob post(ChatwalaMessage message, boolean createNotificationOnDownload, int priority) {
         return new GetWalaJob(message, createNotificationOnDownload, priority).postMeToQueue();
     }
 
-    public static CwJob post(ChatwalaMessage message, boolean createNotificationOnDownload, String eventId, Priority priority) {
+    public static CwJob post(ChatwalaMessage message, boolean createNotificationOnDownload, String eventId, int priority) {
         return new GetWalaJob(message, createNotificationOnDownload, eventId, priority).postMeToQueue();
     }
 
@@ -45,11 +45,11 @@ public class GetWalaJob extends BaseGetWalaJob<ChatwalaMessage> {
         this.createNotificationOnDownload = createNotificationOnDownload;
     }
 
-    private GetWalaJob(ChatwalaMessage message, boolean createNotificationOnDownload, Priority priority) {
+    private GetWalaJob(ChatwalaMessage message, boolean createNotificationOnDownload, int priority) {
         this(message, createNotificationOnDownload, message.getMessageId(), priority);
     }
 
-    private GetWalaJob(ChatwalaMessage message, boolean createNotificationOnDownload, String eventId, Priority priority) {
+    private GetWalaJob(ChatwalaMessage message, boolean createNotificationOnDownload, String eventId, int priority) {
         super(eventId, message, priority);
         this.createNotificationOnDownload = createNotificationOnDownload;
     }
@@ -74,5 +74,10 @@ public class GetWalaJob extends BaseGetWalaJob<ChatwalaMessage> {
     @Override
     protected void deleteMessage() {
         DeleteMessageJob.post(getMessage());
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

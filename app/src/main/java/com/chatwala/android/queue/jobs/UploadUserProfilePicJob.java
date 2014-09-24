@@ -6,9 +6,10 @@ import com.chatwala.android.http.NetworkLogger;
 import com.chatwala.android.http.requests.GetUserProfilePictureWriteUrlRequest;
 import com.chatwala.android.http.requests.UploadUserProfilePicRequest;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
-import com.path.android.jobqueue.JobManager;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 /**
@@ -24,7 +25,10 @@ public class UploadUserProfilePicJob extends CwJob {
     }
 
     private UploadUserProfilePicJob() {
-        super(new CwJobParams(Priority.UPLOAD_MID_PRIORITY).requireNetwork().persist());
+        super(new JobInitializer()
+                .requiresNetwork(true)
+                .isPersistent(true)
+                .priority(Priority.UPLOAD_MID_PRIORITY));
     }
 
     @Override
@@ -33,7 +37,7 @@ public class UploadUserProfilePicJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public void performJob() throws Throwable {
         GetUserProfilePictureWriteUrlRequest renewRequest = new GetUserProfilePictureWriteUrlRequest();
         renewRequest.log();
         CwHttpResponse<JSONObject> renewResponse = HttpClient.getJSONObject(renewRequest);
@@ -53,7 +57,12 @@ public class UploadUserProfilePicJob extends CwJob {
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getUploadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

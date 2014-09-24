@@ -2,19 +2,20 @@ package com.chatwala.android.queue.jobs;
 
 import com.chatwala.android.db.DatabaseHelper;
 import com.chatwala.android.events.ChatwalaMessageThreadEvent;
-import com.chatwala.android.events.Event;
+import com.chatwala.android.events.Extras;
 import com.chatwala.android.messages.ChatwalaMessage;
 import com.chatwala.android.messages.ChatwalaMessageThreadConversation;
 import com.chatwala.android.messages.ChatwalaSentMessage;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.CwResult;
 import com.chatwala.android.util.Logger;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.path.android.jobqueue.JobManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,9 +34,6 @@ public class GetConversationJob extends CwJob {
     private ChatwalaMessage message;
     private ChatwalaMessageThreadConversation conversation;
 
-    private boolean ranQuery = false;
-    private boolean configuredOffsets = false;
-
     public static CwJob post(ChatwalaMessage message) {
         return new GetConversationJob(message).postMeToQueue();
     }
@@ -44,7 +42,9 @@ public class GetConversationJob extends CwJob {
 
     private GetConversationJob(ChatwalaMessage message) {
         super(String.format(EVENT_ID_TEMPLATE, message.getMessageId()),
-                new CwJobParams(Priority.DOWNLOAD_IMMEDIATE_PRIORITY).requireNetwork());
+                new JobInitializer()
+                        .requiresNetwork(true)
+                        .priority(Priority.DOWNLOAD_IMMEDIATE_PRIORITY));
 
         this.message = message;
         this.conversation = new ChatwalaMessageThreadConversation(message);
@@ -57,7 +57,7 @@ public class GetConversationJob extends CwJob {
     }
 
     @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getDownloadQueue();
     }
 
@@ -66,8 +66,8 @@ public class GetConversationJob extends CwJob {
     }
 
     @Override
-    public void onRun() throws Throwable {
-        if(!ranQuery) {
+    public void performJob() throws Throwable {
+        if(!isSubsectionComplete("ranQuery")) {
             Dao<ChatwalaSentMessage, String> sentDao = DatabaseHelper.get().getChatwalaSentMessageDao();
             QueryBuilder<ChatwalaSentMessage, String> conversationQuery = sentDao.queryBuilder();
             conversationQuery.setWhere(conversationQuery.where()
@@ -78,7 +78,7 @@ public class GetConversationJob extends CwJob {
             List<ChatwalaSentMessage> sentMessages = conversationQuery.query();
             if (message.getThreadIndex() > 2 && sentMessages.size() != 2) {
                 Logger.w("Couldn't get two sent messages for the conversation");
-                EventBus.getDefault().post(new ChatwalaMessageThreadEvent(getEventId(), Event.Extra.INVALID_CONVERSATION));
+                Events.getDefault().post(new ChatwalaMessageThreadEvent(getEventId(), Extras.INVALID_CONVERSATION));
                 return;
             }
 
@@ -98,7 +98,7 @@ public class GetConversationJob extends CwJob {
             sentMessages = new ArrayList<ChatwalaSentMessage>(dupes.values());
 
             conversation.getSentMessages().addAll(sentMessages);
-            ranQuery = true;
+            setSubsectionComplete("ranQuery");
         }
 
         /**
@@ -116,7 +116,7 @@ public class GetConversationJob extends CwJob {
             }
         }
 
-        if(!configuredOffsets) {
+        if(!isSubsectionComplete("configuredOffsets")) {
             conversation.getMessageOffsets().add(0);
             if(message.getThreadIndex() == 0) {
                 conversation.getSentMessageOffsets().add(0);
@@ -130,7 +130,7 @@ public class GetConversationJob extends CwJob {
                 conversation.getSentMessageOffsets().add(firstOffset);
                 conversation.getSentMessageOffsets().add(0);
             }
-            configuredOffsets = true;
+            setSubsectionComplete("configuredOffsets");
         }
 
         //TODO spinning?
@@ -156,6 +156,11 @@ public class GetConversationJob extends CwJob {
             }
         }
 
-        EventBus.getDefault().post(new ChatwalaMessageThreadEvent(getEventId(), new CwResult<ChatwalaMessageThreadConversation>(conversation)));
+        Events.getDefault().post(new ChatwalaMessageThreadEvent(getEventId(), new CwResult<ChatwalaMessageThreadConversation>(conversation)));
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }

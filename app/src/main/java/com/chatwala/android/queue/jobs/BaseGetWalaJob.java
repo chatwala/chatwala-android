@@ -2,7 +2,7 @@ package com.chatwala.android.queue.jobs;
 
 import com.chatwala.android.events.BaseChatwalaMessageEvent;
 import com.chatwala.android.events.DrawerUpdateEvent;
-import com.chatwala.android.events.Event;
+import com.chatwala.android.events.Extras;
 import com.chatwala.android.events.ProgressEvent;
 import com.chatwala.android.http.CwHttpResponse;
 import com.chatwala.android.http.HttpClient;
@@ -12,7 +12,7 @@ import com.chatwala.android.messages.ChatwalaMessageBase;
 import com.chatwala.android.messages.MessageMetadataKeys;
 import com.chatwala.android.messages.MessageState;
 import com.chatwala.android.queue.CwJob;
-import com.chatwala.android.queue.CwJobParams;
+import com.chatwala.android.queue.NetworkConnectionChecker;
 import com.chatwala.android.queue.Priority;
 import com.chatwala.android.util.CwResult;
 import com.chatwala.android.util.FileUtils;
@@ -21,12 +21,12 @@ import com.chatwala.android.util.ZipUtils;
 import com.j256.ormlite.dao.Dao;
 import com.koushikdutta.async.http.AsyncHttpClient;
 import com.koushikdutta.async.http.AsyncHttpResponse;
-import com.path.android.jobqueue.JobManager;
-import de.greenrobot.event.EventBus;
+import com.staticbloc.events.Events;
+import com.staticbloc.jobs.JobInitializer;
+import com.staticbloc.jobs.JobQueue;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,7 +38,7 @@ import java.util.concurrent.Semaphore;
 public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJob {
     private T message;
     private File downloadedFile = null;
-    private transient Throwable exceptionToThrow;
+    private Events events = Events.getDefault();
 
     protected BaseGetWalaJob() {}
 
@@ -46,9 +46,16 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
         this(eventId, message, Priority.DOWNLOAD_HIGH_PRIORITY);
     }
 
-    protected BaseGetWalaJob(String eventId, T message, Priority priority) {
-        super(eventId, new CwJobParams(priority).requireNetwork().persist());
+    protected BaseGetWalaJob(String eventId, T message, int priority) {
+        super(eventId, new JobInitializer()
+                        .requiresNetwork(true)
+                        .isPersistent(true)
+                        .priority(priority));
         this.message = message;
+    }
+
+    protected Events getEvents() {
+        return events;
     }
 
     @Override
@@ -57,14 +64,16 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
     }
 
     @Override
-    public void onRun() throws Throwable {
+    public int getInitialLockCount() {
+        return 1;
+    }
+
+    @Override
+    public void performJob() throws Throwable {
         if(downloadedFile != null && downloadedFile.exists()) {
             handleDownloadedMessage();
             return;
         }
-
-        final Semaphore waitForResponse = new Semaphore(1, true);
-        waitForResponse.acquire();
 
         GetWalaRequest request = new GetWalaRequest<T>(message);
         request.log();
@@ -72,14 +81,13 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
         HttpClient.requestFile(request, walaFilePath, new AsyncHttpClient.FileCallback() {
             @Override
             public void onProgress(AsyncHttpResponse response, long downloaded, long total) {
-                EventBus.getDefault().post(new ProgressEvent(getEventId(), downloaded, total));
+                events.post(new ProgressEvent(getEventId(), downloaded, total));
             }
 
             @Override
             public void onCompleted(Exception e, AsyncHttpResponse rawResponse, File wala) {
                 if (wala == null || !wala.exists()) {
-                    setExceptionToThrow(new RuntimeException("Didn't get downloaded file"));
-                    waitForResponse.release();
+                    raiseThrowableFromAsyncTask(new RuntimeException("Didn't get downloaded file"));
                     return;
                 }
 
@@ -87,8 +95,7 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
                     if (wala.exists()) {
                         wala.delete();
                     }
-                    setExceptionToThrow(e);
-                    waitForResponse.release();
+                    raiseThrowableFromAsyncTask(e);
                     return;
                 }
 
@@ -99,27 +106,21 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
                     if (wala.exists()) {
                         wala.delete();
                     }
-                    waitForResponse.release();
-                    EventBus.getDefault().post(createMessageEvent(getEventId(), Event.Extra.WALA_BAD_SHARE_ID));
+                    notifyAsyncTaskDone();
+                    events.post(createMessageEvent(getEventId(), Extras.WALA_BAD_SHARE_ID));
                     return;
                 }
 
                 try {
                     downloadedFile = wala;
                     handleDownloadedMessage();
+                    notifyAsyncTaskDone();
                 } catch (Throwable innerE) {
                     Logger.e("There was an error handling the downloaded wala", innerE);
-                    setExceptionToThrow(innerE);
-                } finally {
-                    waitForResponse.release();
+                    raiseThrowableFromAsyncTask(innerE);
                 }
             }
         }, HttpClient.SHORTER_FILE_TIMEOUT);
-
-        waitForResponse.acquire();
-        if(exceptionToThrow != null) {
-            throw exceptionToThrow;
-        }
     }
 
     private void handleDownloadedMessage() throws Throwable {
@@ -165,9 +166,9 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
         }
 
         onWalaDownloaded(message);
-        EventBus.getDefault().post(createMessageEvent(getEventId(), new CwResult<T>(message)));
+        events.post(createMessageEvent(getEventId(), new CwResult<T>(message)));
 
-        EventBus.getDefault().post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
+        events.post(new DrawerUpdateEvent(DrawerUpdateEvent.LOAD_EVENT_EXTRA));
 
         //we might be redownloading this wala and already have the message thumb
         if(!message.getLocalMessageThumb().exists()) {
@@ -188,17 +189,18 @@ public abstract class BaseGetWalaJob<T extends ChatwalaMessageBase> extends CwJo
 
     protected abstract void deleteMessage();
 
-    private void setExceptionToThrow(Throwable exceptionToThrow) {
-        this.exceptionToThrow = exceptionToThrow;
+    @Override
+    public void onCanceled() {
+        events.post(createMessageEvent(getEventId(), Extras.CANCELED));
     }
 
     @Override
-    protected void onCancel() {
-        EventBus.getDefault().post(createMessageEvent(getEventId(), Event.Extra.CANCELED));
-    }
-
-    @Override
-    protected JobManager getQueueToPostTo() {
+    protected JobQueue getQueueToPostTo() {
         return getDownloadQueue();
+    }
+
+    @Override
+    public boolean canReachRequiredNetwork() {
+        return NetworkConnectionChecker.getInstance().isConnected();
     }
 }
