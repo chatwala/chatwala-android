@@ -35,6 +35,9 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 
     private Camera.Size cameraPreviewSize = null;
     private Camera.Size cameraVideoSize = null;
+    private WhichCamera currentCamera = WhichCamera.FRONT;
+    private int frontCameraId;
+    private int backCameraId;
     private File recordingFile;
     private final CameraPreviewCallback callback;
     private AtomicBoolean recordStarting = new AtomicBoolean(false);
@@ -50,11 +53,22 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         void recordingDone(File videoFile);
     }
 
+    private enum WhichCamera { FRONT, BACK }
+
     public CameraPreviewView(Context context, CameraPreviewCallback callback)
     {
         super(context);
         initSurface();
-        openCamera();
+
+        try {
+            frontCameraId = CameraUtils.getFrontCameraId();
+            backCameraId = CameraUtils.getBackCameraId();
+        }
+        catch(Exception e) {
+            //what do we do here
+        }
+
+        openCamera(WhichCamera.FRONT);
         this.callback = callback;
     }
 
@@ -154,11 +168,17 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         setSurfaceTextureListener(this);
     }
 
-    private void openCamera()
+    private void openCamera(WhichCamera whichCamera)
     {
         try
         {
-            camera = Camera.open(CameraUtils.getFrontCameraId());
+            if(whichCamera == WhichCamera.FRONT) {
+                camera = Camera.open(frontCameraId);
+            }
+            else if(whichCamera == WhichCamera.BACK) {
+                camera = Camera.open(backCameraId);
+            }
+
             camera.setErrorCallback(new Camera.ErrorCallback()
             {
                 @Override
@@ -172,6 +192,28 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
         {
             this.releaseResources();
         }
+    }
+
+    public void switchCamera() {
+        if(currentCamera == WhichCamera.FRONT ) {
+            //if we don't have a back camera, stop the switch
+            if(backCameraId == CameraUtils.NO_BACK_CAMERA) {
+                return;
+            }
+            currentCamera = WhichCamera.BACK;
+        }
+        else if(currentCamera == WhichCamera.BACK) {
+            currentCamera = WhichCamera.FRONT;
+        }
+
+        if(camera != null) {
+            camera.stopPreview();
+            releaseCamera();
+        }
+
+        openCamera(currentCamera);
+
+        runSurface();
     }
 
     private void setCameraParams()
@@ -216,12 +258,19 @@ public class CameraPreviewView extends TextureView implements TextureView.Surfac
 
         int mrRotate = 0;
 
-        if (display.getRotation() == Surface.ROTATION_0)
+        if (display.getRotation() == Surface.ROTATION_0) {
             mrRotate = 270;
-
-
-        if (display.getRotation() == Surface.ROTATION_270)
+        }
+        else if (display.getRotation() == Surface.ROTATION_270) {
             mrRotate = 180;
+        }
+
+        //when we record from the back with the above rotations
+        //the video ends up getting flipped upside down
+        //this flips it rightside up
+        if(currentCamera == WhichCamera.BACK && mrRotate != 0) {
+            mrRotate -= 180;
+        }
 
         if (mrRotate != 0)
             mediaRecorder.setOrientationHint(mrRotate);

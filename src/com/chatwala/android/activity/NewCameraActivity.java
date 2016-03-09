@@ -1381,6 +1381,14 @@ public class NewCameraActivity extends DrawerListActivity {
             @Override
             public void surfaceReady()
             {
+                findViewById(R.id.recordPreviewClick).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(appState == AppState.ReadyStopped) {
+                            cameraPreviewView.switchCamera();
+                        }
+                    }
+                });
                 previewSurfaceReady();
             }
 
